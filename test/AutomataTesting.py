@@ -1,8 +1,14 @@
 import unittest
 from src.Common.Automaton import DFA, NFA
+from src.Common.AutomatonOperations import automata_union, automata_concatenation, automata_closure
 from src.Common.AutomatonUtils import nfa_to_dfa
 
 class TestAutomata(unittest.TestCase):
+
+
+    def setUp(self):
+        self.a1 = NFA(states=3, finals=[2], transitions={(0, 'b'): [0], (0, 'a'): [1], (1, 'b'): [2]})
+        self.a2 = NFA(states=2, finals=[1], transitions={(0, 'a'): [1]})
 
     def test_dfa(self):
         dfa_transitions = {
@@ -50,6 +56,26 @@ class TestAutomata(unittest.TestCase):
         self.assertFalse(dfa.recognize('bcbc'))
         self.assertFalse(dfa.recognize('acb'))
         self.assertTrue(dfa.recognize('ab'))
+
+    def test_automata_union(self):
+        result = automata_union(self.a1, self.a2)
+        # Add your assertions here
+        self.assertEqual(result.states, self.a1.states + self.a2.states + 2)
+
+        print(result)
+
+        self.assertTrue(result.recognize('a'))
+
+    def test_automata_concatenation(self):
+        result = automata_concatenation(self.a1, self.a2)
+        # Add your assertions here
+        self.assertEqual(result.states, self.a1.states + self.a2.states + 1)
+
+    def test_automata_closure(self):
+        result = automata_closure(self.a1)
+        # Add your assertions here
+        self.assertEqual(result.states, self.a1.states + 2)
+
 
 if __name__ == '__main__':
     unittest.main()
