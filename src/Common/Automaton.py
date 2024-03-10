@@ -1,5 +1,7 @@
 from typing import List, Dict, Tuple, Set
 
+from src.Common.Exceptions import InvalidTransitionException
+
 
 class NFA:
     def __init__(self, states: int, finals: List[int], transitions: Dict[Tuple[int, str], List[int]], start: int = 0):
@@ -62,7 +64,7 @@ class DFA(NFA):
         currentSymbol = self.current
 
         if symbol not in self.transitions[currentSymbol]:
-            raise Exception("Invalid symbol transition")
+            raise InvalidTransitionException("Invalid symbol transition")
 
         self.current = self.transitions[currentSymbol][symbol][0]
 
