@@ -1,6 +1,6 @@
 import string
 
-from src.Lexer.Utils.Automata import State
+from src.Common.Automata import State
 
 Letters = string.ascii_letters
 Digits = string.digits

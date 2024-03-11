@@ -1,5 +1,5 @@
 from src.Common.TokenType import TokenType
-from src.Lexer.Utils.Automata import State
+from src.Common.Automata import State
 
 
 SingleCharacterOperators = {

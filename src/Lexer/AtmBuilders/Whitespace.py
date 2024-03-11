@@ -1,4 +1,4 @@
-from src.Lexer.Utils.Automata import State
+from src.Common.Automata import State
 
 
 def whitespace_automaton():

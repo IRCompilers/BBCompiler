@@ -7,7 +7,7 @@ from src.Lexer.AtmBuilders.Number import number_automaton
 from src.Lexer.AtmBuilders.Operator import operator_automaton
 from src.Lexer.AtmBuilders.Punctuation import punctuation_automaton
 from src.Lexer.AtmBuilders.Whitespace import whitespace_automaton
-from src.Lexer.Utils.Automata import State
+from src.Common.Automata import State
 
 
 class Lexer:
