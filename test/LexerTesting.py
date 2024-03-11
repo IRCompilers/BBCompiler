@@ -1,6 +1,6 @@
 from src.Lexer.Lexer import Lexer
 
-Text = "-123.534 + 200 = a; for v in a; \" the great fenomenon \"; let identity in print(x);"
+Text = "-123.534 + 200 = a; a > b && b <= 9let identity in print(x);"
 
 lexer = Lexer()
 Tokens = lexer(Text)

@@ -1,49 +1,45 @@
+from src.Common.TokenType import TokenType
 from src.Lexer.Utils.Automata import State
 
-UnaryOperators = "+-*/%^"
 
-BinaryOperators = {
-    "=": ["=", ">"],
-    "!": ["="],
-    "<": ["="],
-    ">": ["="],
-    ":": ["="],
-    "&": ["&"],
-    "@": ["@"],
-    "|": ["|"],
-    "*": ["*"],
+SingleCharacterOperators = {
+    ("+", TokenType.PLUS),
+    ("-", TokenType.MINUS),
+    ("*", TokenType.MULTIPLY),
+    ("/", TokenType.DIVIDE),
+    ("%", TokenType.MODULUS)
+}
+
+MultiCharacterOperators = {
+    ("=", TokenType.EQUAL): [("=", TokenType.DEQUAL)],
+    ("!", TokenType.NOT): [("=", TokenType.NOT_EQUAL)],
+    ("<", TokenType.LESS_THAN): [("=", TokenType.LESS_THAN_OR_EQUAL)],
+    (">", TokenType.GREATER_THAN): [("=", TokenType.GREATER_THAN_OR_EQUAL)],
+    (":", TokenType.COLON): [("=", TokenType.ASSIGN)],
+    ("&", TokenType.BITWISE_AND): [("&", TokenType.AND)],
+    ("|", TokenType.BITWISE_OR): [("|", TokenType.OR)],
+    ("*", TokenType.MULTIPLY): [("=", TokenType.POWER)],
 }
 
 
 def operator_automaton():
     optr_state = State("Operator")
 
-    optr_unary_final_states = {
-        optr: State(f"Operator_{optr}_final", True) for optr in UnaryOperators
-    }
-
-    for optr, state in optr_unary_final_states.items():
-        state.tag = "Operator"
+    # Single character operators (both standalone and those part of potential multi-char ops)
+    for optr, token_type in SingleCharacterOperators:
+        state = State(f"Operator_{optr}_final", True)
+        state.tag = token_type
         optr_state.add_transition(optr, state)
 
-    optr_binary_final_states = {}
-    optr_binary_intermediate_states = {}
+    # Multi-character Operators (only the extended parts)
+    for (optr, initial_token), extensions in MultiCharacterOperators.items():
+        intermediate_state = State(f"Operator_{optr}_intermediate", final=True)
+        intermediate_state.tag = initial_token
+        optr_state.add_transition(optr, intermediate_state)
 
-    for optr, next_chars in BinaryOperators.items():
-        for next_char in next_chars:
-            if optr not in optr_binary_intermediate_states:
-                optr_binary_intermediate_states[optr] = State(
-                    f"Operator_{optr}_intermediate", True)
-
-                optr_binary_intermediate_states[optr].tag = "Operator"
-
+        for (next_char, token_type) in extensions:
             final_state = State(f"Operator_{optr}{next_char}_final", True)
-            final_state.tag = "Operator"
-
-            optr_binary_final_states[f"{optr}{next_char}"] = final_state
-
-            optr_state.add_transition(optr, optr_binary_intermediate_states[optr])
-
-            optr_binary_intermediate_states[optr].add_transition(next_char, final_state)
+            final_state.tag = token_type
+            intermediate_state.add_transition(next_char, final_state)
 
     return optr_state

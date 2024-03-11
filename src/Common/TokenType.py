@@ -25,6 +25,8 @@ class TokenType(Enum):
     POWER = 35
     ASSIGN = 36
     MODULUS = 37
+    BITWISE_AND = 51
+    BITWISE_OR = 52
 
     # Keywords
     FOR = 12
