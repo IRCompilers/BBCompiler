@@ -88,11 +88,3 @@ def automata_closure(a1):
     finals = {final}
 
     return NFA(states, finals, transitions, start)
-
-
-a1 = NFA(states=3, finals=[2], transitions={(0, 'b'): [0], (0, 'a'): [1], (1, 'b'): [2]})
-a2 = NFA(states=2, finals=[1], transitions={(0, 'a'): [1]})
-
-union = automata_union(a1, a2)
-
-print(union.transitions)
