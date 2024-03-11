@@ -1,70 +1,69 @@
-from src.Common.Exceptions import InvalidTransitionException
 from src.Common.Token import Token
 from src.Common.TokenType import TokenType
-from src.Lexer.LexerAutomaton import LexerAutomaton
-
-boilerplate_chars = [' ']
-
-
-def get_automaton() -> LexerAutomaton:
-    automaton = LexerAutomaton(9, [3, 6, 7, 8], {
-        (0, 'f'): 1,
-        (1, 'o'): 2,
-        (2, 'r'): 3,
-        (0, 'l'): 4,
-        (4, 'e'): 5,
-        (5, 't'): 6,
-        (0, '<'): 7,
-        (7, '='): 8
-    })
-
-    automaton.add_final_token(3, TokenType.FOR)
-    automaton.add_final_token(6, TokenType.LET)
-    automaton.add_final_token(7, TokenType.LESS_THAN)
-    automaton.add_final_token(8, TokenType.LESS_THAN_OR_EQUAL)
-
-    return automaton
+from src.Lexer.AtmBuilders.Identifier import identifier_automaton
+from src.Lexer.AtmBuilders.Keyword import keyword_automaton
+from src.Lexer.AtmBuilders.Literal import literal_automaton
+from src.Lexer.AtmBuilders.Number import number_automaton
+from src.Lexer.AtmBuilders.Operator import operator_automaton
+from src.Lexer.AtmBuilders.Punctuation import punctuation_automaton
+from src.Lexer.AtmBuilders.Whitespace import whitespace_automaton
+from src.Lexer.Utils.Automata import State
 
 
 class Lexer:
     def __init__(self):
-        self.automaton = get_automaton()
+        self.eof = "$"
+        self.regexs = self._build_regex()
+        self.automaton = self._build_automaton()
 
-    def Tokenize(self, input_string: str):
-        tokens = []
-        i = 0
-        while i < len(input_string):
+    def _build_regex(self):
+        return [
+            whitespace_automaton(),
+            keyword_automaton(),
+            number_automaton(),
+            identifier_automaton(),
+            operator_automaton(),
+            punctuation_automaton(),
+            literal_automaton()
+        ]
 
-            # print(i)
+    def _build_automaton(self):
+        start = State("start")
 
-            try:
-                if input_string[i] in boilerplate_chars:
-                    self.chop(tokens, input_string, i)
-                    i += 1
-                    self.automaton.reset(i + 1)
-                else:
-                    self.automaton.walk(input_string[i], i)
+        for state in self.regexs:
+            start.add_epsilon_transition(state)
+        return start.to_deterministic()
 
-            except InvalidTransitionException:
-                self.chop(tokens, input_string, i)
-                i -= 1
+    def _walk(self, string):
+        state = self.automaton
+        final = state if state.final else None
+        lex = ""
 
-            i += 1
+        for symbol in string:
+            if state.has_transition(symbol):
+                lex += symbol
+                state = state[symbol][0]
 
-        # Handle the last token
-        token_type, last_start_pointer = self.automaton.get_final()
-        if token_type is not None:
-            tokens.append(Token(input_string[last_start_pointer:], token_type))
-        return tokens
+                if state.final:
+                    final = state
+                    final.lex = lex
+            else:
+                break
 
-    # Synonym for chopping but more elegant
-    def chop(self, tokens, input_string, i):
-        token_type, last_start_pointer = self.automaton.get_final()
-        if token_type is not None:
-            tokens.append(Token(input_string[last_start_pointer:i], token_type))
-        self.automaton.reset(i)
+        if final:
+            return final, final.lex
 
+        return None, lex
 
-lexer = Lexer()
-for temp in lexer.Tokenize("for<=let< =letfor"):
-    print(temp.Type, temp.Lemma, len(temp.Lemma))
+    def Tokenize(self, text):
+        while text:
+            final, lex = self._walk(text)
+            text = text[len(lex):]
+
+            if final:
+                yield Token(lex, final.tag)
+
+        yield Token("$", TokenType.EOF)
+
+    def __call__(self, text):
+        return [token for token in self.Tokenize(text)]
