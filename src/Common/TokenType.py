@@ -2,39 +2,65 @@ from enum import Enum
 
 
 class TokenType(Enum):
+    # Regex
     NUMBER = 1
-    STRING = 2
-    IDENTIFIER = 3
-    FUNCTION = 4
-    FOR = 5
-    IF = 6
-    ELSE = 7
-    ELSE_IF = 8
-    LET = 9
-    RETURN = 10
-    BOOLEAN = 11
-    WHILE = 12
-    OPEN_PARENTHESES = 13
-    CLOSE_PARENTHESES = 14
-    OPEN_BRACKET = 15
-    CLOSE_BRACKET = 16
-    OPEN_BRACE = 17
-    CLOSE_BRACE = 18
-    COMMA = 19
-    SEMICOLON = 20
-    PLUS = 21
-    MINUS = 22
-    MULTIPLY = 23
-    DIVIDE = 24
-    MODULUS = 25
-    EQUAL = 26
-    NOT_EQUAL = 27
-    LESS_THAN = 28
-    LESS_THAN_OR_EQUAL = 29
-    GREATER_THAN = 30
-    GREATER_THAN_OR_EQUAL = 31
+    IDENTIFIER = 2
+    STRING = 18
+
+    # Operators
+    PLUS = 3
+    MINUS = 4
+    MULTIPLY = 5
+    DIVIDE = 6
+    EQUAL = 7
+    LESS_THAN = 8
+    LESS_THAN_OR_EQUAL = 9
+    GREATER_THAN = 10
+    GREATER_THAN_OR_EQUAL = 11
+    DEQUAL = 30
+    NOT_EQUAL = 31
     AND = 32
     OR = 33
     NOT = 34
-    ASSIGN = 35
-    POWER = 36
+    POWER = 35
+    ASSIGN = 36
+    MODULUS = 37
+    BITWISE_AND = 51
+    BITWISE_OR = 52
+
+    # Keywords
+    FOR = 12
+    LET = 13
+    IF = 14
+    ELSE = 15
+    WHILE = 16
+    ELSE_IF = 17
+    RETURN = 28
+    FUNCTION = 29
+    PI = 39
+    E = 40
+    NEW = 41
+    INHERITS = 42
+    PROTOCOL = 43
+    TYPE = 44
+    SELF = 45
+    IN = 46
+    RANGE = 47
+    TRUE = 48
+    FALSE = 49
+    EXTENDS = 50
+
+    # Punctuation
+    OPARENT = 19
+    CPARENT = 20
+    OBRACKET = 21
+    CBRACKET = 22
+    OBRACE = 23
+    CBRACE = 24
+    COMMA = 25
+    SEMICOLON = 26
+    COLON = 27
+    DOT = 38
+
+    # Misc
+    EOF = 100
