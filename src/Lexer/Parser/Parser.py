@@ -156,6 +156,9 @@ automaton = build_LR0_automaton(grammar)
 
 print(grammar)
 
+
+
+
 parser = SLR1Parser(grammar, verbose=False)
 
 # derivation = parser([num, plus, num, star, num, G.EOF])
