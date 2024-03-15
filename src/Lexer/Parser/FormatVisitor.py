@@ -24,13 +24,13 @@ class FormatVisitor(object):
     @Visitor.when(ClosureNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__ClosureNode: <expr>*'
-        expr = self.visit(node.expr, tabs + 1)
+        expr = self.visit(node.child, tabs + 1)
         return f'{ans}\n{expr}'
 
     @Visitor.when(PClosureNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__PClosureNode: <expr>+'
-        body = self.visit(node.body, tabs + 1)
+        body = self.visit(node.child, tabs + 1)
         return f'{ans}\n{body}'
 
     @Visitor.when(BinaryNode)
@@ -43,13 +43,13 @@ class FormatVisitor(object):
     @Visitor.when(PossibleNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__PossibleNode: <expr>?'
-        body = self.visit(node.body, tabs + 1)
+        body = self.visit(node.child, tabs + 1)
         return f'{ans}\n{body}'
 
     @Visitor.when(NotNode)
     def visit(self, node, tabs=0):
         ans = '\t' * tabs + f'\\__NotNode: <expr>?'
-        body = self.visit(node.body, tabs + 1)
+        body = self.visit(node.child, tabs + 1)
         return f'{ans}\n{body}'
 
     @Visitor.when(LiteralNode)

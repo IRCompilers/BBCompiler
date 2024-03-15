@@ -88,3 +88,30 @@ def automata_closure(a1):
     finals = {final}
 
     return NFA(states, finals, transitions, start)
+
+
+def automata_pclosure(a1):
+    return automata_concatenation(a1, automata_closure(a1))
+
+
+def automata_possible(a1):
+    epsilon = epsilon_automata()
+    return automata_concatenation(epsilon, a1)
+
+
+def automata_not(a1):
+    raise NotImplementedError()
+
+
+def epsilon_automata():
+    return NFA(states=1, finals=[0], transitions={})
+
+
+def automata_symbol(lex: str):
+    return NFA(
+        states=2,
+        finals=[1],
+        transitions={
+            (0, lex): [1]
+        }
+    )

@@ -1,4 +1,4 @@
-from src.Common.Automaton import DFA
+from src.Common.Automaton import DFA, NFA
 from src.Common.ContainerSet import ContainerSet
 
 
@@ -65,3 +65,5 @@ def nfa_to_dfa(automaton):
     finals = [state.id for state in states if state.is_final]
     dfa = DFA(len(states), finals, transitions)
     return dfa
+
+
