@@ -1,9 +1,8 @@
 from typing import List
 
 from src.Common.Automata import State
-from src.Common.Compiler import Item, Production, NonTerminal
+from src.Common.Compiler import Item, Production, NonTerminal, EOF
 from src.Common.ContainerSet import ContainerSet
-from src.Lexer.Parser.Grammar import GetLexerGrammar
 from src.Lexer.Parser.Utils import compute_firsts, compute_follows
 
 
@@ -74,10 +73,11 @@ class ShiftReduceParser:
     def _build_parsing_table(self):
         raise NotImplementedError()
 
-    def __call__(self, w) -> List[Production]:
+    def __call__(self, w) -> (List[Production], List[str]):
         stack = [0]
         cursor = 0
         output = []
+        actions = []
 
         while True:
             state = stack[-1]
@@ -104,7 +104,9 @@ class ShiftReduceParser:
             elif action == ShiftReduceParser.OK:
                 break
 
-        return output
+            actions.append(action)
+
+        return output, actions
 
 
 class SLR1Parser(ShiftReduceParser):
@@ -123,9 +125,6 @@ class SLR1Parser(ShiftReduceParser):
             idx = node.idx
             for state in node.state:
                 item = state.state
-                # Your code here!!!
-                # - Fill `self.Action` and `self.Goto` according to `item`)
-                # - Feel free to use `self._register(...)`)
 
                 production_left: NonTerminal = item.production.Left
                 left_follows: ContainerSet = follows[production_left]
@@ -151,16 +150,32 @@ class SLR1Parser(ShiftReduceParser):
         table[key] = value
 
 
-grammar = GetLexerGrammar()
-automaton = build_LR0_automaton(grammar)
+def evaluate_reverse_parse(right_parse, operations, tokens):
+    if not right_parse or not operations or not tokens:
+        return
 
-print(grammar)
+    right_parse = iter(right_parse)
+    tokens = iter(tokens)
+    stack = []
+    for operation in operations:
+        if operation == ShiftReduceParser.SHIFT:
+            token = next(tokens)
+            stack.append(token.Lemma)
+        elif operation == ShiftReduceParser.REDUCE:
+            production = next(right_parse)
+            head, body = production
+            attributes = production.attributes
+            assert all(rule is None for rule in attributes[1:]), 'There must be only synteticed attributes.'
+            rule = attributes[0]
 
+            if len(body):
+                synteticed = [None] + stack[-len(body):]
+                value = rule(None, synteticed)
+                stack[-len(body):] = [value]
+            else:
+                stack.append(rule(None, None))
+        else:
+            raise Exception('Invalid action!!!')
 
-
-
-parser = SLR1Parser(grammar, verbose=False)
-
-# derivation = parser([num, plus, num, star, num, G.EOF])
-# assert str(derivation) == '[F -> int, T -> F, E -> T, F -> int, T -> F, F -> int, T -> T * F, E -> E + T]'
-# print("Derivation: ", derivation)
+    assert len(stack) == 1
+    return stack[0]
