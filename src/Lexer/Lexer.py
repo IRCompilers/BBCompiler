@@ -1,37 +1,37 @@
+from src.Common.Automata import State
 from src.Common.Token import Token
 from src.Common.TokenType import TokenType
-from src.Lexer.AtmBuilders.Identifier import identifier_automaton
-from src.Lexer.AtmBuilders.Keyword import keyword_automaton
-from src.Lexer.AtmBuilders.Literal import literal_automaton
-from src.Lexer.AtmBuilders.Number import number_automaton
-from src.Lexer.AtmBuilders.Operator import operator_automaton
-from src.Lexer.AtmBuilders.Punctuation import punctuation_automaton
-from src.Lexer.AtmBuilders.Whitespace import whitespace_automaton
-from src.Common.Automata import State
+from src.Lexer.Parser.Regex import build_regex
 
 
 class Lexer:
-    def __init__(self):
-        self.eof = "$"
-        self.regexs = self._build_regex()
+    def __init__(self, table, eof):
+        self.eof = eof
+        self.regexs = self._build_regexs(table)
         self.automaton = self._build_automaton()
 
-    def _build_regex(self):
-        return [
-            whitespace_automaton(),
-            keyword_automaton(),
-            number_automaton(),
-            identifier_automaton(),
-            operator_automaton(),
-            punctuation_automaton(),
-            literal_automaton()
-        ]
+    def _build_regexs(self, table):
+        regexs = []
+        for n, (token_type, regex) in enumerate(table):
+            regex_automata = build_regex(regex)
+            automata, states = State.from_nfa(regex_automata, get_states=True)
+
+            for state in states:
+                if state.final and state.tag is None:
+                    state.tag = (n, token_type)
+                elif not state.final:
+                    state.tag = None
+
+            regexs.append(automata)
+
+        return regexs
 
     def _build_automaton(self):
-        start = State("start")
+        start = State('start')
 
-        for state in self.regexs:
-            start.add_epsilon_transition(state)
+        for automata in self.regexs:
+            start.add_epsilon_transition(automata)
+
         return start.to_deterministic()
 
     def _walk(self, string):
@@ -56,14 +56,16 @@ class Lexer:
         return None, lex
 
     def Tokenize(self, text):
+        pos = 0
         while text:
             final, lex = self._walk(text)
             text = text[len(lex):]
-
             if final:
-                yield Token(lex, final.tag)
+                yield Token(lex, final.tag, pos)
 
-        yield Token("$", TokenType.EOF)
+            pos += len(lex)
+
+        yield Token("$", TokenType.EOF, pos)
 
     def __call__(self, text):
         return [token for token in self.Tokenize(text)]
