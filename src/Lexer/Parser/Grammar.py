@@ -1,10 +1,8 @@
 from Ast import *
 from src.Common.Compiler import Grammar
-from src.Common.Token import Token
-from src.Lexer.Parser.Parser import SLR1Parser, evaluate_reverse_parse
 
 
-def GetLexerGrammar():
+def GetRegexGrammar():
     G = Grammar()
 
     regex = G.NonTerminal('<regex>', startSymbol=True)
@@ -46,18 +44,26 @@ def GetLexerGrammar():
     char_class_character %= literal, lambda h, s: s[1]
     char_class_character %= literal + dot + dot + literal, lambda h, s: EllipsisNode(left=s[1], right=s[4])
 
-    # # This is for testing
-    # parser = SLR1Parser(G, verbose=False)
-    # zero = [x for x in G.terminals if x.Name == '0'][0]
-    # nine = [x for x in G.terminals if x.Name == '9'][0]
-    # tokens = [obrack, zero, dot, dot, nine, cbrack, plus, G.EOF]
-    # derivation, operations = parser(tokens)
-    # tokens = [Token(x.Name, x, 0) for x in tokens]
-    # ast = evaluate_reverse_parse(derivation, operations, tokens)
-    # print(ast)
-    # # Up to here
-
     return G
 
-
-g = GetLexerGrammar()
+# # This is for testing
+# parser = SLR1Parser(G, verbose=False)
+# zero = [x for x in G.terminals if x.Name == '0'][0]
+# nine = [x for x in G.terminals if x.Name == '9'][0]
+# tokens = [obrack, zero, dot, dot, nine, cbrack, plus, G.EOF]
+# derivation, operations = parser(tokens)
+#
+# print(derivation)
+#
+# tokens = [Token(x.Name, x, 0) for x in tokens]
+# ast = evaluate_reverse_parse(derivation, operations, tokens)
+# formatter = FormatVisitor()
+# print(formatter.visit(ast))
+# print()
+#
+# evaluator = EvaluateVisitor()
+# nfa = evaluator.visit(ast)
+# dfa = nfa_to_dfa(nfa)
+# # print(dfa.transitions)
+#
+# print(dfa.recognize("1039123"))
