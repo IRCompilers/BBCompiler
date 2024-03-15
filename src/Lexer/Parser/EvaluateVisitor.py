@@ -1,6 +1,6 @@
-from Ast import *
 from src.Common import Visitor
 from src.Common.AutomatonOperations import *
+from src.Lexer.Parser.Ast import *
 
 
 class EvaluateVisitor(object):

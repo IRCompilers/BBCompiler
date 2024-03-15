@@ -1,3 +1,5 @@
-regex = [
-    (TokenType.NUMBER, "[0..9]")
+from src.Common.TokenType import TokenType
+
+regex_table = [
+    (TokenType.NUMBER, "[0..9]+")
 ]

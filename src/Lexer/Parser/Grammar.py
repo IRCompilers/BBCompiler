@@ -1,4 +1,4 @@
-from Ast import *
+from src.Lexer.Parser.Ast import *
 from src.Common.Compiler import Grammar
 
 

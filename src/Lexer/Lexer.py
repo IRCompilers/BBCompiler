@@ -1,19 +1,20 @@
 from src.Common.Automata import State
 from src.Common.Token import Token
 from src.Common.TokenType import TokenType
-from src.Lexer.Parser.Regex import build_regex
+from src.Lexer.Parser.Regex import RegexBuilder
+from src.Lexer.Parser.SymbolTable import regex_table
 
 
 class Lexer:
-    def __init__(self, table, eof):
-        self.eof = eof
+    def __init__(self, table):
+        self.regex_builder = RegexBuilder()
         self.regexs = self._build_regexs(table)
         self.automaton = self._build_automaton()
 
     def _build_regexs(self, table):
         regexs = []
         for n, (token_type, regex) in enumerate(table):
-            regex_automata = build_regex(regex)
+            regex_automata, errors = self.regex_builder.build_regex(regex)
             automata, states = State.from_nfa(regex_automata, get_states=True)
 
             for state in states:
@@ -59,6 +60,7 @@ class Lexer:
         pos = 0
         while text:
             final, lex = self._walk(text)
+            print(lex)
             text = text[len(lex):]
             if final:
                 yield Token(lex, final.tag, pos)
@@ -69,3 +71,8 @@ class Lexer:
 
     def __call__(self, text):
         return [token for token in self.Tokenize(text)]
+
+
+lexer = Lexer(regex_table)
+tokens = lexer("124414")
+print(tokens)
