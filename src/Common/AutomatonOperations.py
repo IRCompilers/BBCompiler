@@ -96,7 +96,7 @@ def automata_pclosure(a1):
 
 def automata_possible(a1):
     epsilon = epsilon_automata()
-    return automata_concatenation(epsilon, a1)
+    return automata_union(epsilon, a1)
 
 
 def automata_not(a1):

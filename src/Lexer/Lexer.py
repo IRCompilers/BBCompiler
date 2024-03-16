@@ -89,7 +89,7 @@ class Lexer:
 
 
 lexer = Lexer(regex_table)
-tokens = lexer("    for let 12let 94 1\n   4532 ")
+tokens = lexer("    for let 12.54let 94 1\n   4532 ")
 
 for v in tokens:
     print(v.Lemma, v.TokenType, v.Pos)

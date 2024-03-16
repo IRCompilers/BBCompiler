@@ -1,4 +1,4 @@
-from Ast import *
+from src.Lexer.Parser.Ast import *
 from src.Common import Visitor
 
 
@@ -12,7 +12,7 @@ class FormatVisitor(object):
         ans = '\t' * tabs + f'\\__<expr> Concat <expr>'
         left = self.visit(node.left, tabs + 1)
         right = self.visit(node.right, tabs + 1)
-        return f'{ans}\n{left} {right}'
+        return f'{ans}\n{left}\n{right}'
 
     @Visitor.when(UnionNode)
     def visit(self, node, tabs=0):
