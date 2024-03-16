@@ -41,6 +41,10 @@ class Lexer:
         lex = ""
 
         for symbol in string:
+
+            if symbol == " " or symbol == "\n":
+                break
+
             if state.has_transition(symbol):
                 lex += symbol
                 state = state[symbol][0]
@@ -54,14 +58,12 @@ class Lexer:
         if final:
             return final, final.lex
 
-        return None, lex
-
     def Tokenize(self, text):
         pos = 0
+        text = self.CleanupText("", text)
         while text:
             final, lex = self._walk(text)
-            print(lex)
-            text = text[len(lex):]
+            text = self.CleanupText(lex, text)
             if final:
                 yield Token(lex, final.tag, pos)
 
@@ -69,10 +71,26 @@ class Lexer:
 
         yield Token("$", TokenType.EOF, pos)
 
+    @staticmethod
+    def CleanupText(lex, text):
+        index = len(lex)
+        for i, symbol in enumerate(text):
+            if i < index:
+                continue
+
+            if symbol == " " or symbol == "\n":
+                index += 1
+            else:
+                break
+
+        return text[index:]
+
     def __call__(self, text):
         return [token for token in self.Tokenize(text)]
 
 
 lexer = Lexer(regex_table)
-tokens = lexer("124414")
-print(tokens)
+tokens = lexer("      12 94 1\n   4532 ")
+
+for v in tokens:
+    print(v)
