@@ -19,7 +19,7 @@ class FormatVisitor(object):
         ans = '\t' * tabs + f'\\__<expr> Union <expr>'
         left = self.visit(node.left, tabs + 1)
         right = self.visit(node.right, tabs + 1)
-        return f'{ans}\n{left} {right}'
+        return f'{ans}\n{left}\n{right}'
 
     @Visitor.when(ClosureNode)
     def visit(self, node, tabs=0):

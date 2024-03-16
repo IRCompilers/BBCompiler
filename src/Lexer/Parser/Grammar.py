@@ -18,7 +18,8 @@ def GetRegexGrammar():
     opar, cpar, obrack, cbrack = G.Terminals('( ) [ ]')
     dot, pipe, scape = G.Terminals('. | \\')
     literal_characters = G.Terminals(
-        'a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z # $ % &  @ ^ _ 0 1 2 3 4 5 6 7 8 9')
+        'a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M '
+        'N O P Q R S T U V W X Y Z # $ % &  @ ^ _ < > = : ; \' \" - / 0 1 2 3 4 5 6 7 8 9')
 
     regex %= branch, lambda h, s: s[1]
 
@@ -53,7 +54,6 @@ def GetRegexGrammar():
 
     return G
 
-
 # # This is for testing
 # G = GetRegexGrammar()
 # parser = SLR1Parser(G, verbose=False)
@@ -62,6 +62,7 @@ def GetRegexGrammar():
 # plus = [x for x in G.terminals if x.Name == '+'][0]
 # dot = [x for x in G.terminals if x.Name == '.'][0]
 # question = [x for x in G.terminals if x.Name == '?'][0]
+# asterisk = [x for x in G.terminals if x.Name == "*"][0]
 #
 # # tokens = [obrack, zero, dot, dot, nine, cbrack, plus, G.EOF]
 #
@@ -70,14 +71,21 @@ def GetRegexGrammar():
 # cpar = [x for x in G.terminals if x.Name == ')'][0]
 # cbrack = [x for x in G.terminals if x.Name == ']'][0]
 # pipe = [x for x in G.terminals if x.Name == '|'][0]
-# scape = [x for x in G.terminals if x.Name == '\\'][0]
-# f = [x for x in G.terminals if x.Name == 'f'][0]
-# o = [x for x in G.terminals if x.Name == 'o'][0]
-# r = [x for x in G.terminals if x.Name == 'r'][0]
-# l = [x for x in G.terminals if x.Name == 'l'][0]
+# # scape = [x for x in G.terminals if x.Name == '\\'][0]
+# # f = [x for x in G.terminals if x.Name == 'f'][0]
+# # o = [x for x in G.terminals if x.Name == 'o'][0]
+# # r = [x for x in G.terminals if x.Name == 'r'][0]
+# # l = [x for x in G.terminals if x.Name == 'l'][0]
+# a = [x for x in G.terminals if x.Name == 'a'][0]
+# z = [x for x in G.terminals if x.Name == 'z'][0]
+# A = [x for x in G.terminals if x.Name == 'A'][0]
+# Z = [x for x in G.terminals if x.Name == 'Z'][0]
+# underscore = [x for x in G.terminals if x.Name == "_"][0]
 #
-# tokens = [opar, obrack, zero, dot, dot, nine, cbrack, plus, scape, dot, cpar, question, obrack, zero, dot, dot, nine,
-#           cbrack, plus, G.EOF]
+# firstpart = [opar, obrack, a, dot, dot, z, cbrack, pipe, obrack, A, dot, dot, Z, cbrack, pipe, underscore, cpar]
+# secondpart = [opar, obrack, a, dot, dot, z, cbrack, pipe, obrack, A, dot, dot, Z, cbrack, pipe, underscore, pipe, obrack, zero, dot, dot, nine, cbrack, cpar, asterisk]
+#
+# tokens = firstpart + secondpart + [G.EOF]
 # print(tokens)
 #
 # derivation, operations = parser(tokens)
@@ -96,7 +104,5 @@ def GetRegexGrammar():
 # evaluator = EvaluateVisitor()
 # nfa = evaluator.visit(ast)
 # dfa = nfa_to_dfa(nfa)
-# print(dfa.transitions)
-# print(dfa.finals)
 #
-# print(dfa.recognize("133.6645"))
+# print(dfa.recognize("abc"))
