@@ -1,8 +1,8 @@
 from src.Common.Automata import State
 from src.Common.Token import Token
-from src.Common.TokenType import TokenType
 from src.Lexer.Parser.Regex import RegexBuilder
 from src.Lexer.Parser.SymbolTable import regex_table
+from src.Project.Grammar import G
 
 
 class Lexer:
@@ -59,17 +59,16 @@ class Lexer:
             return final, final.lex
 
     def Tokenize(self, text):
-        pos = 0
-        text = self.CleanupText("", text)
+        text, pos = self.CleanupText("", text)
         while text:
             final, lex = self._walk(text)
-            text = self.CleanupText(lex, text)
+            text, index = self.CleanupText(lex, text)
             if final:
                 yield Token(lex, final.tag, pos)
 
-            pos += len(lex)
+            pos += index
 
-        yield Token("$", TokenType.EOF, pos)
+        yield Token("$", G.EOF, pos)
 
     @staticmethod
     def CleanupText(lex, text):
@@ -83,14 +82,14 @@ class Lexer:
             else:
                 break
 
-        return text[index:]
+        return text[index:], index
 
     def __call__(self, text):
         return [token for token in self.Tokenize(text)]
 
 
 lexer = Lexer(regex_table)
-tokens = lexer("      12 94 1\n   4532 ")
+tokens = lexer("    for let 12let 94 1\n   4532 ")
 
 for v in tokens:
-    print(v)
+    print(v.Lemma, v.TokenType, v.Pos)

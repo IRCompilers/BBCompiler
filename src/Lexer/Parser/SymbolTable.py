@@ -1,5 +1,9 @@
-from src.Common.TokenType import TokenType
+from src.Project.Grammar import *
 
 regex_table = [
-    (TokenType.NUMBER, "[0..9]+")
+    (number, "[0..9]+"),
+    (for_, "[for]"),
+    (let, "[let]")
+    # (TokenType.LESS_THAN, "<"),
+    # (TokenType.LESS_THAN_OR_EQUAL, "<=")
 ]

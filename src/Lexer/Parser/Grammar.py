@@ -1,5 +1,5 @@
-from src.Lexer.Parser.Ast import *
 from src.Common.Compiler import Grammar
+from src.Lexer.Parser.Ast import *
 
 
 def GetRegexGrammar():
@@ -47,23 +47,37 @@ def GetRegexGrammar():
     return G
 
 # # This is for testing
+# G = GetRegexGrammar()
 # parser = SLR1Parser(G, verbose=False)
 # zero = [x for x in G.terminals if x.Name == '0'][0]
 # nine = [x for x in G.terminals if x.Name == '9'][0]
-# tokens = [obrack, zero, dot, dot, nine, cbrack, plus, G.EOF]
+# # tokens = [obrack, zero, dot, dot, nine, cbrack, plus, G.EOF]
+#
+# obrack = [x for x in G.terminals if x.Name == '['][0]
+# cbrack = [x for x in G.terminals if x.Name == ']'][0]
+# f = [x for x in G.terminals if x.Name == 'f'][0]
+# o = [x for x in G.terminals if x.Name == 'o'][0]
+# r = [x for x in G.terminals if x.Name == 'r'][0]
+#
+# tokens = [obrack, f, o, cbrack, obrack, r, cbrack, G.EOF]
+# print(tokens)
+#
 # derivation, operations = parser(tokens)
 #
 # print(derivation)
 #
 # tokens = [Token(x.Name, x, 0) for x in tokens]
 # ast = evaluate_reverse_parse(derivation, operations, tokens)
+#
+# print(ast)
+#
 # formatter = FormatVisitor()
-# print(formatter.visit(ast))
+# print("Formatter: ", formatter.visit(ast))
 # print()
 #
 # evaluator = EvaluateVisitor()
 # nfa = evaluator.visit(ast)
 # dfa = nfa_to_dfa(nfa)
-# # print(dfa.transitions)
+# print(dfa.transitions)
 #
-# print(dfa.recognize("1039123"))
+# print(dfa.recognize("for"))
