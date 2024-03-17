@@ -1,6 +1,7 @@
 import pydot
 
 import src.Project.Grammar
+from src.Common.Compiler import Terminal
 from src.Project.Grammar import identifier
 
 
@@ -60,13 +61,15 @@ class State:
         keyword_tag = next(
             (s.tag for s in closure if s.final and s.tag in keyword_tags), None
         )
+
         if start.final:
             if keyword_tag:
                 start.tag = keyword_tag
             else:
-                start.tag = "/".join(
-                    set(s.tag for s in closure if s.final and s.tag is not None)
-                )
+                if isinstance(start.tag, Terminal):
+                    start.tag = start.tag.Name
+
+                start.tag = next((s.tag for s in closure if s.final and s.tag is not None), None)
 
         closures = [closure]
         states = [start]
@@ -110,7 +113,6 @@ class State:
 
                 state.add_transition(symbol, new_state)
 
-        print("State amount: ", len(states))
         return start
 
     @staticmethod

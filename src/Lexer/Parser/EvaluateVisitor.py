@@ -1,5 +1,6 @@
 from src.Common import Visitor
 from src.Common.AutomatonOperations import *
+from src.Common.AutomatonUtils import automata_minimization, nfa_to_dfa
 from src.Lexer.Parser.Ast import *
 from src.Project.Chars import regular_chars
 
@@ -56,8 +57,8 @@ class EvaluateVisitor(object):
             result = automata_union(result, automata_symbol(c))
 
         result = automata_union(result, automata_symbol(' '))
+        return automata_minimization(nfa_to_dfa(result))
 
-        return result
 
     @Visitor.when(EllipsisNode)
     def visit(self, node):
@@ -83,4 +84,4 @@ class EvaluateVisitor(object):
         for c in characters_in_between:
             result = automata_union(result, automata_symbol(c))
 
-        return result
+        return automata_minimization(nfa_to_dfa(result))
