@@ -2,7 +2,7 @@ from src.Common import Visitor
 from src.Common.AutomatonOperations import *
 from src.Common.AutomatonUtils import automata_minimization, nfa_to_dfa
 from src.Lexer.Parser.Ast import *
-from src.Project.Chars import regular_chars
+from src.Project.Chars import regular_chars, regex_grammar_extra_chars
 
 
 class EvaluateVisitor(object):
@@ -54,6 +54,9 @@ class EvaluateVisitor(object):
         second = automata_symbol(chars[1])
         result = automata_union(first, second)
         for c in chars[2:]:
+            result = automata_union(result, automata_symbol(c))
+
+        for c in regex_grammar_extra_chars.split():
             result = automata_union(result, automata_symbol(c))
 
         result = automata_union(result, automata_symbol(' '))
