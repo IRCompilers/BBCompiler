@@ -1,7 +1,7 @@
 from typing import List
 
 from src.Common.Automata import State
-from src.Common.Exceptions import UnknownSymbolException
+from src.Common.Exceptions import LexerError
 from src.Common.Token import Token
 from src.Lexer.Parser.Regex import RegexBuilder
 from src.Lexer.Parser.SymbolTable import regex_table
@@ -66,13 +66,13 @@ class Lexer:
             return final, final.lex
 
     def Tokenize(self, text):
-        errors: List[UnknownSymbolException] = []
+        errors: List[LexerError] = []
         text, pos = self.CleanupText("", text)
         while text:
             try:
                 final, lex = self._walk(text)
             except TypeError:
-                errors.append(UnknownSymbolException(f"LEXER ERROR: Invalid token \"{text[0]}\" at position: {pos}"))
+                errors.append(LexerError(f"LEXER ERROR: Invalid token \"{text[0]}\" at position: {pos}"))
                 text, index = self.CleanupText("", text, skip=1)
                 pos += index
                 continue
@@ -111,18 +111,6 @@ class Lexer:
 # Calculate the elapsed time
 lexer = Lexer(regex_table)
 tokens = lexer("let* polish=(36.42).in \"this is a great string\": for ; 56.43+@*30.1")
-# tokens = lexer("for v in range \"this is a great string\" for let polish be 12.54let 94 1\n   4532 ")
-# end_time = time.time()
-# elapsed_time = end_time - start_time
-# after_lex_time = time.time()
-# elapsed_lex_time = after_lex_time - elapsed_time
-# tokens = lexer("for v in range for let polish be 12.54let 94 1\n   4532 ")
-# after_lex_time_second = time.time()
-# elapsed_lex_time_second = after_lex_time_second - elapsed_lex_time
-#
-# print("Elapsed: ", elapsed_time)
-# print("Elapsed lex: ", elapsed_lex_time)
-# print("Elapsed lex second: ", elapsed_lex_time_second)
-#
+
 for v in tokens:
     print(v.Lemma, v.TokenType, v.Pos)

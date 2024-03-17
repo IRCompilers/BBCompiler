@@ -1,8 +1,9 @@
 from typing import List
 
 from src.Common.Automata import State
-from src.Common.Compiler import Item, Production, NonTerminal, EOF
+from src.Common.Compiler import Item, Production, NonTerminal
 from src.Common.ContainerSet import ContainerSet
+from src.Common.Exceptions import ParserError
 from src.Lexer.Parser.Utils import compute_firsts, compute_follows
 
 
@@ -78,15 +79,17 @@ class ShiftReduceParser:
         cursor = 0
         output = []
         actions = []
+        errors: List[ParserError] = []
 
         while True:
             state = stack[-1]
             lookahead = w[cursor]
             if self.verbose: print(stack, '<---||--->', w[cursor:])
 
-            # Your code here!!! (Detect error)
-
-            action, tag = self.action[state, lookahead]
+            try:
+                action, tag = self.action[state, lookahead]
+            except Exception as e:
+                raise ParserError(f"Neither Action nor Goto found on {cursor} and lookahead {lookahead}")
 
             if action == ShiftReduceParser.SHIFT:
                 stack.append(lookahead)

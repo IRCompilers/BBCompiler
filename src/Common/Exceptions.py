@@ -3,6 +3,11 @@ class InvalidTransitionException(Exception):
         super().__init__(message)
 
 
-class UnknownSymbolException(Exception):
+class LexerError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
+
+class ParserError(Exception):
     def __init__(self, message):
         super().__init__(message)
