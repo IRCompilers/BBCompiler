@@ -100,7 +100,14 @@ def automata_possible(a1):
 
 
 def automata_not(a1):
-    raise NotImplementedError()
+    new_finals = set()
+
+    for i in range(a1.states):
+        if i not in a1.finals:
+            new_finals.add(i)
+
+    a1.finals = new_finals
+    return a1
 
 
 def epsilon_automata():

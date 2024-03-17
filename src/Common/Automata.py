@@ -110,6 +110,7 @@ class State:
 
                 state.add_transition(symbol, new_state)
 
+        print("State amount: ", len(states))
         return start
 
     @staticmethod

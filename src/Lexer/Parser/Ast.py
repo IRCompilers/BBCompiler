@@ -18,6 +18,10 @@ class LiteralNode(Node):
     value: str
 
 
+class VocabularyNode(Node):
+    pass
+
+
 class ClosureNode(UnaryNode):
     pass
 

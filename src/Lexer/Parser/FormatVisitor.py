@@ -62,3 +62,8 @@ class FormatVisitor(object):
         left = self.visit(node.left, tabs + 1)
         right = self.visit(node.right, tabs + 1)
         return f'{ans}\n{left}\n{right}'
+
+    @Visitor.when(VocabularyNode)
+    def visit(self, node, tabs=0):
+        ans = '\t' * tabs + f'\\__VocabularyNode: <-|->'
+        return f'{ans}'

@@ -21,7 +21,7 @@ class Lexer:
 
             for state in states:
                 if state.final:
-                    state.tag = (n, token_type)
+                    state.tag = token_type
                 else:
                     state.tag = None
 
@@ -42,10 +42,14 @@ class Lexer:
         final = state if state.final else None
         lex = ""
 
-        for symbol in string:
+        string_started = False
 
-            if symbol == " " or symbol == "\n":
+        for symbol in string:
+            if not string_started and symbol == " " or symbol == "\n":
                 break
+
+            if symbol == "\"":
+                string_started = True
 
             if state.has_transition(symbol):
                 lex += symbol
@@ -90,22 +94,23 @@ class Lexer:
         return [token for token in self.Tokenize(text)]
 
 
-start_time = time.time()
+# start_time = time.time()
 
 # Calculate the elapsed time
 lexer = Lexer(regex_table)
-end_time = time.time()
-elapsed_time = end_time - start_time
-tokens = lexer("for v in range for let 12.54let 94 1\n   4532 ")
-after_lex_time = time.time()
-elapsed_lex_time = after_lex_time - elapsed_time
-tokens = lexer("for v in range for let 12.54let 94 1\n   4532 ")
-after_lex_time_second = time.time()
-elapsed_lex_time_second = after_lex_time_second - elapsed_lex_time
-
-print("Elapsed: ", elapsed_time)
-print("Elapsed lex: ", elapsed_lex_time)
-print("Elapsed lex second: ", elapsed_lex_time_second)
-
+tokens = lexer("45.23 65 \"this for \\\" ut\" is for the string")
+# tokens = lexer("for v in range \"this is a great string\" for let polish be 12.54let 94 1\n   4532 ")
+# end_time = time.time()
+# elapsed_time = end_time - start_time
+# after_lex_time = time.time()
+# elapsed_lex_time = after_lex_time - elapsed_time
+# tokens = lexer("for v in range for let polish be 12.54let 94 1\n   4532 ")
+# after_lex_time_second = time.time()
+# elapsed_lex_time_second = after_lex_time_second - elapsed_lex_time
+#
+# print("Elapsed: ", elapsed_time)
+# print("Elapsed lex: ", elapsed_lex_time)
+# print("Elapsed lex second: ", elapsed_lex_time_second)
+#
 for v in tokens:
     print(v.Lemma, v.TokenType, v.Pos)

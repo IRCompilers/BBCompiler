@@ -1,6 +1,7 @@
 from src.Common import Visitor
 from src.Common.AutomatonOperations import *
 from src.Lexer.Parser.Ast import *
+from src.Project.Chars import regular_chars
 
 
 class EvaluateVisitor(object):
@@ -44,6 +45,19 @@ class EvaluateVisitor(object):
     def visit(self, node):
         lex = node.value
         return automata_symbol(lex)
+
+    @Visitor.when(VocabularyNode)
+    def visit(self, node):
+        chars = regular_chars.split()
+        first = automata_symbol(chars[0])
+        second = automata_symbol(chars[1])
+        result = automata_union(first, second)
+        for c in chars[2:]:
+            result = automata_union(result, automata_symbol(c))
+
+        result = automata_union(result, automata_symbol(' '))
+
+        return result
 
     @Visitor.when(EllipsisNode)
     def visit(self, node):
