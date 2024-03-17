@@ -1,6 +1,7 @@
 from typing import List
 
 from src.Common.Automaton import NFA
+from src.Common.AutomatonUtils import nfa_to_dfa, automata_minimization
 from src.Common.Token import Token
 from src.Lexer.Parser.EvaluateVisitor import EvaluateVisitor
 from src.Lexer.Parser.Grammar import GetRegexGrammar
@@ -31,4 +32,6 @@ class RegexBuilder:
         ast = evaluate_reverse_parse(derivation, operations, tokens)
         evaluator = EvaluateVisitor()
         nfa = evaluator.visit(ast)
-        return nfa, errors
+        dfa = nfa_to_dfa(nfa)
+        dfa = automata_minimization(dfa)
+        return dfa, errors
