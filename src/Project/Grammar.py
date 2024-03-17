@@ -10,7 +10,7 @@ comma, period, colon, semicolon = G.Terminals(", . : ;")
 arrow, darrow = G.Terminals("-> =>")
 and_, or_, not_ = G.Terminals("& | !")
 modulus, power = G.Terminals("% ^")
-assign = G.Terminals(":=")
+assign, concat = G.Terminals(":= @")
 
 for_, let, if_, else_, elif_ = G.Terminals("for let if else elif")
 while_, return_, function, pi, e, print_ = G.Terminals("while return function pi e print")

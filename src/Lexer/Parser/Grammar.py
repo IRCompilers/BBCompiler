@@ -1,10 +1,5 @@
-from src.Common.AutomatonUtils import nfa_to_dfa
 from src.Common.Compiler import Grammar
-from src.Common.Token import Token
 from src.Lexer.Parser.Ast import *
-from src.Lexer.Parser.EvaluateVisitor import EvaluateVisitor
-from src.Lexer.Parser.FormatVisitor import FormatVisitor
-from src.Lexer.Parser.Parser import SLR1Parser, evaluate_reverse_parse
 from src.Project.Chars import regular_chars
 
 
@@ -46,13 +41,11 @@ def GetRegexGrammar():
 
     literal %= scape + escape_comp, lambda h, s: s[2]
 
-    escape_comp %= star, lambda h, s: VocabularyNode()
+    A = [x for x in G.terminals if x.Name == "A"][0]
+    escape_comp %= A, lambda h, s: VocabularyNode()
 
     for v in literal_characters + quotes:
         literal %= v, lambda h, s: LiteralNode(value=s[1])
-
-    # for v in quotes:
-    #     literal %= scape + v, lambda h, s: LiteralNode(value=s[2])
 
     for v in [plus, star, question, bang, opar, cpar, obrack, cbrack, pipe, dot, scape]:
         escape_comp %= v, lambda h, s: LiteralNode(value=s[1])
@@ -68,40 +61,40 @@ def GetRegexGrammar():
 
     return G
 
-
-# This is for testing
-G = GetRegexGrammar()
-parser = SLR1Parser(G, verbose=False)
-zero = [x for x in G.terminals if x.Name == '0'][0]
-nine = [x for x in G.terminals if x.Name == '9'][0]
-plus = [x for x in G.terminals if x.Name == '+'][0]
-dot = [x for x in G.terminals if x.Name == '.'][0]
-question = [x for x in G.terminals if x.Name == '?'][0]
-asterisk = [x for x in G.terminals if x.Name == "*"][0]
-
-# tokens = [obrack, zero, dot, dot, nine, cbrack, plus, G.EOF]
-
-obrack = [x for x in G.terminals if x.Name == '['][0]
-opar = [x for x in G.terminals if x.Name == '('][0]
-cpar = [x for x in G.terminals if x.Name == ')'][0]
-cbrack = [x for x in G.terminals if x.Name == ']'][0]
-pipe = [x for x in G.terminals if x.Name == '|'][0]
-# scape = [x for x in G.terminals if x.Name == '\\'][0]
-# f = [x for x in G.terminals if x.Name == 'f'][0]
-# o = [x for x in G.terminals if x.Name == 'o'][0]
-# r = [x for x in G.terminals if x.Name == 'r'][0]
-# l = [x for x in G.terminals if x.Name == 'l'][0]
-a = [x for x in G.terminals if x.Name == 'a'][0]
-z = [x for x in G.terminals if x.Name == 'z'][0]
-A = [x for x in G.terminals if x.Name == 'A'][0]
-Z = [x for x in G.terminals if x.Name == 'Z'][0]
-underscore = [x for x in G.terminals if x.Name == "_"][0]
-whitespace = [x for x in G.terminals if x.Name == " "][0]
-quotes = [x for x in G.terminals if x.Name == "\""][0]
-scape = [x for x in G.terminals if x.Name == "\\"][0]
-
-tokens = [quotes, opar, opar, scape, scape, scape, quotes, cpar, pipe, opar, scape, asterisk, cpar, cpar,
-          asterisk, quotes, G.EOF]
+#
+# # This is for testing
+# G = GetRegexGrammar()
+# parser = SLR1Parser(G, verbose=False)
+# zero = [x for x in G.terminals if x.Name == '0'][0]
+# nine = [x for x in G.terminals if x.Name == '9'][0]
+# plus = [x for x in G.terminals if x.Name == '+'][0]
+# dot = [x for x in G.terminals if x.Name == '.'][0]
+# question = [x for x in G.terminals if x.Name == '?'][0]
+# asterisk = [x for x in G.terminals if x.Name == "*"][0]
+#
+# # tokens = [obrack, zero, dot, dot, nine, cbrack, plus, G.EOF]
+#
+# obrack = [x for x in G.terminals if x.Name == '['][0]
+# opar = [x for x in G.terminals if x.Name == '('][0]
+# cpar = [x for x in G.terminals if x.Name == ')'][0]
+# cbrack = [x for x in G.terminals if x.Name == ']'][0]
+# pipe = [x for x in G.terminals if x.Name == '|'][0]
+# # scape = [x for x in G.terminals if x.Name == '\\'][0]
+# # f = [x for x in G.terminals if x.Name == 'f'][0]
+# # o = [x for x in G.terminals if x.Name == 'o'][0]
+# # r = [x for x in G.terminals if x.Name == 'r'][0]
+# # l = [x for x in G.terminals if x.Name == 'l'][0]
+# a = [x for x in G.terminals if x.Name == 'a'][0]
+# z = [x for x in G.terminals if x.Name == 'z'][0]
+# A = [x for x in G.terminals if x.Name == 'A'][0]
+# Z = [x for x in G.terminals if x.Name == 'Z'][0]
+# underscore = [x for x in G.terminals if x.Name == "_"][0]
+# whitespace = [x for x in G.terminals if x.Name == " "][0]
+# quotes = [x for x in G.terminals if x.Name == "\""][0]
+# scape = [x for x in G.terminals if x.Name == "\\"][0]
+#
+# tokens = [quotes, opar, opar, scape, scape, scape, quotes, cpar, pipe, opar, scape, asterisk, cpar, cpar,
+#           asterisk, quotes, G.EOF]
 
 
 # regex = "\"((\\\\\\\")|(\\*))*\""
