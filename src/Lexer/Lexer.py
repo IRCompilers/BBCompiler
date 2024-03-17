@@ -109,8 +109,8 @@ class Lexer:
 # start_time = time.time()
 
 # Calculate the elapsed time
-lexer = Lexer(regex_table)
-tokens = lexer("let* polish=(36.42).in \n \"this is + 523 =  a great string\": for ; 56.43+@*30.1")
-
-for v in tokens:
-    print(v.Lemma, v.TokenType, v.Pos)
+# lexer = Lexer(regex_table)
+# tokens = lexer("let* polish=(36.42).in \n \"this is + 523 =  a great string\": for ; 56.43+@*30.1")
+#
+# for v in tokens:
+#     print(v.Lemma, v.TokenType, v.Pos)
