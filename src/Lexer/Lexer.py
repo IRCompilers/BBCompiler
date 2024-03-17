@@ -4,7 +4,7 @@ from src.Common.Automata import State
 from src.Common.Exceptions import LexerError
 from src.Common.Token import Token
 from src.Lexer.Parser.Regex import RegexBuilder
-from src.Lexer.Parser.SymbolTable import regex_table
+from src.Lexer.SymbolTable import regex_table
 from src.Project.Grammar import G
 
 
@@ -86,7 +86,7 @@ class Lexer:
         yield Token("$", G.EOF, pos)
 
         for e in errors:
-            print(e)
+            print('\033[91m' + str(e) + '\033[0m')
 
     @staticmethod
     def CleanupText(lex, text, skip=0):
@@ -110,7 +110,7 @@ class Lexer:
 
 # Calculate the elapsed time
 lexer = Lexer(regex_table)
-tokens = lexer("let* polish=(36.42).in \"this is a great string\": for ; 56.43+@*30.1")
+tokens = lexer("let* polish=(36.42).in \n \"this is a great string\": for ; 56.43+@*30.1")
 
 for v in tokens:
     print(v.Lemma, v.TokenType, v.Pos)

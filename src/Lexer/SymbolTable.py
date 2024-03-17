@@ -22,7 +22,7 @@ regex_table = [
     (false, "false"),
     (extends, "extends"),
     (plus, "\+"),
-    # (times, "\*"),
+    (times, "\*"),
     (minus, "-"),
     (divide, "/"),
     (equal, "="),
