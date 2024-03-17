@@ -1,7 +1,8 @@
 import pydot
 
-from src.Common.TokenType import TokenType
-from src.Lexer.Utils.KeywordTokens import KEYWORD_TOKENS
+import src.Project.Grammar
+from src.Common.Compiler import Terminal
+from src.Project.Grammar import identifier
 
 
 class State:
@@ -52,20 +53,23 @@ class State:
         return any(s.final for s in states)
 
     def to_deterministic(self, formatter=lambda x: str(x)):
-        keyword_tags = set(token_type for keyword, token_type in KEYWORD_TOKENS)
+        keywords = src.Project.Grammar.GetKeywords()
+        keyword_tags = set(keywords)
         closure = self.epsilon_closure
         start = State(tuple(closure), any(s.final for s in closure), formatter)
 
         keyword_tag = next(
             (s.tag for s in closure if s.final and s.tag in keyword_tags), None
         )
+
         if start.final:
             if keyword_tag:
                 start.tag = keyword_tag
             else:
-                start.tag = "/".join(
-                    set(s.tag for s in closure if s.final and s.tag is not None)
-                )
+                if isinstance(start.tag, Terminal):
+                    start.tag = start.tag.Name
+
+                start.tag = next((s.tag for s in closure if s.final and s.tag is not None), None)
 
         closures = [closure]
         states = [start]
@@ -95,7 +99,7 @@ class State:
                             if tags_in_closure:
                                 if len(tags_in_closure) > 1:
                                     for tag in tags_in_closure:
-                                        if tag != TokenType.IDENTIFIER:
+                                        if tag != identifier:
                                             new_state.tag = tag
                                 else:
                                     new_state.tag = tags_in_closure.pop()

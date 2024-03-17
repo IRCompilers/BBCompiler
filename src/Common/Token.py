@@ -1,10 +1,11 @@
-from src.Common.TokenType import TokenType
+from typing import Any
+
+
+from src.Common.Compiler import Terminal
 
 
 class Token:
-    def __init__(self, lemma: str, type: TokenType):
+    def __init__(self, lemma: str, token_type: Terminal, pos: int):
         self.Lemma = lemma
-        self.Type = type
-
-    def __str__(self):
-        return f"Token({self.Lemma}, {self.Type})"
+        self.TokenType = token_type
+        self.Pos = pos

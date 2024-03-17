@@ -90,9 +90,35 @@ def automata_closure(a1):
     return NFA(states, finals, transitions, start)
 
 
-a1 = NFA(states=3, finals=[2], transitions={(0, 'b'): [0], (0, 'a'): [1], (1, 'b'): [2]})
-a2 = NFA(states=2, finals=[1], transitions={(0, 'a'): [1]})
+def automata_pclosure(a1):
+    return automata_concatenation(a1, automata_closure(a1))
 
-union = automata_union(a1, a2)
 
-print(union.transitions)
+def automata_possible(a1):
+    epsilon = epsilon_automata()
+    return automata_union(epsilon, a1)
+
+
+def automata_not(a1):
+    new_finals = set()
+
+    for i in range(a1.states):
+        if i not in a1.finals:
+            new_finals.add(i)
+
+    a1.finals = new_finals
+    return a1
+
+
+def epsilon_automata():
+    return NFA(states=1, finals=[0], transitions={})
+
+
+def automata_symbol(lex: str):
+    return NFA(
+        states=2,
+        finals=[1],
+        transitions={
+            (0, lex): [1]
+        }
+    )
