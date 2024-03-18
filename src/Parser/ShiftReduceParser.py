@@ -1,11 +1,9 @@
 from typing import List
 from src.Common.Token import Token
+from src.Parser.SROperations import SROperations
 
 
 class ShiftReduceParser:
-    SHIFT = "SHIFT"
-    REDUCE = "REDUCE"
-    OK = "OK"
 
     def __init__(self, grammar, verbose=False):
         self.Grammar = grammar
@@ -42,13 +40,13 @@ class ShiftReduceParser:
 
             action, tag = list(self.action[state][lookahead])[0]
 
-            if action is self.SHIFT:
-                operations.append(self.SHIFT)
+            if action is SROperations.SHIFT:
+                operations.append(SROperations.SHIFT)
                 stack.append(tag)
                 cursor += 1
 
-            elif action is self.REDUCE:
-                operations.append(self.REDUCE)
+            elif action is SROperations.REDUCE:
+                operations.append(SROperations.REDUCE)
 
                 if len(tag.Right):
                     stack = stack[: -len(tag.Right)]
@@ -56,7 +54,7 @@ class ShiftReduceParser:
                 stack.append(list(self.goto[stack[-1]][tag.Left])[0])
                 output.append(tag)
 
-            elif action is ShiftReduceParser.OK:
+            elif action is SROperations.OK:
                 return (output if not get_shift_reduce else (output, operations)), None
 
             else:

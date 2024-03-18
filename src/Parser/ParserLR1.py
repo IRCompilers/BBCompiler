@@ -1,5 +1,6 @@
 from src.Parser.ShiftReduceParser import ShiftReduceParser
 from src.Parser.UtilMethods import update_table, build_automaton_for_lr1_parser
+from src.Parser.SROperations import SROperations
 
 
 class ParserLR1(ShiftReduceParser):
@@ -21,7 +22,7 @@ class ParserLR1(ShiftReduceParser):
                     prod = item.production
                     if prod.Left == aug_grammar.startSymbol:
                         self.ok &= update_table(
-                            self.action, idx, aug_grammar.EOF, (ShiftReduceParser.OK, "")
+                            self.action, idx, aug_grammar.EOF, (SROperations.OK, "")
                         )
                     else:
                         for lookahead in item.lookaheads:
@@ -29,7 +30,7 @@ class ParserLR1(ShiftReduceParser):
                                 self.action,
                                 idx,
                                 lookahead,
-                                (ShiftReduceParser.REDUCE, prod),
+                                (SROperations.REDUCE, prod),
                             )
                 else:
                     next_symbol = item.NextSymbol
@@ -38,7 +39,7 @@ class ParserLR1(ShiftReduceParser):
                             self.action,
                             idx,
                             next_symbol,
-                            (ShiftReduceParser.SHIFT, node[next_symbol.Name][0].idx),
+                            (SROperations.SHIFT, node[next_symbol.Name][0].idx),
                         )
                     else:
                         self.ok &= update_table(

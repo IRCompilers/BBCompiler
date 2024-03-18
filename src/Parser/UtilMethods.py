@@ -1,6 +1,7 @@
 from src.Common.ContainerSet import ContainerSet
-from src.Common.Compiler import Item
+from src.Common.Compiler import Item, EOF
 from src.Common.Automata import State
+from src.Parser.SROperations import SROperations
 
 
 def update_table(table, head, symbol, production) -> bool:
@@ -198,4 +199,40 @@ def build_automaton_for_lr1_parser(grammar):
     automaton.set_formatter(lambda x: "")
     return automaton
 
+
+def evaluate_reverse_parse(right_parse, operations, tokens):
+    if not right_parse or not operations or not tokens:
+        return
+
+    right_parse = iter(right_parse)
+    tokens = iter(tokens)
+    stack = []
+    for operation in operations:
+
+        if operation == SROperations.SHIFT:
+            token = next(tokens)
+            stack.append(token)
+
+        elif operation == SROperations.REDUCE:
+            production = next(right_parse)
+            _, body = production
+            attributes = production.attributes
+            assert all(
+                rule is None for rule in attributes[1:]
+            ), "There must be only synteticed attributes."
+            rule = attributes[0]
+
+            if len(body):
+                synteticed = [None] + stack[-len(body) :]
+                value = rule(None, synteticed)
+                stack[-len(body) :] = [value]
+            else:
+                stack.append(rule(None, None))
+
+        else:
+            raise Exception("Invalid action!!!")
+
+    assert len(stack) == 1
+    assert isinstance(next(tokens).token_type, EOF)
+    return stack[0]
 
