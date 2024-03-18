@@ -1,5 +1,5 @@
 from src.Parser.ShiftReduceParser import ShiftReduceParser
-from src.Parser.UtilMethods import update_table
+from src.Parser.UtilMethods import update_table, build_automaton_for_lr1_parser
 
 
 class ParserLR1(ShiftReduceParser):
@@ -7,7 +7,7 @@ class ParserLR1(ShiftReduceParser):
         self.ok = True
         aug_grammar = self.Augmented = self.Grammar.AugmentedGrammar(True)
 
-        automaton = self.automaton = build_LR1_automaton(aug_grammar)
+        automaton = self.automaton = build_automaton_for_lr1_parser(aug_grammar)
         for i, node in enumerate(automaton):
             if self.verbose:
                 print(i, "\t", "\n\t ".join(str(x) for x in node.state), "\n")
