@@ -1,14 +1,12 @@
+import os
+import pickle
 from typing import List
 
 from src.Common.Automata import State
 from src.Common.Exceptions import LexerError
 from src.Common.Token import Token
 from src.Lexer.Parser.Regex import RegexBuilder
-from src.Lexer.SymbolTable import regex_table
 from src.Project.Grammar import G
-
-import os
-import pickle
 
 
 class Lexer:
@@ -77,44 +75,52 @@ class Lexer:
 
     def Tokenize(self, text):
         errors: List[LexerError] = []
-        text, pos = self.CleanupText("", text)
+        text, pos, rows, cols = self.CleanupText("", text, 0, 0)
         while text:
             try:
                 final, lex = self._walk(text)
             except TypeError:
-                errors.append(LexerError(f"LEXER ERROR: Invalid token \"{text[0]}\" at position: {pos}"))
-                text, index = self.CleanupText("", text, skip=1)
+                errors.append(LexerError(f"LEXER ERROR: Invalid token \"{text[0]}\" at position: {(rows, cols)}"))
+                text, index, rows, cols = self.CleanupText("", text, cols, rows, skip=1)
                 pos += index
+                cols += 1
                 continue
 
-            text, index = self.CleanupText(lex, text)
             if final:
-                yield Token(lex, final.tag, pos)
+                yield Token(lex, final.tag, (rows, cols))
 
+            cols += len(lex)
+            text, index, rows, cols = self.CleanupText(lex, text, cols, rows)
             pos += index
 
-        yield Token("$", G.EOF, pos)
+        yield Token("$", G.EOF, (rows, cols))
 
         for e in errors:
             print('\033[91m' + str(e) + '\033[0m')
 
     @staticmethod
-    def CleanupText(lex, text, skip=0):
+    def CleanupText(lex, text, start_cols, start_rows, skip=0):
         index = len(lex) + skip
+        cols = start_cols
+        rows = start_rows
         for i, symbol in enumerate(text):
             if i < index:
                 continue
 
-            if symbol == " " or symbol == "\n":
+            if symbol == " " or symbol == "\t":
                 index += 1
+                cols += 1
+            elif symbol == "\n":
+                index += 1
+                rows += 1
+                cols = 0
             else:
                 break
 
-        return text[index:], index
+        return text[index:], index, rows, cols
 
     def __call__(self, text):
         return [token for token in self.Tokenize(text)]
-
 
 # start_time = time.time()
 

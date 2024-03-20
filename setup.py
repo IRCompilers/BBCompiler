@@ -16,12 +16,13 @@ def run(filename):
     text = ""
     with open(filename, 'r') as file:
         for line in file:
-            text += "\n"
             text += line
+
+    print(text)
 
     tokens = lexer(text)
     for v in tokens:
-        print(v.Lemma, v.TokenType)
+        print(v.Lemma, v.TokenType, v.Pos)
 
 
 pass
