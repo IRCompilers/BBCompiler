@@ -20,9 +20,12 @@ def run(filename):
 
     print(text)
 
-    tokens = lexer(text)
+    tokens, errors = lexer.Tokenize(text)
     for v in tokens:
         print(v.Lemma, v.TokenType, v.Pos)
+
+    for e in errors:
+        print('\033[91m' + str(e) + '\033[0m')
 
 
 pass
