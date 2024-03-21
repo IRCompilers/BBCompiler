@@ -18,8 +18,6 @@ def run(filename):
         for line in file:
             text += line
 
-    print(text)
-
     tokens, errors = lexer.Tokenize(text)
     for v in tokens:
         print(v.Lemma, v.TokenType, v.Pos)

@@ -20,8 +20,8 @@ class Lexer:
             self.regex_builder = RegexBuilder()
             self.regexs = self._build_regexs(table)
             self.automaton = self._build_automaton()
-        with open('models/lexer_automaton.pkl', 'wb') as f:
-            pickle.dump(self.automaton, f)
+            with open('models/lexer_automaton.pkl', 'wb') as f:
+                pickle.dump(self.automaton, f)
 
     def _build_regexs(self, table):
         regexs = []
