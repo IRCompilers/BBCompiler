@@ -1,26 +1,26 @@
-import os
-import pickle
 from typing import List
 
 from src.Common.Automata import State
+from src.Common.Automaton import DFA
 from src.Common.Exceptions import LexerError
 from src.Common.Token import Token
 from src.Lexer.Parser.Regex import RegexBuilder
+from src.Lexer.SymbolTable import regex_table
 from src.Project.Grammar import G
 
 
 class Lexer:
     def __init__(self, table):
 
-        if os.path.exists("models/lexer_automaton.pkl"):
-            with open('models/lexer_automaton.pkl', 'rb') as f:
-                self.automaton = pickle.load(f)
-        else:
-            self.regex_builder = RegexBuilder()
-            self.regexs = self._build_regexs(table)
-            self.automaton = self._build_automaton()
-            with open('models/lexer_automaton.pkl', 'wb') as f:
-                pickle.dump(self.automaton, f)
+        # if os.path.exists("models/lexer_automaton.pkl"):
+        #     with open('models/lexer_automaton.pkl', 'rb') as f:
+        #         self.automaton = pickle.load(f)
+        # else:
+        self.regex_builder = RegexBuilder()
+        self.regexs = self._build_regexs(table)
+        self.automaton = self._build_automaton()
+        # with open('models/lexer_automaton.pkl', 'wb') as f:
+        #     pickle.dump(self.automaton, f)
 
     def _build_regexs(self, table):
         regexs = []
@@ -51,14 +51,19 @@ class Lexer:
         final = state if state.final else None
         lex = ""
 
-        string_started = False
+        # string_started = False
+        # escape_next = False
 
         for symbol in string:
-            if not string_started and symbol == " " or symbol == "\n":
-                break
+            # if not string_started and symbol == " " or symbol == "\n":
+            #     break
 
-            if symbol == "\"":
-                string_started = True
+            # if symbol == "\\":
+            #     escape_next = True
+            #     continue
+
+            # if symbol == "\"" and not escape_next:
+            #     string_started = not string_started
 
             if state.has_transition(symbol):
                 lex += symbol
@@ -69,6 +74,7 @@ class Lexer:
                     final.lex = lex
             else:
                 break
+
 
         if final:
             return final, final.lex
@@ -122,11 +128,28 @@ class Lexer:
     def __call__(self, text):
         return [token for token in self.Tokenize(text)]
 
+
 # start_time = time.time()
 
 # Calculate the elapsed time
 # lexer = Lexer(regex_table)
-# tokens = lexer("let* polish=(36.42).in \n \"this is + 523 =  a great string\": for ; 56.43+@*30.1")
+# string = "\" te \\\" \\\" mp \" for x in 4.12\" xd 4.12 \""
+# #
+# # temp = RegexBuilder()
+# # string_regex: DFA = temp.build_regex(regex_table[-1][1], True)[0]
+# #
+# #
+# # print(string_regex.recognize(string))
 #
+# # print(string_regex.transitions)
+# # print("Finals: ", string_regex.finals)
+#
+# # print(string_regex)
+#
+#
+# tokens = lexer(string)
+# #
+# # print(string)
+# #
 # for v in tokens:
 #     print(v.Lemma, v.TokenType, v.Pos)
