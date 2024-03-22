@@ -12,8 +12,9 @@ def hulk():
 @hulk.command()
 @click.argument('filename')
 def run(filename):
-    lexer = Lexer(regex_table)
+    lexer = Lexer(regex_table, file_path="models/lexer_automaton.pkl")
     text = ""
+
     with open(filename, 'r') as file:
         for line in file:
             text += line

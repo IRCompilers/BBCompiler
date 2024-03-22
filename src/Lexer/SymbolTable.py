@@ -24,6 +24,7 @@ regex_table = [
     (sin, "sin"),
     (cos, "cos"),
     (tan, "tan"),
+    (sqrt, "sqrt"),
     (plus, "\+"),
     (times, "\*"),
     (minus, "-"),

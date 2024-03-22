@@ -68,7 +68,7 @@ class TestLexer(unittest.TestCase):
         self.check_equal(expected_types, expected_lemmas, tokens)
 
     def test_tokenization_7(self):
-        tokens, errors = self.lexer.Tokenize("let a=243.12 in := temp; \n let b=312 in a-b+1")
+        tokens, errors = self.lexer.Tokenize("let a=243.12 in := temp; \n let b=312 in ?? a-b+1")
         expected_lemmas = ['let', 'a', '=', '243.12', 'in', ':=', 'temp', ';', 'let', 'b', '=', '312', 'in', 'a', '-', 'b', '+', '1', '$']
         expected_types = [let.Name, identifier.Name, equal.Name, number.Name, in_.Name, destruct.Name, identifier.Name, semicolon.Name, let.Name, identifier.Name, equal.Name, number.Name, in_.Name, identifier.Name, minus.Name, identifier.Name, plus.Name, number.Name, G.EOF.Name]
         self.check_equal(expected_types, expected_lemmas, tokens)
