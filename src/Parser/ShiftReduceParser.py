@@ -15,7 +15,7 @@ class ShiftReduceParser:
     def build_parsing_table(self):
         raise NotImplementedError()
 
-    def __call__(self, w: List[Token], get_shift_reduce=False):
+    def __call__(self, w: List[Token], get_shift_reduce=True):
         stack = [0]
         cursor = 0
         output = []
@@ -23,39 +23,41 @@ class ShiftReduceParser:
 
         while True:
             state = stack[-1]
-            lookahead = w[cursor].TokenType
+            lookahead = w[cursor]
             if self.verbose:
-                print(stack, w[cursor:])
+                print(stack, '<---||--->', w[cursor:])
 
-            try:
-                if state not in self.action or lookahead not in self.action[state]:
-                    error = f"{w[cursor].Pos} - SyntacticError: ERROR at or near {w[cursor].Lemma}"
-                    return None, error
-            except:
-                print(state)
-                print(self.action)
-                print(lookahead)
-                error = f"{w[cursor].Pos} - SyntacticError: ERROR at or near {w[cursor].Lemma}"
-                return None, error
+            if (state, lookahead) not in self.action:
+                print("Error. Aborting...")
+                return None
 
-            action, tag = list(self.action[state][lookahead])[0]
-
-            if action is SROperations.SHIFT:
-                operations.append(SROperations.SHIFT)
-                stack.append(tag)
-                cursor += 1
-
-            elif action is SROperations.REDUCE:
-                operations.append(SROperations.REDUCE)
-
-                if len(tag.Right):
-                    stack = stack[: -len(tag.Right)]
-
-                stack.append(list(self.goto[stack[-1]][tag.Left])[0])
-                output.append(tag)
-
-            elif action is SROperations.OK:
-                return (output if not get_shift_reduce else (output, operations)), None
+            if self.action[state, lookahead] == SROperations.OK:
+                action = SROperations.OK
 
             else:
-                raise ValueError
+                action, tag = self.action[state, lookahead]
+
+            if action == SROperations.SHIFT:
+                operations.append(SROperations.SHIFT)
+                stack += [lookahead, tag]
+                cursor += 1
+
+            elif action == SROperations.REDUCE:
+                operations.append(SROperations.REDUCE)
+                output.append(tag)
+                head, body = tag
+                for symbol in reversed(body):
+                    stack.pop()
+                    assert stack.pop() == symbol
+                    state = stack[-1]
+                goto = self.goto[state, head]
+                stack += [head, goto]
+
+            elif action == SROperations.OK:
+                stack.pop()
+                assert stack.pop() == self.Grammar.startSymbol
+                assert len(stack) == 1
+                return output if not get_shift_reduce else (output, operations)
+
+            else:
+                raise Exception('Invalid action!!!')
