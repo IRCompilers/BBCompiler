@@ -5,15 +5,18 @@ from src.Parser.SROperations import SROperations
 
 class ParserLR1(ShiftReduceParser):
     def _build_parsing_table(self):
-        self.ok = True
-        aug_grammar = self.Augmented = self.Grammar.AugmentedGrammar(True)
+        aug_grammar = self.Grammar.AugmentedGrammar(True)
 
-        automaton = self.automaton = build_automaton_for_lr1_parser(aug_grammar)
+        if self.goto == {} or self.action == {}:
+            pass
+        else:
+            return
+
+        automaton = build_automaton_for_lr1_parser(aug_grammar)
         for i, node in enumerate(automaton):
             if self.verbose:
-                print(i, "\t", "\n\t ".join(str(x) for x in node.state), "\n")
+                print(i, '\t', '\n\t '.join(str(x) for x in node.state), '\n')
             node.idx = i
-            node.tag = f"I{i}"
 
         for node in automaton:
             idx = node.idx
@@ -21,28 +24,19 @@ class ParserLR1(ShiftReduceParser):
                 if item.IsReduceItem:
                     prod = item.production
                     if prod.Left == aug_grammar.startSymbol:
-                        self.ok &= update_table(
-                            self.action, idx, aug_grammar.EOF, (SROperations.OK, "")
-                        )
+                        self.add(self.action, (idx, aug_grammar.EOF), (SROperations.OK, None))
                     else:
                         for lookahead in item.lookaheads:
-                            self.ok &= update_table(
-                                self.action,
-                                idx,
-                                lookahead,
-                                (SROperations.REDUCE, prod),
-                            )
+                            self.add(self.action, (idx, lookahead), (SROperations.REDUCE, prod))
                 else:
                     next_symbol = item.NextSymbol
                     if next_symbol.IsTerminal:
-                        self.ok &= update_table(
-                            self.action,
-                            idx,
-                            next_symbol,
-                            (SROperations.SHIFT, node[next_symbol.Name][0].idx),
-                        )
+                        self.add(self.action, (idx, next_symbol),
+                                       (SROperations.SHIFT, node[next_symbol.Name][0].idx))
                     else:
-                        self.ok &= update_table(
-                            self.goto, idx, next_symbol,
-                            node[next_symbol.Name][0].idx
-                        )
+                        self.add(self.goto, (idx, next_symbol), node[next_symbol.Name][0].idx)
+
+    @staticmethod
+    def add(table, key, value):
+        assert key not in table or table[key] == value, f'Conflict {key} {table[key]} {value}'
+        table[key] = value
