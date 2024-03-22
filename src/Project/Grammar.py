@@ -50,8 +50,6 @@ sin, cosine, sqrt, exp, log = G.Terminals("sin cosine sqrt exp log")
 as_ = G.Terminal("as")
 
 
-# Missing || and @@
-
 def GetKeywords():
     return [for_, let, if_, else_, elif_, while_, return_, function, pi, e, print_,
             new, inherits, protocol, type_, self_, in_, range_, true, false, extends, as_,
