@@ -1,10 +1,10 @@
 from src.Parser.ShiftReduceParser import ShiftReduceParser
-from src.Parser.UtilMethods import update_table, build_automaton_for_lr1_parser
+from src.Parser.UtilMethods import build_automaton_for_lr1_parser
 from src.Parser.SROperations import SROperations
 
 
 class ParserLR1(ShiftReduceParser):
-    def _build_parsing_table(self):
+    def build_lr1_parsing_table(self):
         aug_grammar = self.Grammar.AugmentedGrammar(True)
 
         if self.goto == {} or self.action == {}:

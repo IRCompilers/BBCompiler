@@ -2,35 +2,13 @@ from src.Common.ContainerSet import ContainerSet
 from src.Common.Compiler import Item, EOF
 from src.Common.Automata import State
 from src.Parser.SROperations import SROperations
+from src.Common.Compiler import Grammar
 
 
-def update_table(table, head, symbol, production) -> bool:
-    """
-    Updates the parsing table
-
-    :param table: current parsing table
-    :param head:
-    :param symbol:
-    :param production:
-    :return:
-    Boolean: If the table was updated
-    """
-    if not head in table:
-        table[head] = {}
-
-    if not symbol in table[head]:
-        table[head][symbol] = []
-
-    if production not in table[head][symbol]:
-        table[head][symbol].append(production)
-
-    return len(table[head][symbol]) <= 1
-
-
-def compute_local_first(firsts, alpha):
+def compute_local_firsts(firsts, alpha):
     """
 
-    Computes the local firsts for the given alpha
+    Computes the local firsts for a given alpha
 
     :param firsts:
     :param alpha:
@@ -57,7 +35,7 @@ def compute_local_first(firsts, alpha):
     return first_alpha
 
 
-def compute_firsts(grammar):
+def compute_firsts(grammar: Grammar):
     """
 
     Computes the firsts sets for the given grammar
@@ -88,7 +66,7 @@ def compute_firsts(grammar):
             except KeyError:
                 first_alpha = firsts[alpha] = ContainerSet()
 
-            local_first = compute_local_first(firsts, alpha)
+            local_first = compute_local_firsts(firsts, alpha)
 
             change |= first_alpha.hard_update(local_first)
             change |= first_left.hard_update(local_first)
@@ -111,7 +89,7 @@ def expand(item, firsts):
 
     lookaheads = ContainerSet()
     for preview in item.Preview():
-        lookaheads.hard_update(compute_local_first(firsts, preview))
+        lookaheads.hard_update(compute_local_firsts(firsts, preview))
 
     assert not lookaheads.contains_epsilon
     return [Item(prod, 0, lookaheads) for prod in next_symbol.productions]
@@ -163,7 +141,7 @@ def goto_for_lr1(items, symbol, firsts=None, just_kernel=False):
     return items if just_kernel else closure_for_lr1(items, firsts)
 
 
-def build_automaton_for_lr1_parser(grammar):
+def build_automaton_for_lr1_parser(grammar: Grammar):
     assert len(grammar.startSymbol.productions) == 1, "Grammar must be augmented"
 
     firsts = compute_firsts(grammar)
