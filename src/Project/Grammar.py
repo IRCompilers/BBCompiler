@@ -17,7 +17,7 @@ while_, function, pi, e, print_ = G.Terminals("while function pi e print")
 new, inherits, protocol, type_, self_, in_, range_ = G.Terminals("new inherits protocol type self in range")
 true, false = G.Terminals("true false")
 extends = G.Terminals("extends")
-sin, cos, tan, sqrt = G.Terminals("sin cos tan sqrt")
+sin, cos, tan, sqrt, exp, log, rand = G.Terminals("sin cos tan sqrt exp log rand")
 
 
 def GetKeywords():
