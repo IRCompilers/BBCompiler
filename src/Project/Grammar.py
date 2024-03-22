@@ -1,7 +1,16 @@
 from src.Common.Compiler import Grammar
 
 G = Grammar()
+# No Terminals
+program = G.NonTerminal("<program>", startSymbol=True)
+expression = G.NonTerminals("<expression>")
+statement = G.NonTerminal("<statement>")
+parameters = G.NonTerminal("<parameters>")
+function_style = G.NonTerminal("<function_style>")
+type_def = G.NonTerminal("<type_def>")
+protocol_declare = G.NonTerminal("<protocol_declare>")
 
+# Terminals
 string, identifier, number = G.Terminals("<string> <id> <number>")
 plus, minus, times, divide = G.Terminals("+ - * /")
 equal, dequal, lesst, greatt, lequal, gequal = G.Terminals("= == < > <= >=")
