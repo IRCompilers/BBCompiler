@@ -11,16 +11,19 @@ from src.Project.Grammar import G
 
 
 class Lexer:
-    def __init__(self, table):
+    def __init__(self, table, file_path=None):
 
-        if os.path.exists("models/lexer_automaton.pkl"):
-            with open('models/lexer_automaton.pkl', 'rb') as f:
+        if not file_path:
+            file_path = "models/lexer_automaton.pkl"
+
+        if os.path.exists(file_path):
+            with open(file_path, 'rb') as f:
                 self.automaton = pickle.load(f)
         else:
             self.regex_builder = RegexBuilder()
             self.regexs = self._build_regexs(table)
             self.automaton = self._build_automaton()
-            with open('models/lexer_automaton.pkl', 'wb') as f:
+            with open(file_path, 'wb') as f:
                 pickle.dump(self.automaton, f)
 
     def _build_regexs(self, table):

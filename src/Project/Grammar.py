@@ -13,7 +13,7 @@ modulus, power = G.Terminals("% ^")
 destruct, concat = G.Terminals(":= @")
 
 for_, let, if_, else_, elif_ = G.Terminals("for let if else elif")
-while_, return_, function, pi, e, print_ = G.Terminals("while return function pi e print")
+while_, function, pi, e, print_ = G.Terminals("while function pi e print")
 new, inherits, protocol, type_, self_, in_, range_ = G.Terminals("new inherits protocol type self in range")
 true, false = G.Terminals("true false")
 extends = G.Terminals("extends")
@@ -21,6 +21,6 @@ sin, cos, tan = G.Terminals("sin cos tan")
 
 
 def GetKeywords():
-    return [for_, let, if_, else_, elif_, while_, return_, function, pi, e, print_,
+    return [for_, let, if_, else_, elif_, while_, function, pi, e, print_,
             new, inherits, protocol, type_, self_, in_, range_, true, false, extends,
             sin, cos, tan]
