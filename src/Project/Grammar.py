@@ -23,32 +23,35 @@ disjunction, conjunction = G.NonTerminals("<disjunction> <conjunction>")
 literal, proposition, boolean = G.NonTerminals("<literal> <proposition> <boolean>")
 concatenation = G.NonTerminal("<concatenation>")
 arithmetic_expression = G.NonTerminal("<arithmetic_expression>")
-module, product, monomial, pow_exp = G.NonTerminals("<module> <product> <monomial> <pow_exp>")
+module, product, monomial, pow_ = G.NonTerminals("<module> <product> <monomial> <pow>")
 high_hierarchy_object, object_exp = G.NonTerminals("<high_hierarchy_object> <object_exp>")
-list_exp = G.NonTerminal("<list_exp>")
-
-
-
-
-
-
+list_ = G.NonTerminal("<list>")
 
 # Terminals
 string, identifier, number = G.Terminals("<string> <id> <number>")
-plus, minus, times, divide = G.Terminals("+ - * /")
-equal, dequal, lesst, greatt, lequal, gequal = G.Terminals("= == < > <= >=")
+plus, minus, times, divide, int_divide = G.Terminals("+ - * / //")
+equal, dequal, lesst, greatt, lequal, gequal, notequal = G.Terminals("= == < > <= >= !=")
 lparen, rparen, lbrack, rbrack, lbrace, rbrace = G.Terminals("( ) [ ] { }")
 comma, period, colon, semicolon = G.Terminals(", . : ;")
 arrow, darrow = G.Terminals("-> =>")
 and_, or_, not_ = G.Terminals("& | !")
-modulus, power = G.Terminals("% ^")
+modulus, power, power_asterisk = G.Terminals("% ^ **")
 assign, concat = G.Terminals(":= @")
 
 for_, let, if_, else_, elif_ = G.Terminals("for let if else elif")
 while_, return_, function, pi, e, print_ = G.Terminals("while return function pi e print")
 new, inherits, protocol, type_, self_, in_, range_ = G.Terminals("new inherits protocol type self in range")
 true, false = G.Terminals("true false")
-extends = G.Terminals("extends")
+extends = G.Terminal("extends")
+rand = G.Terminal("rand")
+sin, cosine, sqrt, exp, log = G.Terminals("sin cosine sqrt exp log")
+as_ = G.Terminal("as")
+concat_ = G.Terminal("@")
+
+# Missing || and @@
+
+
+
 
 
 def GetKeywords():
