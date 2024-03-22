@@ -142,6 +142,7 @@ def closure_for_lr1(items, firsts):
     closure = ContainerSet(*items)
 
     changed = True
+
     while changed:
         changed = False
 
@@ -157,7 +158,7 @@ def closure_for_lr1(items, firsts):
 def goto_for_lr1(items, symbol, firsts=None, just_kernel=False):
     assert (
         just_kernel or firsts is not None
-    ), "`firsts` must be provided if `just_kernel=False`"
+    ), "`firsts` values must be provided if `just_kernel=False`"
     items = frozenset(item.NextItem() for item in items if item.NextSymbol == symbol)
     return items if just_kernel else closure_for_lr1(items, firsts)
 
@@ -219,13 +220,13 @@ def evaluate_reverse_parse(right_parse, operations, tokens):
             attributes = production.attributes
             assert all(
                 rule is None for rule in attributes[1:]
-            ), "There must be only synteticed attributes."
+            ), "There must be only synthesized attributes."
             rule = attributes[0]
 
             if len(body):
-                synteticed = [None] + stack[-len(body) :]
-                value = rule(None, synteticed)
-                stack[-len(body) :] = [value]
+                synthesized = [None] + stack[-len(body):]
+                value = rule(None, synthesized)
+                stack[-len(body):] = [value]
             else:
                 stack.append(rule(None, None))
 
