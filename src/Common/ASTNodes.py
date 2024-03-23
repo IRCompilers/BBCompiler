@@ -59,24 +59,15 @@ class StatementNode(Node):
     pass
 
 
-class ProgramNode(Node):
-    '''
-        A program in HULK is a collection of statements
-    '''
-
-    def __init__(self, Statements: list[StatementNode]):
-        self.Statements = Statements
-
-
 class ParameterNode(Node):
     '''
         Represents a parameter for a function/method, a constructor for a type or a let expression
         A parameter must have a name, and the type can be specified
     '''
 
-    def __init__(self, Name: str, Type: str = ''):
-        self.name = Name
-        self.Type = [] if Type == '' else [Type]
+    def __init__(self, name: str, type: str = ''):
+        self.Name = name
+        self.Type = [] if type == '' else [type]
 
 
 class ExpressionNode(StatementNode):
@@ -159,6 +150,16 @@ class ExpressionBlockNode(ExpressionNode):
 
     def __init__(self, Expressions: List[ExpressionNode]):
         self.Expressions = Expressions
+
+
+class ProgramNode(Node):
+    '''
+        A program in HULK is a collection of statements
+    '''
+
+    def __init__(self, Statements: list[StatementNode], Expression: ExpressionNode):
+        self.Statements = Statements
+        self.Expression = Expression
 
 
 class SimpleExpressionNode(ExpressionNode):
@@ -299,7 +300,7 @@ class StringConcatenationNode(SimpleExpressionNode):
 class AritmethicExpression(SimpleExpressionNode):
     '''
         Contains all the aritmethic expressions:
-        + - * ** ^ / // %
+        + - * ** ^ / %
         The unary expression -Expression is included has 0-Expression
     '''
 
@@ -347,7 +348,7 @@ class BooleanNode(SimpleExpressionNode):
         self.value = value
 
 
-class Variable(SimpleExpressionNode):
+class VariableNode(SimpleExpressionNode):
     '''
         A variable
     '''
