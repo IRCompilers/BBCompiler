@@ -36,7 +36,7 @@ from typing import List,Union
             -BooleanNode
             -Variable
             -FunctionCallNode
-            -ClassFunctionCallNode
+            -TypeFunctionCallNode
             -ListNode
             -ImplicitListNode
             -InexingNode
@@ -170,11 +170,6 @@ class IfElseExpression(SimpleExpressionNode):
     def __init__(self,Conditions:List[SimpleExpressionNode],Expressions:List[ExpressionNode]):
         self.Conditions=Conditions
         self.cases=Expressions
-    def valueType(self)->List[str]:
-        PossibleValues=set()
-        for Expression in self.cases:
-            PossibleValues=PossibleValues.union(Expression.valueType)
-        return PossibleValues
 
 class DestructiveExpression(SimpleExpressionNode):
     '''
@@ -308,7 +303,7 @@ class FunctionCallNode(SimpleExpressionNode):
         self.function=name
         self.Arguments=arguments
 
-class ClassFunctionCallNode(SimpleExpressionNode):
+class TypeFunctionCallNode(SimpleExpressionNode):
     '''
         The combination of the last two
     '''
