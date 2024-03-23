@@ -4,44 +4,43 @@ from typing import List,Union
 -Node
     -ProgramNode
     -ParameterNode
-    -ClassAtributeNode
+    -TypeAtributeNode
     -ProtocolMethodNode
     -StatementNode
         -FunctionNode
         -TypeNode
         -ProtocolNode
-        -ExpressionNode
-            -ExpressionBlockNode
-            -SimpleExpressionNode
-                
-                ___(Less Priority)___
-                -LetNode
-                -IfElseExpression
-                -DestructiveExpression
-                -whileNode
-                -forNode
-                -newNode
-                
-                ___(Operations)___
-                -OrAndExpression
-                -NotExpression
-                -ComparationExpression
-                -IsExpression
-                -StringConcatenationNode
-                -AritmethicExpression
-                
-                __(High Priority)__
-                -NumberNode
-                -StringNode
-                -BooleanNode
-                -Variable
-                -FunctionCallNode
-                -ClassAtributeCallNode
-                -ClassFunctionCallNode
-                -ListNode
-                -ImplicitListNode
-                -InexingNode
-                -asNode
+    -ExpressionNode
+        -ExpressionBlockNode
+        -SimpleExpressionNode
+            
+            ___(Less Priority)___
+            -LetNode
+            -IfElseExpression
+            -DestructiveExpression
+            -whileNode
+            -forNode
+            -newNode
+            
+            ___(Operations)___
+            -OrAndExpression
+            -NotExpression
+            -ComparationExpression
+            -IsExpression
+            -StringConcatenationNode
+            -AritmethicExpression
+            
+            __(High Priority)__
+            -NumberNode
+            -StringNode
+            -BooleanNode
+            -Variable
+            -FunctionCallNode
+            -ClassFunctionCallNode
+            -ListNode
+            -ImplicitListNode
+            -InexingNode
+            -asNode
 '''
 
 
@@ -53,31 +52,32 @@ class Node:
 
 class StatementNode(Node):
     """
-        A statement can be a type definition, a method declaration, a expression or a protocol
+        A statement can be a Type definition, a method declaration, a expression or a protocol
     """
+    pass
+
+class ExpressionNode(StatementNode):
+    '''
+        An expression in HULK is anything that has a value
+    '''
     pass
 
 class ProgramNode(Node):
     '''
         A program in HULK is a collection of statements
     '''
-    def __init__(self,Statements:list[StatementNode]):
+    def __init__(self,Statements:list[StatementNode],Expression:ExpressionNode):
         self.Statements=Statements
+        self.Expression=Expression
 
 class ParameterNode(Node):
     '''
-        Represents a parameter for a function/method, a constructor for a type or a let expression
-        A parameter must have a name, and the type can be specified
+        Represents a parameter for a function/method, a constructor for a Type or a let expression
+        A parameter must have a name, and the Type can be specified
     '''
-    def __init__(self,Name:str,Type:str=''):
+    def __init__(self,Name:str,Type:str='Object'):
         self.name=Name
-        self.Type=[] if Type=='' else [Type]
-
-
-class ExpressionNode(StatementNode):
-    '''
-        An expression in HULK is anything that has a value
-    '''
+        self.Type=Type
 
 class FunctionNode(StatementNode):
     '''
@@ -86,20 +86,19 @@ class FunctionNode(StatementNode):
         And it may contains parameters and a return Type
     '''
     def __init__(self,name:str,Parameters:list[ParameterNode],
-                 Corpus:List[ExpressionNode],Type:str=''):
+                 Corpus:List[ExpressionNode],Type:str='Object'):
         self.name=name
         self.Parameters=Parameters
         self.Corpus=Corpus
-        self.type=Corpus[-1].valueType() if Type=='' else [Type]
+        self.Type=Type
 
-class ClassAtributeNode(Node):
+class TypeAtributeNode(Node):
     '''
         This is an atribute of a class. It has a name and a value from a expression
     '''
     def __init__(self,name:str,value:ExpressionNode):
         self.name=name
         self.value=value
-        self.type=value.valueType()
 
 class TypeNode(StatementNode):
     '''
@@ -108,8 +107,8 @@ class TypeNode(StatementNode):
         It may have a constructor an a parent in hierarchy
         In case of hierarchy, you can call arguments for the parent
     '''
-    def __init__(self,name:str,Corpus:list[Union[FunctionNode,ClassAtributeNode]]
-                 ,Parameters:list[ParameterNode]=[],inherits:str="",Arguments=[]):
+    def __init__(self,name:str,Corpus:list[Union[FunctionNode,TypeAtributeNode]]
+                 ,Parameters:list[ParameterNode]=[],inherits:str="Object",Arguments:list[ExpressionNode]=[]):
         self.name=name
         self.Corpus=Corpus
         self.ConstructorParameters=Parameters
@@ -119,16 +118,16 @@ class TypeNode(StatementNode):
 class ProtocolMethodNode(Node):
     '''
         This is a abstract method inside of a protocol.
-        Needs to have a name, a type and a typed Parameter List
+        Needs to have a name, a Type and a Typed Parameter List
     '''
-    def __init__(self,name:str,Parameters:List[ParameterNode],type:str):
+    def __init__(self,name:str,Parameters:List[ParameterNode],Type:str):
         self.name=name
         self.Parameters=Parameters
-        self.type=type
+        self.Type=Type
 
 class ProtocolNode(StatementNode):
     '''
-        This is a protocol. It has a name and and a list of fully-typed methods.
+        This is a protocol. It has a name and and a list of fully-Typed methods.
         A protocol may extend another protocol
     '''
     def __init__(self,name:str,Corpus:List[ProtocolMethodNode],extends:str=''):
@@ -205,7 +204,7 @@ class forNode(SimpleExpressionNode):
     
 class NewNode(SimpleExpressionNode):
     '''
-        Contains the new operator. Contains the name of a type and the constructor arguments
+        Contains the new operator. Contains the name of a Type and the constructor arguments
     '''
     def __init__(self,name:str,Arguments:List[SimpleExpressionNode]):
         self.name=name
@@ -273,7 +272,7 @@ class asNode(SimpleExpressionNode):
     '''
     def __init__(self,left:SimpleExpressionNode,right:str):
         self.Expression=left
-        self.type=right
+        self.Type=right
 
 class NumberNode(SimpleExpressionNode):
     '''
@@ -309,14 +308,6 @@ class FunctionCallNode(SimpleExpressionNode):
         self.function=name
         self.Arguments=arguments
 
-class ClassAtributeCallNode(SimpleExpressionNode):
-    '''
-        Allows to call a class member. Is formed by the expression and the members name
-    '''
-    def __init__(self,classCalling:SimpleExpressionNode,Atribute:str):
-        self.classCalling=classCalling
-        self.Atribute=Atribute
-    
 class ClassFunctionCallNode(SimpleExpressionNode):
     '''
         The combination of the last two
