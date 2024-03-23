@@ -35,14 +35,14 @@ class TestLexer(unittest.TestCase):
         self.check_equal(expected_types, expected_lemmas, tokens)
 
     def test_tokenization_4(self):
-        # Test the tokenization of a string with a function call
+        # Test the tokenization of a string with a print call and string
         tokens, errors = self.lexer.Tokenize('print("Hello World");')
         expected_lemmas = ['print', '(', '"Hello World"', ')', ';', '$']
         expected_types = [print_.Name, lparen.Name, string.Name, rparen.Name, semicolon.Name, G.EOF.Name]
         self.check_equal(expected_types, expected_lemmas, tokens)
 
     def test_tokenization_5(self):
-        # Test the tokenization of a string with a function definition
+        # Test the tokenization  with a function definition
         tokens, errors = self.lexer.Tokenize('function add(x: Number, y: Number) { \n\t return cos(x) *tan(y); \n }')
         expected_lemmas = ['function', 'add', '(', 'x', ':', 'Number', ',', 'y', ':', 'Number', ')', '{', 'return',
                            'cos', '(', 'x', ')', '*', 'tan', '(', 'y', ')', ';', '}', '$']
