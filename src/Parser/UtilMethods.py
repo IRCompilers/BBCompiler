@@ -1,8 +1,5 @@
 from src.Common.ContainerSet import ContainerSet
-from src.Common.Compiler import Item, EOF
-from src.Common.Automata import State
-from src.Parser.SROperations import SROperations
-from src.Common.Compiler import Grammar
+from src.Common.Compiler import Item
 
 
 def compute_local_firsts(firsts, alpha):
@@ -35,7 +32,7 @@ def compute_local_firsts(firsts, alpha):
     return first_alpha
 
 
-def compute_firsts(grammar: Grammar):
+def compute_firsts(grammar):
     """
 
     Computes the firsts sets for the given grammar
@@ -139,79 +136,4 @@ def goto_for_lr1(items, symbol, firsts=None, just_kernel=False):
     ), "`firsts` values must be provided if `just_kernel=False`"
     items = frozenset(item.NextItem() for item in items if item.NextSymbol == symbol)
     return items if just_kernel else closure_for_lr1(items, firsts)
-
-
-def build_automaton_for_lr1_parser(grammar: Grammar):
-    assert len(grammar.startSymbol.productions) == 1, "Grammar must be augmented"
-
-    firsts = compute_firsts(grammar)
-    firsts[grammar.EOF] = ContainerSet(grammar.EOF)
-
-    start_production = grammar.startSymbol.productions[0]
-    start_item = Item(start_production, 0, lookaheads=(grammar.EOF,))
-    start = frozenset([start_item])
-
-    closure = closure_for_lr1(start, firsts)
-    automaton = State(frozenset(closure), True)
-
-    pending = [start]
-    visited = {start: automaton}
-
-    while pending:
-        current = pending.pop()
-        current_state = visited[current]
-
-        for symbol in grammar.terminals + grammar.nonTerminals:
-            items = current_state.state
-            kernel = goto_for_lr1(items, symbol, just_kernel=True)
-            if not kernel:
-                continue
-            try:
-                next_state = visited[kernel]
-            except KeyError:
-                closure = goto_for_lr1(items, symbol, firsts)
-                next_state = visited[kernel] = State(frozenset(closure), True)
-                pending.append(kernel)
-
-            current_state.add_transition(symbol.Name, next_state)
-
-    automaton.set_formatter(lambda x: "")
-    return automaton
-
-
-def evaluate_reverse_parse(right_parse, operations, tokens):
-    if not right_parse or not operations or not tokens:
-        return
-
-    right_parse = iter(right_parse)
-    tokens = iter(tokens)
-    stack = []
-    for operation in operations:
-
-        if operation == SROperations.SHIFT:
-            token = next(tokens)
-            stack.append(token)
-
-        elif operation == SROperations.REDUCE:
-            production = next(right_parse)
-            _, body = production
-            attributes = production.attributes
-            assert all(
-                rule is None for rule in attributes[1:]
-            ), "There must be only synthesized attributes."
-            rule = attributes[0]
-
-            if len(body):
-                synthesized = [None] + stack[-len(body):]
-                value = rule(None, synthesized)
-                stack[-len(body):] = [value]
-            else:
-                stack.append(rule(None, None))
-
-        else:
-            raise Exception("Invalid action!!!")
-
-    assert len(stack) == 1
-    assert isinstance(next(tokens).token_type, EOF)
-    return stack[0]
 
