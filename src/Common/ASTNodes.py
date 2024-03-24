@@ -44,13 +44,13 @@ from typing import List,Union
 '''
 
 
-class Node:
+class node:
     """
         Basic node class. The building block of the AST
     """
     pass
 
-class StatementNode(Node):
+class StatementNode(node):
     """
         A statement can be a Type definition, a method declaration, a expression or a protocol
     """
@@ -64,7 +64,7 @@ class ExpressionNode(StatementNode):
         self.VALUE_TYPE='Object'
         pass
 
-class ProgramNode(Node):
+class ProgramNode(node):
     '''
         A program in HULK is a collection of statements
     '''
@@ -72,7 +72,7 @@ class ProgramNode(Node):
         self.STATEMENTS=statements
         self.EXPRESSION=expression
 
-class ParameterNode(Node):
+class ParameterNode(node):
     '''
         Represents a parameter for a function/method, a constructor for a Type or a let expression
         A parameter must have a name, and the Type can be specified
@@ -88,13 +88,13 @@ class FunctionNode(StatementNode):
         And it may contains parameters and a return Type
     '''
     def __init__(self,name:str,parameters:list[ParameterNode],
-                 corpus:List[ExpressionNode],type:str='Object'):
+                 corpus:ExpressionNode,type:str='Object'):
         self.NAME=name
         self.PARAMETERS=parameters
         self.CORPUS=corpus
         self.TYPE=type
 
-class TypeAtributeNode(Node):
+class TypeAtributeNode(node):
     '''
         This is an atribute of a class. It has a name and a value from a expression
     '''
@@ -117,7 +117,7 @@ class TypeNode(StatementNode):
         self.INHERITS=inherits
         self.ARGUMENTS=arguments
 
-class ProtocolMethodNode(Node):
+class ProtocolMethodNode(node):
     '''
         This is a abstract method inside of a protocol.
         Needs to have a name, a Type and a Typed Parameter List
