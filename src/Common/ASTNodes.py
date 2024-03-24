@@ -1,4 +1,4 @@
-from typing import List,Union
+from typing import List, Union
 
 '''
 -Node
@@ -50,11 +50,13 @@ class Node:
     """
     pass
 
+
 class StatementNode(Node):
     """
         A statement can be a Type definition, a method declaration, a expression or a protocol
     """
     pass
+
 
 class ExpressionNode(StatementNode):
     '''
@@ -64,13 +66,16 @@ class ExpressionNode(StatementNode):
         self.VALUE_TYPE='Object'
         pass
 
+
 class ProgramNode(Node):
     '''
         A program in HULK is a collection of statements
     '''
+
     def __init__(self,statements:list[StatementNode],expression:ExpressionNode):
         self.STATEMENTS=statements
         self.EXPRESSION=expression
+
 
 class ParameterNode(Node):
     '''
@@ -80,6 +85,7 @@ class ParameterNode(Node):
     def __init__(self,name:str,type:str='Object'):
         self.NAME=name
         self.TYPE=type
+
 
 class FunctionNode(StatementNode):
     '''
@@ -94,6 +100,7 @@ class FunctionNode(StatementNode):
         self.CORPUS=corpus
         self.TYPE=type
 
+
 class TypeAtributeNode(Node):
     '''
         This is an atribute of a class. It has a name and a value from a expression
@@ -101,6 +108,7 @@ class TypeAtributeNode(Node):
     def __init__(self,name:str,value:ExpressionNode):
         self.NAME=name
         self.VALUE=value
+				
 
 class TypeNode(StatementNode):
     '''
@@ -116,6 +124,7 @@ class TypeNode(StatementNode):
         self.CONSTRUCTOR=parameters
         self.INHERITS=inherits
         self.ARGUMENTS=arguments
+				
 
 class ProtocolMethodNode(Node):
     '''
@@ -144,11 +153,13 @@ class ExpressionBlockNode(ExpressionNode):
     def __init__(self,expressions:List[ExpressionNode]):
         self.EXPRESSIONS=expressions
 
+
 class SimpleExpressionNode(ExpressionNode):
     '''
         This class is only a distinction of a ExpressionBlock
     '''
     pass
+
 
 class LetNode(SimpleExpressionNode):
     '''
@@ -162,6 +173,7 @@ class LetNode(SimpleExpressionNode):
         self.VAR_VALUES=variable_values
         self.EXPRESSION=expression
 
+
 class IfElseExpression(SimpleExpressionNode):
     '''
         Contains the semantic of the conditionals.
@@ -173,6 +185,7 @@ class IfElseExpression(SimpleExpressionNode):
         self.CONDITIONS=conditions
         self.CASES=expressions
 
+
 class DestructiveExpression(SimpleExpressionNode):
     '''
         This is contains the semantic for := operator.
@@ -181,7 +194,8 @@ class DestructiveExpression(SimpleExpressionNode):
     def __init__(self,name:str,expression:SimpleExpressionNode):
         self.NAME=name
         self.EXPRESSION=expression
-    
+
+				
 class whileNode(SimpleExpressionNode):
     '''
         Has the semantic for a while cicle. Contains the condition and the expressions
@@ -189,7 +203,7 @@ class whileNode(SimpleExpressionNode):
     def __init__(self,condition:SimpleExpressionNode,expression:ExpressionNode):
         self.CONDITIONS=condition
         self.EXPRESSION=expression
-    
+
 class forNode(SimpleExpressionNode):
     '''
         Has the semantic for a for cicle. Contains the colection, the iterator and the expressions
@@ -198,7 +212,8 @@ class forNode(SimpleExpressionNode):
         self.NAME=name
         self.COLECTION=colection
         self.EXPRESSION=expression
-    
+
+				
 class NewNode(SimpleExpressionNode):
     '''
         Contains the new operator. Contains the name of a Type and the constructor arguments
@@ -206,6 +221,7 @@ class NewNode(SimpleExpressionNode):
     def __init__(self,name:str,arguments:List[SimpleExpressionNode]):
         self.NAME=name
         self.ARGS=arguments    
+				
 
 class OrAndExpression(SimpleExpressionNode):
     '''
@@ -216,13 +232,15 @@ class OrAndExpression(SimpleExpressionNode):
         self.RIGHT=right
         self.OPERATION=operation
     
+		
 class NotExpression(SimpleExpressionNode):
     '''
         Contains the operator !.
     '''
     def __init__(self,expression:SimpleExpressionNode):
         self.EXPRESSION=expression
-    
+
+				
 class ComparationExpression(SimpleExpressionNode):
     '''
         Contains the operators >, <, <=, >=, ==. Recive 2 expressions and compares them
@@ -231,7 +249,8 @@ class ComparationExpression(SimpleExpressionNode):
         self.LEFT=left
         self.RIGHT=right
         self.OPERATION=operation
-    
+
+				
 class IsExpression(SimpleExpressionNode):
     '''
         Contains the operator is
@@ -240,7 +259,7 @@ class IsExpression(SimpleExpressionNode):
         self.LEFT=left
         self.NAME=name
 
-    
+
 class StringConcatenationNode(SimpleExpressionNode):
     '''
         Contains the @ and @@ operators
@@ -250,11 +269,11 @@ class StringConcatenationNode(SimpleExpressionNode):
         self.LEFT=left
         self.RIGHT=right
         self.DOUBLE=double
-    
+
 class AritmethicExpression(SimpleExpressionNode):
     '''
         Contains all the aritmethic expressions:
-        + - * ** ^ / // %
+        + - * ** ^ / %
         The unary expression -Expression is included has 0-Expression
     '''
     def __init__(self,operation:str,left:SimpleExpressionNode
@@ -262,6 +281,7 @@ class AritmethicExpression(SimpleExpressionNode):
         self.LEFT=left
         self.RIGHT=right
         self.OPERATION=operation
+				
 
 class asNode(SimpleExpressionNode):
     '''
@@ -277,17 +297,19 @@ class NumberNode(SimpleExpressionNode):
     '''
     def __init__(self,value):
         self.VALUE=value
-    
+				
 class StringNode(SimpleExpressionNode):
     '''
         Contains a string value
     '''
     def __init__(self,value):
         self.VALUE=value
+
 class BooleanNode(SimpleExpressionNode):
     '''
         True or False
     '''
+
     def __init__(self, value):
         self.VALUE=value
 class Variable(SimpleExpressionNode):
@@ -297,6 +319,7 @@ class Variable(SimpleExpressionNode):
     def __init__(self,name:str):
         self.NAME=name
 
+				
 class FunctionCallNode(SimpleExpressionNode):
     '''
         A function call. Recieves a name and arguments
@@ -314,12 +337,14 @@ class TypeFunctionCallNode(SimpleExpressionNode):
         self.FUNCT=name
         self.ARGS=arguments
     
+
 class ListNode(SimpleExpressionNode):
     '''
         Represents a list in code. It receives an array with its elements
     '''
     def __init__(self,expressions:List[SimpleExpressionNode]):
         self.ELEMENTS=expressions
+
 
 class ImplicitListNode(SimpleExpressionNode):
     '''
@@ -339,3 +364,4 @@ class InexingNode(SimpleExpressionNode):
     def __init__(self,collection:SimpleExpressionNode,index:SimpleExpressionNode):
         self.COLLECTION=collection
         self.INDEX=index
+

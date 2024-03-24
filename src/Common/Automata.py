@@ -5,8 +5,12 @@ from src.Common.Compiler import Terminal
 from src.Project.Grammar import identifier
 
 
+def regular_formatter(state):
+    return str(state)
+
+
 class State:
-    def __init__(self, state, final: bool = False, formatter=lambda x: str(x), shape="circle"):
+    def __init__(self, state, final: bool = False, formatter=regular_formatter, shape="circle"):
         self.state = state
         self.final = final
         self.transitions = {}
@@ -52,7 +56,7 @@ class State:
             states = self.epsilon_closure_by_state(*states)
         return any(s.final for s in states)
 
-    def to_deterministic(self, formatter=lambda x: str(x)):
+    def to_deterministic(self, formatter=regular_formatter):
         keywords = src.Project.Grammar.GetKeywords()
         keyword_tags = set(keywords)
         closure = self.epsilon_closure

@@ -21,6 +21,13 @@ regex_table = [
     (true, "true"),
     (false, "false"),
     (extends, "extends"),
+    (sin, "sin"),
+    (cos, "cos"),
+    (tan, "tan"),
+    (sqrt, "sqrt"),
+    (exp, "exp"),
+    (log, "log"),
+    (rand, "rand"),
     (plus, "\+"),
     (times, "\*"),
     (minus, "-"),
@@ -48,10 +55,9 @@ regex_table = [
     (not_, "\!"),
     (modulus, "%"),
     (power, "^"),
-    (assign, ":="),
+    (destruct, ":="),
     (concat, "@"),
     (identifier, "([a..z]|[A..Z]|_)([a..z]|[A..Z]|_|[0..9])*"),
     (number, "([0..9]+\.)?[0..9]+"),
-    (string, "\"((\\\\\\\")|(\\A))*\"")
+    (string, "\"((\\\\\")|(\\A))*\"")
 ]
-
