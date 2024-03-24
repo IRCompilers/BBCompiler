@@ -53,6 +53,7 @@ class EvaluateVisitor(object):
         first = automata_symbol(chars[0])
         second = automata_symbol(chars[1])
         result = automata_union(first, second)
+
         for c in chars[2:]:
             result = automata_union(result, automata_symbol(c))
 
@@ -61,7 +62,6 @@ class EvaluateVisitor(object):
 
         result = automata_union(result, automata_symbol(' '))
         return automata_minimization(nfa_to_dfa(result))
-
 
     @Visitor.when(EllipsisNode)
     def visit(self, node):

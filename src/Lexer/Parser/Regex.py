@@ -4,6 +4,7 @@ from src.Common.Automaton import NFA
 from src.Common.AutomatonUtils import nfa_to_dfa, automata_minimization
 from src.Common.Token import Token
 from src.Lexer.Parser.EvaluateVisitor import EvaluateVisitor
+from src.Lexer.Parser.FormatVisitor import FormatVisitor
 from src.Lexer.Parser.Grammar import GetRegexGrammar
 from src.Lexer.Parser.Parser import SLR1Parser, evaluate_reverse_parse
 
@@ -14,7 +15,7 @@ class RegexBuilder:
         self.grammar = GetRegexGrammar()
         self.parser = SLR1Parser(self.grammar)
 
-    def build_regex(self, regex: str) -> (NFA, List[str]):
+    def build_regex(self, regex: str, verbose = False) -> (NFA, List[str]):
         tokens = []
         errors = []
 
@@ -31,6 +32,11 @@ class RegexBuilder:
         tokens = [Token(x.Name, x, 0) for x in tokens]
         ast = evaluate_reverse_parse(derivation, operations, tokens)
         evaluator = EvaluateVisitor()
+
+        if verbose:
+            formatter = FormatVisitor()
+            print(formatter.visit(ast))
+
         nfa = evaluator.visit(ast)
         dfa = nfa_to_dfa(nfa)
         dfa = automata_minimization(dfa)

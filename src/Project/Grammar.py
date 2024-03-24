@@ -37,15 +37,17 @@ lparen, rparen, lbrack, rbrack, lbrace, rbrace = G.Terminals("( ) [ ] { }")
 comma, period, colon, semicolon = G.Terminals(", . : ;")
 arrow, darrow = G.Terminals("-> =>")
 and_, or_, not_ = G.Terminals("& | !")
+
 modulus, power, power_asterisk = G.Terminals("% ^ **")
 assign, concat = G.Terminals(":= @")
 concat_space = G.Terminal("@@")
 list_comprehension = G.Terminal("||")
 
 for_, let, if_, else_, elif_ = G.Terminals("for let if else elif")
-while_, return_, function, pi, e, print_ = G.Terminals("while return function pi e print")
+while_, function, pi, e, print_ = G.Terminals("while function pi e print")
 new, inherits, protocol, type_, self_, in_, range_ = G.Terminals("new inherits protocol type self in range")
 true, false = G.Terminals("true false")
+
 extends = G.Terminal("extends")
 rand = G.Terminal("rand")
 sin, cosine, sqrt, exp, log = G.Terminals("sin cosine sqrt exp log")
