@@ -1,7 +1,7 @@
 import click
 
-from src.Common.Automaton import Automaton
 from src.Lexer.Lexer import Lexer
+from src.Lexer.SymbolTable import regex_table
 
 
 @click.group()
@@ -12,34 +12,19 @@ def hulk():
 @hulk.command()
 @click.argument('filename')
 def run(filename):
-    lexer = Lexer()
+    lexer = Lexer(regex_table, file_path="models/lexer_automaton.pkl")
+    text = ""
 
-    # Define transitions
-    transitions = {
-        ('q0', 'a'): 'q1',
-        ('q1', 'b'): 'q2',
-        ('q2', 'c'): 'q3',
-        ('q3', 'd'): 'q3'
-    }
+    with open(filename, 'r') as file:
+        for line in file:
+            text += line
 
-    # Define start state
-    start_state = 'q0'
+    tokens, errors = lexer.Tokenize(text)
+    for v in tokens:
+        print(v.Lemma, v.TokenType, v.Pos)
 
-    # Define accept states
-    accept_states = {'q3'}
-
-    # Initialize the Automaton
-    automaton = Automaton(transitions, start_state, accept_states)
-
-    # Check if a string is accepted
-    print(automaton.is_accepted('abcd'))  # True
-    print(automaton.is_accepted('abc'))  # False
-
-    # with open(filename, 'r') as file:
-    #     for line in file:
-    #         tokens = lexer.Tokenize(line)
-    #         for token in tokens:
-    #             print(token.Lemma, token.Type)
+    for e in errors:
+        print('\033[91m' + str(e) + '\033[0m')
 
 
 pass
