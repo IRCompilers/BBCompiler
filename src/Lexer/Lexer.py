@@ -1,3 +1,5 @@
+import os
+import pickle
 from typing import List
 
 from src.Common.Automata import State
@@ -9,10 +11,19 @@ from src.Project.Grammar import G
 
 
 class Lexer:
-    def __init__(self, table):
-        self.regex_builder = RegexBuilder()
-        self.regexs = self._build_regexs(table)
-        self.automaton = self._build_automaton()
+    def __init__(self, table, file_path=None):
+        if not file_path:
+            file_path = "../../models/lexer_automaton.pkl"
+
+        if os.path.exists(file_path):
+            with open(file_path, 'rb') as f:
+                self.automaton = pickle.load(f)
+        else:
+            self.regex_builder = RegexBuilder()
+            self.regexs = self._build_regexs(table)
+            self.automaton = self._build_automaton()
+            with open(file_path, 'wb') as f:
+                pickle.dump(self.automaton, f)
 
     def _build_regexs(self, table):
         regexs = []
@@ -38,19 +49,14 @@ class Lexer:
 
         return start.to_deterministic()
 
-    def _walk(self, string):
+    def _walk(self, string, start_index):
         state = self.automaton
         final = state if state.final else None
         lex = ""
+        index = start_index
 
-        string_started = False
-
-        for symbol in string:
-            if not string_started and symbol == " " or symbol == "\n":
-                break
-
-            if symbol == "\"":
-                string_started = True
+        while index < len(string):
+            symbol = string[index]
 
             if state.has_transition(symbol):
                 lex += symbol
@@ -62,55 +68,85 @@ class Lexer:
             else:
                 break
 
+            index += 1
+
         if final:
-            return final, final.lex
-
-    def Tokenize(self, text):
-        errors: List[LexerError] = []
-        text, pos = self.CleanupText("", text)
-        while text:
-            try:
-                final, lex = self._walk(text)
-            except TypeError:
-                errors.append(LexerError(f"LEXER ERROR: Invalid token \"{text[0]}\" at position: {pos}"))
-                text, index = self.CleanupText("", text, skip=1)
-                pos += index
-                continue
-
-            text, index = self.CleanupText(lex, text)
-            if final:
-                yield Token(lex, final.tag, pos)
-
-            pos += index
-
-        yield Token("$", G.EOF, pos)
-
-        for e in errors:
-            print('\033[91m' + str(e) + '\033[0m')
+            return final, final.lex, index
 
     @staticmethod
-    def CleanupText(lex, text, skip=0):
-        index = len(lex) + skip
+    def CleanupText(start_index, text, start_cols, start_rows, skip=0):
+        index = start_index + skip
+        cols = start_cols
+        rows = start_rows
         for i, symbol in enumerate(text):
             if i < index:
                 continue
 
-            if symbol == " " or symbol == "\n":
+            if symbol == " " or symbol == "\t":
                 index += 1
+                cols += 1
+            elif symbol == "\n":
+                index += 1
+                rows += 1
+                cols = 0
             else:
                 break
 
-        return text[index:], index
+        return index, rows, cols
 
-    def __call__(self, text):
-        return [token for token in self.Tokenize(text)]
+    def Tokenize(self, text):
+        tokens = []
+        errors: List[LexerError] = []
+        index, rows, cols = self.CleanupText(0, text, 0, 0)
+        while index < len(text):
+            try:
+                final, lex, end_index = self._walk(text, index)
+            except TypeError:
+                errors.append(LexerError(f"LEXER ERROR: Invalid token \"{text[index]}\" at position: {(rows, cols)}"))
+                index, rows, cols = self.CleanupText(index, text, cols, rows, skip=1)
+                cols += 1
+                continue
+            except AttributeError:
+                continue
+
+            if not final:
+                continue
+
+            tokens.append(Token(lex, final.tag, (rows, cols)))
+
+            cols += len(lex)
+            index = end_index
+            index, rows, cols = self.CleanupText(index, text, cols, rows)
+
+        tokens.append(Token("$", G.EOF, (rows, cols)))
+
+        return tokens, errors
 
 
 # start_time = time.time()
 
 # Calculate the elapsed time
-lexer = Lexer(regex_table)
-tokens = lexer("let* polish=(36.42).in \n \"this is + 523 =  a great string\": for ; 56.43+@*30.1")
-
-for v in tokens:
-    print(v.Lemma, v.TokenType, v.Pos)
+# lexer = Lexer(regex_table)
+# string = "?\"temp\""
+# # #
+# # # temp = RegexBuilder()
+# # # string_regex: DFA = temp.build_regex(regex_table[-1][1], True)[0]
+# # #
+# # #
+# # # print(string_regex.recognize(string))
+# #
+# # # print(string_regex.transitions)
+# # # print("Finals: ", string_regex.finals)
+# #
+# # # print(string_regex)
+# #
+# #
+# tokens, errors = lexer.Tokenize(string)
+# # #
+# # # print(string)
+# # #
+# for v in tokens:
+#     print(v.Lemma, v.TokenType, v.Pos)
+#
+# for e in errors:
+#     print('\033[91m' + str(e) + '\033[0m')
