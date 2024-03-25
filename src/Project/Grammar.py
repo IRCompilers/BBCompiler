@@ -39,7 +39,7 @@ arrow, darrow = G.Terminals("-> =>")
 and_, or_, not_ = G.Terminals("& | !")
 
 modulus, power, power_asterisk = G.Terminals("% ^ **")
-assign, concat = G.Terminals(":= @")
+destruct, concat = G.Terminals(":= @")
 concat_space = G.Terminal("@@")
 list_comprehension = G.Terminal("||")
 
@@ -50,16 +50,16 @@ true, false = G.Terminals("true false")
 
 extends = G.Terminal("extends")
 rand = G.Terminal("rand")
-sin, cosine, sqrt, exp, log = G.Terminals("sin cosine sqrt exp log")
+sin, cos, sqrt, exp, log, tan = G.Terminals("sin cos sqrt exp log tan")
 as_, is_ = G.Terminals("as is")
 
 init_ %= program, lambda h, s: s[1]
 
-program %= expression, lambda h, s: ProgramNode(s[1])
-program %= statement + program, lambda h, s: ProgramNode(s[1] + s[2])
+program %= expression, lambda h, s: ProgramNode([], s[1])
+program %= statement + program, lambda h, s: ProgramNode([s[1]] + s[2].Statements, s[2].Expression)
 
 statement %= function + identifier + parameters + function_style, lambda h, s: FunctionNode(s[2], s[3], s[4])
-statement %= type_ + identifier + type_def, lambda h, s: TypeNode(s[2], s[3])
+statement %= type_ + identifier + type_def, lambda h, s: TypeNode(s[2], s[3].Corpus, s[3].ConstructorParameters, s[3].inherits, s[3].Arguments) # duda
 statement %= protocol_declare, lambda h, s: s[1]
 #
 function_style %= darrow + simple_expression + semicolon, lambda h, s: s[2]
@@ -110,16 +110,16 @@ expression %= lbrace + expression_block + rbrace, lambda h, s: s[2]
 expression_block %= expression, lambda h, s: s[1]
 expression_block %= expression_block + expression, lambda h, s: s[1] + s[2]
 #
-simple_expression %= let + declaration + in_ + expression, lambda h, s: s[2]+s[4]
-simple_expression %= identifier + assign + simple_expression, lambda h, s: DestructiveExpression(s[1], s[3])
+simple_expression %= let + declaration + in_ + expression, lambda h, s: LetNode(s[2].variables, s[2].variables_values, s[3])
+simple_expression %= identifier + destruct + simple_expression, lambda h, s: DestructiveExpression(s[1], s[3])
 simple_expression %= if_ + if_block + else_block, lambda h, s: s[2] + s[3]
 simple_expression %= while_ + lparen + simple_expression + rparen + expression, lambda h, s: whileNode(s[3], s[5])
 simple_expression %= for_ + lparen + identifier + in_ + simple_expression + rparen + expression, lambda h, s: forNode(s[3], s[5], s[7])
 simple_expression %= new + identifier + arguments, lambda h, s: NewNode(s[2], s[3])
 simple_expression %= disjunction, lambda h, s: s[1]
 #
-declaration %= variable + equal + simple_expression, lambda h, s: LetNode(s[1], s[3], s[1])
-declaration %= variable + equal + simple_expression + comma + declaration, lambda h, s: [LetNode(s[1], s[3], s[1])] + s[5]
+declaration %= variable + equal + simple_expression, lambda h, s: LetNode(s[1], s[3], s[0].Expression) # duda
+declaration %= variable + equal + simple_expression + comma + declaration, lambda h, s: [LetNode(s[1], s[3], s[0].Expression)] + s[5] # duda
 #
 if_block %= lparen + simple_expression + rparen + simple_expression, lambda h, s: IfElseExpression(s[2], s[4])
 if_block %= lparen + simple_expression + rparen + lbrace + expression_block + rbrace, lambda h, s: IfElseExpression(s[2], s[5])
@@ -193,7 +193,8 @@ object_exp %= lbrack + list_ + rbrack, lambda h, s: s[2]
 object_exp %= object_exp + lbrack + simple_expression + rbrack, lambda h, s: InexingNode(s[1], s[3])
 object_exp %= print_ + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1], s[3])
 object_exp %= sin + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1], s[3])
-object_exp %= cosine + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1], s[3])
+object_exp %= cos + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1], s[3])
+object_exp %= tan + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1], s[3])
 object_exp %= sqrt + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1], s[3])
 object_exp %= exp + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1], s[3])
 object_exp %= log + lparen + simple_expression + comma + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1], s[3] + s[5]) # duda
@@ -204,9 +205,7 @@ list_ %= simple_expression + comma + list_, lambda h, s: ListNode([s[1]] + s[3])
 list_ %= simple_expression + list_comprehension + identifier + in_ + simple_expression, lambda h, s: ImplicitListNode(s[1], s[3], s[5])
 
 
-
-
 def GetKeywords():
-    return [for_, let, if_, else_, elif_, while_, return_, function, pi, e, print_,
+    return [for_, let, if_, else_, elif_, while_, function, pi, e, print_,
             new, inherits, protocol, type_, self_, in_, range_, true, false, extends, as_,
-            rand, sin, cosine, sqrt, exp, log]
+            rand, sin, cos, sqrt, exp, log, is_, tan]

@@ -57,6 +57,8 @@ regex_table = [
     (power, "^"),
     (destruct, ":="),
     (concat, "@"),
+    (is_, "is"),
+    (as_, "as"),
     (identifier, "([a..z]|[A..Z]|_)([a..z]|[A..Z]|_|[0..9])*"),
     (number, "([0..9]+\.)?[0..9]+"),
     (string, "\"((\\\\\")|(\\A))*\"")
