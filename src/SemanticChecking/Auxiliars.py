@@ -1,21 +1,29 @@
 from Common.ASTNodes import *
 from SemanticChecking.Scope import Scope
 
-def NotEqualObjects(names):
+def EqualObjects(names):
     return len(names)!=len(set(names))
 
 def AddBasicInfo(scope:Scope):
     scope.AddProtocolFunctions('Iterable',[
-                FunctionNode('next',[],'Boolean'),
-                FunctionNode('current',[],'Object')
+                ProtocolMethodNode('next',[],'Boolean'),
+                ProtocolMethodNode('current',[],'Object')
     ])
+    scope.AddProtocolFunctions('Comparable',[
+                ProtocolMethodNode('CompareTo',[ParameterNode('element')],'Number')
+    ])
+    scope.AddProtocolFunctions('Printable',[
+                ProtocolMethodNode('ToString',[],'String')
+    ])
+    
     scope.AddTypeFunctions('Object',[])
-    scope.AddTypeFunctions('Number',[])
     scope.AddTypeFunctions('Boolean',[])
-    scope.AddTypeFunctions('Vector',[
-                FunctionNode('next',[],'Boolean'),
-                FunctionNode('current',[],'Object')
-    ])
+    scope.AddTypeFunctions('String',[FunctionNode('ToString',[],None,'String')])
+    scope.AddTypeFunctions('Number',[FunctionNode('ToString',[],None,'String'),
+                FunctionNode('CompareTo',[ParameterNode('element','Number')],None,'Object')])
+    scope.AddTypeFunctions('Vector', [FunctionNode('next',[],None,'Boolean'),
+                FunctionNode('current',[],None,'Object')])
+    
     scope.AddTypeParameters('Object',[])
     scope.AddTypeParameters('Number',[])
     scope.AddTypeParameters('Boolean',[])
@@ -28,7 +36,7 @@ def AddBasicInfo(scope:Scope):
     scope.AddFunctions(ProtocolMethodNode('sqrt',[ParameterNode('a','Number')],'Number'))
     scope.AddFunctions(ProtocolMethodNode('rand',[],'Number'))
     scope.AddFunctions(ProtocolMethodNode('log',[ParameterNode('a','Number'),ParameterNode('a','Number')],'Number'))
-    scope.AddFunctions(ProtocolMethodNode('print',[ParameterNode('a','Object')],'Object'))
+    scope.AddFunctions(ProtocolMethodNode('print',[ParameterNode('a','Printable')],'String'))
 
 def GetTopologicOrder(Graph:dict[str,str])->tuple[list[str],bool]:
     colors=dict()
@@ -37,17 +45,21 @@ def GetTopologicOrder(Graph:dict[str,str])->tuple[list[str],bool]:
     for key in Graph.keys():
         colors[key]='white'
     for key in Graph.keys():
-        AllOK=DFS(Graph,key,colors,order,count)
-        if not AllOK:
+        try:
+            AllOK=DFS(Graph,key,colors,order,count)
+            if not AllOK:
+                return (Graph.keys(),False)
+            count=order[key]+1
+        except:
             return (Graph.keys(),False)
-        count=order[key]+1
-    sortedlist=list[map(lambda x:(order[x],x),Graph.keys())].sort()
-    return (list[map(lambda x:x[1],sortedlist)],True)
+    sortedlist=list(map(lambda x:(order[x],x),Graph.keys()))
+    sortedlist.sort(key=lambda x:x[0])
+    return (list(map(lambda x:x[1],sortedlist)),True)
 
 def DFS(Graph,key,colors,order,count):
-    if Graph[key]=='black':
+    if colors[key]=='black':
         return True
-    if Graph[key]=='grey':
+    if colors[key]=='grey':
         return False
     if Graph[key]=='':
         colors[key]='black'
