@@ -26,7 +26,7 @@ class SemanticCheckerVisitor(object):
             self.errors.append('There is two declarations of the same Type')
         
         #Avoiding repited Protocols
-        defaultProtocols=['Iterable']
+        defaultProtocols=['Iterable','Printable','Comparable']
         ProtocolNames= defaultProtocols+[x.NAME for x in node.STATEMENTS if (type(x) is ProtocolNode)]
         if EqualObjects(ProtocolNames):
             self.errors.append('There is two declarations of the same protocol')
@@ -51,6 +51,8 @@ class SemanticCheckerVisitor(object):
         #Avoiding circular extensions
         Extensions=dict([(x.NAME,x.EXTENDS) for x in node.STATEMENTS if type(x) is ProtocolNode])
         Extensions['Iterable']=''
+        Extensions['Printable']=''
+        Extensions['Comparable']=''
         _, TreeForm=GetTopologicOrder(Extensions)
         if not TreeForm:
             self.errors.append("There is a circular dependence between protocols")
@@ -362,10 +364,10 @@ class SemanticCheckerVisitor(object):
             if node.CONDITIONS[i].VALUE_TYPE not in ['Boolean','Object']:
                 self.errors.append(f'Boolean expression was expected')
         #Getting all possible values
-        PossibleValueReturns=set()
+        PossibleValueReturns=[]
         for i in range(len(node.CASES)):
             self.visit(node.CASES[i],scope)
-            PossibleValueReturns.add(node.CASES[i].VALUE_TYPE)
+            PossibleValueReturns.append(node.CASES[i].VALUE_TYPE)
         #The type is the last common ancestor
         node.VALUE_TYPE=scope.LastCommonAncestor(PossibleValueReturns)
         return self.errors
@@ -455,16 +457,16 @@ class SemanticCheckerVisitor(object):
         return self.errors
 
     @visitor.when(StringConcatenationNode)
-    #CONCATENATION OF PRINTEABLES
+    #CONCATENATION OF PRINTABLES
     def visit(self, node:StringConcatenationNode, scope:Scope=None): #✔️✔️
         #Checking the left
         self.visit(node.LEFT,scope)
-        if not scope.AreRelated(node.LEFT.VALUE_TYPE,'Printeable'):
-            self.errors.append(f'{node.LEFT.VALUE_TYPE} type is not Printeable')
+        if not scope.AreRelated(node.LEFT.VALUE_TYPE,'Printable'):
+            self.errors.append(f'{node.LEFT.VALUE_TYPE} type is not Printable')
         #Checking the right
         self.visit(node.RIGHT,scope)
-        if not scope.AreRelated(node.RIGHT.VALUE_TYPE,'Printeable'):
-            self.errors.append(f'{node.RIGHT.VALUE_TYPE} type is not Printeable')
+        if not scope.AreRelated(node.RIGHT.VALUE_TYPE,'Printable'):
+            self.errors.append(f'{node.RIGHT.VALUE_TYPE} type is not Printable')
         node.VALUE_TYPE='String'
         return self.errors
 

@@ -36,7 +36,7 @@ def AddBasicInfo(scope:Scope):
     scope.AddFunctions(ProtocolMethodNode('sqrt',[ParameterNode('a','Number')],'Number'))
     scope.AddFunctions(ProtocolMethodNode('rand',[],'Number'))
     scope.AddFunctions(ProtocolMethodNode('log',[ParameterNode('a','Number'),ParameterNode('a','Number')],'Number'))
-    scope.AddFunctions(ProtocolMethodNode('print',[ParameterNode('a','Printeable')],'String'))
+    scope.AddFunctions(ProtocolMethodNode('print',[ParameterNode('a','Printable')],'String'))
 
 def GetTopologicOrder(Graph:dict[str,str])->tuple[list[str],bool]:
     colors=dict()

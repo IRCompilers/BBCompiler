@@ -148,6 +148,7 @@ class ExpressionBlockNode(ExpressionNode):
     '''
     def __init__(self,expressions:List[ExpressionNode]):
         self.EXPRESSIONS=expressions
+        self.VALUE_TYPE='Object'
 
 
 class SimpleExpressionNode(ExpressionNode):
@@ -168,7 +169,7 @@ class LetNode(SimpleExpressionNode):
         self.VARS=variable_names
         self.VAR_VALUES=variable_values
         self.EXPRESSION=expression
-
+        self.VALUE_TYPE='Object'
 
 class IfElseExpression(SimpleExpressionNode):
     '''
@@ -180,7 +181,7 @@ class IfElseExpression(SimpleExpressionNode):
     def __init__(self,conditions:List[SimpleExpressionNode],expressions:List[ExpressionNode]):
         self.CONDITIONS=conditions
         self.CASES=expressions
-
+        self.VALUE_TYPE='Object'
 
 class DestructiveExpression(SimpleExpressionNode):
     '''
@@ -190,7 +191,7 @@ class DestructiveExpression(SimpleExpressionNode):
     def __init__(self,name:str,expression:SimpleExpressionNode):
         self.NAME=name
         self.EXPRESSION=expression
-
+        self.VALUE_TYPE='Object'
 				
 class whileNode(SimpleExpressionNode):
     '''
@@ -199,6 +200,7 @@ class whileNode(SimpleExpressionNode):
     def __init__(self,condition:SimpleExpressionNode,expression:ExpressionNode):
         self.CONDITIONS=condition
         self.EXPRESSION=expression
+        self.VALUE_TYPE='Object'
 
 class forNode(SimpleExpressionNode):
     '''
@@ -208,7 +210,7 @@ class forNode(SimpleExpressionNode):
         self.NAME=name
         self.COLECTION=colection
         self.EXPRESSION=expression
-
+        self.VALUE_TYPE='Object'
 				
 class NewNode(SimpleExpressionNode):
     '''
@@ -217,7 +219,7 @@ class NewNode(SimpleExpressionNode):
     def __init__(self,name:str,arguments:List[SimpleExpressionNode]):
         self.NAME=name
         self.ARGS=arguments    
-				
+        self.VALUE_TYPE='Object'
 
 class OrAndExpression(SimpleExpressionNode):
     '''
@@ -227,7 +229,7 @@ class OrAndExpression(SimpleExpressionNode):
         self.LEFT=left
         self.RIGHT=right
         self.OPERATION=operation
-    
+        self.VALUE_TYPE='Object'
 		
 class NotExpression(SimpleExpressionNode):
     '''
@@ -235,7 +237,7 @@ class NotExpression(SimpleExpressionNode):
     '''
     def __init__(self,expression:SimpleExpressionNode):
         self.EXPRESSION=expression
-
+        self.VALUE_TYPE='Object'
 				
 class ComparationExpression(SimpleExpressionNode):
     '''
@@ -245,7 +247,7 @@ class ComparationExpression(SimpleExpressionNode):
         self.LEFT=left
         self.RIGHT=right
         self.OPERATION=operation
-
+        self.VALUE_TYPE='Object'
 				
 class IsExpression(SimpleExpressionNode):
     '''
@@ -254,7 +256,7 @@ class IsExpression(SimpleExpressionNode):
     def __init__(self,left:SimpleExpressionNode,name:str):
         self.LEFT=left
         self.NAME=name
-
+        self.VALUE_TYPE='Object'
 
 class StringConcatenationNode(SimpleExpressionNode):
     '''
@@ -265,6 +267,7 @@ class StringConcatenationNode(SimpleExpressionNode):
         self.LEFT=left
         self.RIGHT=right
         self.DOUBLE=double
+        self.VALUE_TYPE='Object'
 
 class AritmethicExpression(SimpleExpressionNode):
     '''
@@ -277,7 +280,7 @@ class AritmethicExpression(SimpleExpressionNode):
         self.LEFT=left
         self.RIGHT=right
         self.OPERATION=operation
-				
+        self.VALUE_TYPE='Object'
 
 class asNode(SimpleExpressionNode):
     '''
@@ -286,6 +289,7 @@ class asNode(SimpleExpressionNode):
     def __init__(self,left:SimpleExpressionNode,right:str):
         self.EXPRESSION=left
         self.TYPE=right
+        self.VALUE_TYPE='Object'
 
 class NumberNode(SimpleExpressionNode):
     '''
@@ -293,6 +297,7 @@ class NumberNode(SimpleExpressionNode):
     '''
     def __init__(self,value):
         self.VALUE=value
+        self.VALUE_TYPE='Object'
 				
 class StringNode(SimpleExpressionNode):
     '''
@@ -300,6 +305,7 @@ class StringNode(SimpleExpressionNode):
     '''
     def __init__(self,value):
         self.VALUE=value
+        self.VALUE_TYPE='Object'
 
 class BooleanNode(SimpleExpressionNode):
     '''
@@ -308,13 +314,15 @@ class BooleanNode(SimpleExpressionNode):
 
     def __init__(self, value):
         self.VALUE=value
+        self.VALUE_TYPE='Object'
+
 class Variable(SimpleExpressionNode):
     '''
         A variable
     '''
     def __init__(self,name:str):
         self.NAME=name
-
+        self.VALUE_TYPE='Object'
 				
 class FunctionCallNode(SimpleExpressionNode):
     '''
@@ -323,6 +331,7 @@ class FunctionCallNode(SimpleExpressionNode):
     def __init__(self,name:str,arguments:List[SimpleExpressionNode]):
         self.FUNCT=name
         self.ARGS=arguments
+        self.VALUE_TYPE='Object'
 
 class TypeFunctionCallNode(SimpleExpressionNode):
     '''
@@ -332,15 +341,15 @@ class TypeFunctionCallNode(SimpleExpressionNode):
         self.CLASS=class_calling
         self.FUNCT=name
         self.ARGS=arguments
+        self.VALUE_TYPE='Object'
     
-
 class ListNode(SimpleExpressionNode):
     '''
         Represents a list in code. It receives an array with its elements
     '''
     def __init__(self,expressions:List[SimpleExpressionNode]):
         self.ELEMENTS=expressions
-
+        self.VALUE_TYPE='Object'
 
 class ImplicitListNode(SimpleExpressionNode):
     '''
@@ -352,6 +361,7 @@ class ImplicitListNode(SimpleExpressionNode):
         self.OPERATION=operator
         self.ITERATION=iterator
         self.COLLECTION=collection
+        self.VALUE_TYPE='Object'
 
 class InexingNode(SimpleExpressionNode):
     '''
@@ -360,4 +370,5 @@ class InexingNode(SimpleExpressionNode):
     def __init__(self,collection:SimpleExpressionNode,index:SimpleExpressionNode):
         self.COLLECTION=collection
         self.INDEX=index
+        self.VALUE_TYPE='Object'
 

@@ -146,8 +146,36 @@ class Scope:
             return None
         return self.PARENT.SearhFunction(self,name,OnType)
     
-    def ExtendedSearch(self,type_name):#TO IMPLEMENT
-        pass
+    def ExtendedSearch(self,type_name):
+    #RETURN THE FUNCTIONS FROM THE TYPE OR HIS DESCENDENTS
+        #First check the Functions from itself or his ancestors
+        x=type_name
+        visited=set()
+        while x!='Object':
+            if x not in self.TYPE_NAMES:
+                return
+            for f in self.TYPE_FUNCTIONS[x]:
+                yield f
+            visited.add(x)
+            x=self.TYPE_HIERARCHY[x]
+        #Now checking if the method belongs to one of the descendents
+        #Reverting the hierarchy tree
+        Hierarchy_Tree=dict()
+        for type in self.TYPE_NAMES:
+            if self.TYPE_HIERARCHY[type] in Hierarchy_Tree.keys:
+                Hierarchy_Tree[self.TYPE_HIERARCHY[type]].append(type)
+            else:
+                Hierarchy_Tree[self.TYPE_HIERARCHY[type]]=[type]
+        #Returning the descendents functions
+        queque=[type_name]
+        while len(queque)!=0:
+            x=queque.pop()
+            if x not in self.TYPE_NAMES:
+                return
+            for f in self.TYPE_FUNCTIONS[x]:
+                yield f
+            if x in Hierarchy_Tree.keys():
+                queque=Hierarchy_Tree[x]+queque
 #----------------------------------------------------------------------------
     #MANAGE THE SCOPES
 #----------------------------------------------------------------------------
@@ -193,29 +221,24 @@ class Scope:
         while aux!='Object':
             if aux not in self.TYPE_NAMES:
                 return False
-            #Removing the types before adding the methods
-            addedFunctions=self.TYPE_FUNCTIONS[aux]
-            for x in addedFunctions:
-                x.PARAMETERS=[ParameterNode(a.NAME,'Object') for a in x]
-            type_funcs+=addedFunctions
+            type_funcs+=self.TYPE_FUNCTIONS[aux]
             aux=self.TYPE_HIERARCHY[aux]
-    
+        #Removing the types before adding the methods
+        type_funcs=[(x.NAME,len(x.PARAMETERS)) for x in type_funcs]
+        
         #Getting all the functions that the protocol contains, including the extensions
         protocol_funcs=[]
         aux=protocol
         while aux!='':
             if aux not in self.PROTOCOL_NAMES:
                 return False        
-            #Removing the types before adding the methods
-            addedFunctions=self.PROTOCOL_FUNCT[aux]
-            for x in addedFunctions:
-                x.PARAMETERS=[ParameterNode(a.NAME,'Object') for a in x]
-            protocol_funcs+=addedFunctions
+            protocol_funcs+=self.PROTOCOL_FUNCT[aux]
             aux=self.PROTOCOL_EXTENSIONS[aux]
+        #Removing the types before adding the methods
+        protocol_funcs=[(x.NAME,len(x.PARAMETERS)) for x in protocol_funcs]
 
         #Checking if the type is the protocol
         return all([x in type_funcs for x in protocol_funcs])
-    
     
     def AreRelated(self,Type1:str,Type2:str)->bool:
         #Go to parent
@@ -235,6 +258,33 @@ class Scope:
         Protocol= Type1 if  Type1 in self.PROTOCOL_NAMES else Type2
         return self.TypeIsProtocol(Type,Protocol)
     
-    def LastCommonAncestor(Posibilitys):
+    def CommonAncestor(self,type1:str,type2:str):
+        Ancestors=set()
+        aux=type1
+        while aux!='':
+            if aux not in self.TYPE_NAMES:
+                return 'Object'
+            Ancestors.add(aux)
+            aux=self.TYPE_HIERARCHY[aux]
+        aux=type2
+        while aux!='Object':
+            if aux in Ancestors:
+                return aux
+            aux=self.TYPE_HIERARCHY[aux]
         return 'Object'
+
+    def LastCommonAncestor(self,Posibilitys:list[str]):
+        #Empty list, return object
+        if len(Posibilitys)==0:
+            return 'Object'
+        #Only one element: return that element
+        if len(Posibilitys)==1:
+            return Posibilitys[0]
+        #With two elements, call the function above
+        if len(Posibilitys)==2:
+            self.CommonAncestor(Posibilitys[0],Posibilitys[1])
+        #More than two elements, call the function above between the recursive calls
+        Frist_Half_Common_Ancestor=self.LastCommonAncestor(Posibilitys[:len(Posibilitys)//2])
+        Second_Half_Common_Ancestor=self.LastCommonAncestor(Posibilitys[len(Posibilitys)//2:])
+        return self.CommonAncestor(Frist_Half_Common_Ancestor , Second_Half_Common_Ancestor)
 #----------------------------------------------------------------------------
