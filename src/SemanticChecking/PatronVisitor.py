@@ -147,7 +147,6 @@ class SemanticCheckerVisitor(object):
         [self.visit(x,scope) for x in node.PARAMETERS]
         #--------------------------------------------------------------------
         return self.errors
-#_______________________________________________________________________________________        
 
     @visitor.when(ParameterNode)
     def visit(self, node:ParameterNode, scope:Scope=None): # ✔️✔️
@@ -208,9 +207,10 @@ class SemanticCheckerVisitor(object):
             map(lambda x:new_scope.AddVariable(x.NAME,x.TYPE),node.CONSTRUCTOR)
             if not 'self' in [x.NAME for x in node.CONSTRUCTOR]:
                 #scope for atributes and functions
-                new_scope.AddVariable('scope',node.NAME)
+                new_scope.AddVariable('self',node.NAME)
             new_scope=new_scope.CreateChild('self')
-            scope.AddTypeFunctions([ProtocolMethodNode(x.NAME,x.PARAMETERS,x.TYPE) for x in node.CORPUS if type(x) is FunctionNode])
+            new_scope.ON_TYPE=True #for self.Something
+            scope.AddTypeFunctions(node.NAME,[ProtocolMethodNode(x.NAME,x.PARAMETERS,x.TYPE) for x in node.CORPUS if type(x) is FunctionNode])
         #-----------------------------------------------------------------------
             #VISITING ALL CHILDREN ✔️
         #--------------------------------------------------------------------
@@ -224,7 +224,6 @@ class SemanticCheckerVisitor(object):
                     for x in node.CORPUS if type(x) is FunctionNode]
         #--------------------------------------------------------------------    
         return self.errors
-#_______________________________________________________________________________________  
 
     @visitor.when(TypeAtributeNode)
     def visit(self, node:TypeAtributeNode, scope:Scope=None):#✔️     
@@ -278,14 +277,15 @@ class SemanticCheckerVisitor(object):
         #--------------------------------------------------------------------
         return self.errors
 
-#_______________________________________________________________________________________  SS
+#_______________________________________________________________________________________
 #_______________________________________________________________________________________  
 #_______________________________________________________________________________________  
         
     @visitor.when(ExpressionBlockNode)
-    def visit(self, node:ExpressionBlockNode, scope:Scope=None): #✔️  
+    def visit(self, node:ExpressionBlockNode, scope:Scope=None): #✔️✔️  
         for Expression in node.EXPRESSIONS:
             self.visit(Expression,scope)
+        node.VALUE_TYPE=node.EXPRESSIONS[-1].VALUE_TYPE
         return self.errors
 #_______________________________________________________________________________________  
 #_______________________________________________________________________________________  
@@ -297,10 +297,10 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(LetNode)
     #DEFINING VARIABLE
-    def visit(self, node:LetNode, scope:Scope=None): #✔️  
+    def visit(self, node:LetNode, scope:Scope=None): #✔️✔️  
         #Checking the assigned expression
         self.visit(node.VAR_VALUES[0],scope)
-        ValueType=node.VALUE_TYPE
+        ValueType=node.VAR_VALUES[0].VALUE_TYPE
         #Checking the parameter
         self.visit(node.VARS[0],scope)
         #Checking compatibility
@@ -316,18 +316,29 @@ class SemanticCheckerVisitor(object):
             self.visit(Simplest_node,new_scope)
         else:
             self.visit(node.EXPRESSION,new_scope)
-        node.VALUE_TYPE=node.VALUE_TYPE
+        node.VALUE_TYPE=node.EXPRESSION.VALUE_TYPE
         return self.errors
     
     @visitor.when(DestructiveExpression)
     #REPLACES A VALUE
-    def visit(self, node:DestructiveExpression, scope:Scope=None):
+    def visit(self, node:DestructiveExpression, scope:Scope=None):#✔️
         if not scope.IsVariableDefined(node.NAME):
             self.errors.append(f"{node.NAME} doesn't exist in the current context")
         #A modificar
-        if node.NAME=='scope':
+        if node.NAME=='self':
             self.errors.append(f"{node.NAME} can't be destroyed")
         self.visit(node.EXPRESSION,scope)    
+        node.VALUE_TYPE=node.EXPRESSION.VALUE_TYPE
+        return self.errors
+    
+    @visitor.when(SelfDestructiveExpression)
+    #REPLACES A VALUE FOR A TYPE ATTRIBUTE
+    def visit(self, node:SelfDestructiveExpression, scope:Scope=None):#✔️✔️
+        self.visit(node.VAR,scope)
+        #A modificar
+        self.visit(node.EXPRESSION,scope)    
+        if not scope.AreRelated(node.VAR.VALUE_TYPE, node.EXPRESSION):
+            self.errors.append(f"You cannot change the variable type")
         node.VALUE_TYPE=node.EXPRESSION.VALUE_TYPE
         return self.errors
     
@@ -337,6 +348,8 @@ class SemanticCheckerVisitor(object):
         #Checking the type
         if not scope.IsTypeDefined(node.NAME):
             self.errors.append(f"The {node.NAME} type doesn't exist in the current context")
+            node.VALUE_TYPE='Object'
+            return self.errors
         #Getting the constructors
         Constructor=scope.SearchTypeParameters(node.NAME)
         if len(Constructor)!=len(node.ARGS):
@@ -344,10 +357,12 @@ class SemanticCheckerVisitor(object):
         #Visiting the arguments
         for i in len(Constructor):
             self.visit(node.ARGS[i])
-            if not scope.AreRelated(node.ARGS[i].VALUE_TYPE,Constructor[i].TYPE):
-                self.errors.append(f"Expected type {Constructor[i].TYPE} instead of {node.ARGS[i].VALUE_TYPE}")
+            try:
+                if not scope.AreRelated(node.ARGS[i].VALUE_TYPE,Constructor[i].TYPE):
+                    self.errors.append(f"Expected type {Constructor[i].TYPE} instead of {node.ARGS[i].VALUE_TYPE}")
+            except:
+                continue
         node.VALUE_TYPE=node.NAME
-
         return self.errors
 
 #_______________________________________________________________________________________  
@@ -357,7 +372,7 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(IfElseExpression)
     #CONDITIONALS
-    def visit(self, node:IfElseExpression, scope:Scope=None): #✔️  
+    def visit(self, node:IfElseExpression, scope:Scope=None): #✔️✔️  
         #First check if the conditions are bool
         for i in range(len(node.CONDITIONS)):
             self.visit(node.CONDITIONS[i],scope)
@@ -386,7 +401,7 @@ class SemanticCheckerVisitor(object):
 
     @visitor.when(forNode)
     #FOR CYCLE
-    def visit(self, node:forNode, scope:Scope=None): #✔️✔️  
+    def visit(self, node:forNode, scope:Scope=None): #✔️
         #First check if the condition is bool
         self.visit(node.COLECTION,scope)        
         if scope.AreRelated(node.COLECTION.VALUE_TYPE,'Iterable'):
@@ -485,14 +500,17 @@ class SemanticCheckerVisitor(object):
     @visitor.when(NumberNode)#NUMBER
     def visit(self, node, scope:Scope=None): #✔️✔️
         node.VALUE_TYPE='Number'
+        return self.errors
     
     @visitor.when(BooleanNode)#BOOLEAN
     def visit(self, node, scope:Scope=None): #✔️✔️
         node.VALUE_TYPE='Boolean'
+        return self.errors
     
     @visitor.when(StringNode)#STRING
     def visit(self, node, scope:Scope=None): #✔️✔️
         node.VALUE_TYPE='String'
+        return self.errors
 
     @visitor.when(Variable)
     def visit(self, node:Variable, scope:Scope=None): #✔️✔️
@@ -500,6 +518,7 @@ class SemanticCheckerVisitor(object):
         if not scope.IsVariableDefined(node.NAME):
             self.errors.append(f"{node.NAME} doesn't exist in the current context")
         node.VALUE_TYPE=scope.VariableType(node.NAME)
+        return self.errors
     
     @visitor.when(asNode)
     def visit(self, node:asNode, scope:Scope=None): #✔️✔️
@@ -515,11 +534,11 @@ class SemanticCheckerVisitor(object):
         return self.errors
 #______________________________________________________________________________
 #------------------------------------------------------------------------------
-    #FUNCTION CALLS  
+    #FUNCTION CALLS AND CLASS PROPERTY CALLS
 #------------------------------------------------------------------------------ 
     
     @visitor.when(FunctionCallNode)
-    def visit(self, node:FunctionCallNode, scope:Scope=None): #✔️
+    def visit(self, node:FunctionCallNode, scope:Scope=None): #✔️✔️
         #Searching the function
         function=scope.SearhFunction(node.FUNCT)
         if function==None:
@@ -556,6 +575,23 @@ class SemanticCheckerVisitor(object):
                 if not scope.AreRelated(node.ARGS[i].VALUE_TYPE,function.PARAMETERS[i].TYPE):
                     self.errors.append(f"Expected type {function.PARAMETERS[i].TYPE} instead of {node.ARGS[i].VALUE_TYPE}")
             node.VALUE_TYPE=function.TYPE
+        return self.errors
+
+    @visitor.when(SelfVariableNode)#✔️✔️
+    #THIS NODE IS ONLY FOR THE CASE self.ATRIBUTE
+    def visit(self, node:SelfVariableNode, scope:Scope=None):
+        Variables=scope.TypeAtributes()
+        #If the left expression is not self, Error
+        #If this node is not inside a type, Error
+        if Variables==None or not node.IS_SELF:
+            self.errors.append('Attributes are private')
+            node.VALUE_TYPE='Object'
+        #If the name is not an attribute, Error
+        elif node.NAME not in [x[0] for x in Variables]:
+            self.errors.append(f'{node.NAME} is not defined in the current context')
+            node.VALUE_TYPE='Object'
+        else:
+            node.VALUE_TYPE=[x[1] for x in Variables if x[0]==node.NAME][0]
         return self.errors
 #______________________________________________________________________________
 #------------------------------------------------------------------------------

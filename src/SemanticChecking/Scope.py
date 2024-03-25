@@ -15,7 +15,7 @@ class Scope:
         self.TYPE_FUNCTIONS=dict()  #Remember all the methods of a Type
         self.TYPE_HIERARCHY=dict()  #Remember the hierarchy for types
         self.CONSTRUCTORS=dict()  #Remember the constructor for every class
-
+        self.ON_TYPE=False #For self.something
 #----------------------------------------------------------------------------
     #MANAGE THE TYPES OF THE SCOPE
 #----------------------------------------------------------------------------
@@ -112,6 +112,14 @@ class Scope:
             return 'Object'
         return self.PARENT.VariableType(name)
     
+    def TypeAtributes(self):
+    #RETURNS THE ATRIBUTES OF THE CURRENT TYPE
+        if self.ON_TYPE:
+            return self.VARS
+        if self.PARENT==None:
+            return None
+        return self.PARENT.TypeAtributes()
+    
 #----------------------------------------------------------------------------
     #MANAGE THE FUNCTIONS OF THE SCOPE
 #----------------------------------------------------------------------------
@@ -146,36 +154,16 @@ class Scope:
             return None
         return self.PARENT.SearhFunction(self,name,OnType)
     
-    def ExtendedSearch(self,type_name):
-    #RETURN THE FUNCTIONS FROM THE TYPE OR HIS DESCENDENTS
+    def ExtendedSearch(self,type_name:str):
+    #RETURN THE FUNCTIONS FROM THE TYPE
         #First check the Functions from itself or his ancestors
         x=type_name
-        visited=set()
         while x!='Object':
             if x not in self.TYPE_NAMES:
                 return
             for f in self.TYPE_FUNCTIONS[x]:
                 yield f
-            visited.add(x)
             x=self.TYPE_HIERARCHY[x]
-        #Now checking if the method belongs to one of the descendents
-        #Reverting the hierarchy tree
-        Hierarchy_Tree=dict()
-        for type in self.TYPE_NAMES:
-            if self.TYPE_HIERARCHY[type] in Hierarchy_Tree.keys:
-                Hierarchy_Tree[self.TYPE_HIERARCHY[type]].append(type)
-            else:
-                Hierarchy_Tree[self.TYPE_HIERARCHY[type]]=[type]
-        #Returning the descendents functions
-        queque=[type_name]
-        while len(queque)!=0:
-            x=queque.pop()
-            if x not in self.TYPE_NAMES:
-                return
-            for f in self.TYPE_FUNCTIONS[x]:
-                yield f
-            if x in Hierarchy_Tree.keys():
-                queque=Hierarchy_Tree[x]+queque
 #----------------------------------------------------------------------------
     #MANAGE THE SCOPES
 #----------------------------------------------------------------------------
