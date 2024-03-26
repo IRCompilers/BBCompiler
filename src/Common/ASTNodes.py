@@ -18,6 +18,7 @@ from typing import List, Union
             -LetNode
             -IfElseExpression
             -DestructiveExpression
+            -SelfDestructiveExpression
             -whileNode
             -forNode
             -newNode
@@ -35,6 +36,7 @@ from typing import List, Union
             -StringNode
             -BooleanNode
             -Variable
+            -SelfVariableNode
             -FunctionCallNode
             -TypeFunctionCallNode
             -ListNode
@@ -101,8 +103,8 @@ class TypeAtributeNode(node):
     '''
         This is an atribute of a class. It has a name and a value from a expression
     '''
-    def __init__(self,name:str,value:ExpressionNode):
-        self.NAME=name
+    def __init__(self,param:ParameterNode,value:ExpressionNode):
+        self.VAR=param
         self.VALUE=value
 				
 
@@ -192,7 +194,27 @@ class DestructiveExpression(SimpleExpressionNode):
         self.NAME=name
         self.EXPRESSION=expression
         self.VALUE_TYPE='Object'
+
+class SelfVariableNode(SimpleExpressionNode):
+    '''
+        The call of an atribute inside a class
+    '''
+    def __init__(self,is_self:bool,name:str):
+        self.IS_SELF=is_self
+        self.NAME=name
+        self.VALUE_TYPE='Object'
+
+
+class SelfDestructiveExpression(SimpleExpressionNode):
+    '''
+        This is contains the semantic for := operator on the case that is for an attribute of a type
+    '''
+    def __init__(self,var:SelfVariableNode,expression:SimpleExpressionNode):
+        self.VAR=var
+        self.EXPRESSION=expression
+        self.VALUE_TYPE='Object'
 				
+
 class whileNode(SimpleExpressionNode):
     '''
         Has the semantic for a while cicle. Contains the condition and the expressions
