@@ -103,8 +103,8 @@ class TypeAtributeNode(node):
     '''
         This is an atribute of a class. It has a name and a value from a expression
     '''
-    def __init__(self,name:str,value:ExpressionNode):
-        self.NAME=name
+    def __init__(self,param:ParameterNode,value:ExpressionNode):
+        self.VAR=param
         self.VALUE=value
 				
 

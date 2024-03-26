@@ -15,7 +15,7 @@ class Scope:
         self.TYPE_FUNCTIONS=dict()  #Remember all the methods of a Type
         self.TYPE_HIERARCHY=dict()  #Remember the hierarchy for types
         self.CONSTRUCTORS=dict()  #Remember the constructor for every class
-        self.ON_TYPE=False #For self.something
+        self.SELF_ACTIVE=False if parent is None else parent.SELF_ACTIVE #To avoid self:=...
 #----------------------------------------------------------------------------
     #MANAGE THE TYPES OF THE SCOPE
 #----------------------------------------------------------------------------
@@ -87,6 +87,8 @@ class Scope:
     #DEFINE A VARIABLE FOR A SCOPE
     def AddVariable(self,name:str,type:str)->None:
         self.VARS.append((name,type))
+        if name == 'self':
+            self.SELF_ACTIVE=False
     
     def IsVariableDefined(self,name:str)->bool:
     #RETURN TRUE IF THE VARIABLE WAS IN THE SCOPE OR IN A FATHER SCOPE
@@ -96,9 +98,9 @@ class Scope:
             return False
         return self.PARENT.IsVariableDefined(name)
     
-    def UpdateVariableValue(self,name:str,type:str)->None:
+    def UnlockVariables(self)->None:
     #USED TO INFER THE TYPE
-        self.VARS=[x if name!=x[0] else (name,type) for x in self.VARS]
+        self.VARS=[(x[0][1:],x[1]) for x in self.VARS if x[0][0]==' ']
     
     def RemoveVariable(self,name:str,type:str)->None:
     #AVOID A=A IN TYPE ATRIBUTES
@@ -112,21 +114,16 @@ class Scope:
             return 'Object'
         return self.PARENT.VariableType(name)
     
-    def TypeAtributes(self):
-    #RETURNS THE ATRIBUTES OF THE CURRENT TYPE
-        if self.ON_TYPE:
-            return self.VARS
-        if self.PARENT==None:
-            return None
-        return self.PARENT.TypeAtributes()
-    
 #----------------------------------------------------------------------------
     #MANAGE THE FUNCTIONS OF THE SCOPE
 #----------------------------------------------------------------------------
     def AddFunctions(self,method:ProtocolMethodNode)->None:
     #SAVE A FUNCTION NAME, AND PARAMS
         self.FUNCTIONS.append(method)
-    
+    def RemoveFunction(self,method:str):
+    #REMOVE A FUNCTION
+        self.FUNCTIONS=[x for x in self.FUNCTIONS if x.NAME==method]
+
     def FunctionVisited(self,name:str)->bool:
     #ALLOWS TO VISIT A METHOD TWICE, (only for program node)
         if name in self.VISITED_FUNCTIONS:
@@ -145,7 +142,7 @@ class Scope:
                 return None
             return self.PARENT.SearhFunction(name,'')
         #Type case, searching. The search extends for all possible class hierarchy
-        if name in self.TYPE_NAMES:
+        if OnType in self.TYPE_NAMES:
             for funct in self.ExtendedSearch(OnType):
                 if funct.NAME==name:
                     return funct

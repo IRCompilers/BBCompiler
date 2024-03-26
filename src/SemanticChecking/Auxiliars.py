@@ -22,7 +22,7 @@ def AddBasicInfo(scope:Scope):
     scope.AddTypeFunctions('Number',[FunctionNode('ToString',[],None,'String'),
                 FunctionNode('CompareTo',[ParameterNode('element','Number')],None,'Object')])
     scope.AddTypeFunctions('Vector', [FunctionNode('next',[],None,'Boolean'),
-                FunctionNode('current',[],None,'Object')])
+                FunctionNode('current',[],None,'Object'),FunctionNode('size',[],None,'Number')])
     
     scope.AddTypeParameters('Object',[])
     scope.AddTypeParameters('Number',[])
