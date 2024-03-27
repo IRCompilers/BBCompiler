@@ -113,8 +113,8 @@ class InterpretVisitor:
         self.visit(node.EXPRESSION,context)
         context.edit_variable(node.VAR.NAME,self.last_value_returned)
 
-    @Visitor.when(whileNode)
-    def visit(self, node:whileNode, context: CodeContext):
+    @Visitor.when(WhileNode)
+    def visit(self, node:WhileNode, context: CodeContext):
         self.visit(node.CONDITIONS,context)
         while(self.last_value_returned):
             self.visit(node.EXPRESSION,context)
@@ -122,8 +122,8 @@ class InterpretVisitor:
             self.visit(node.CONDITIONS,context)
         self.last_value_returned=returnValue
 
-    @Visitor.when(forNode)
-    def visit(self, node:forNode, context: CodeContext):
+    @Visitor.when(ForNode)
+    def visit(self, node:ForNode, context: CodeContext):
         #modificar: para aquello que sea iterable
         self.visit(node.COLECTION,context)
         collection=self.last_value_returned

@@ -420,9 +420,9 @@ class SemanticCheckerVisitor(object):
         node.VALUE_TYPE = scope.LastCommonAncestor(PossibleValueReturns)
         return self.errors
 
-    @visitor.when(whileNode)
+    @visitor.when(WhileNode)
     # WHILE CYCLE
-    def visit(self, node: whileNode, scope: Scope = None):  # ✔️✔️
+    def visit(self, node: WhileNode, scope: Scope = None):  # ✔️✔️
         # Check if the condition is bool
         self.visit(node.CONDITIONS, scope)
         if node.CONDITIONS.VALUE_TYPE not in ['Boolean', 'Object']:
@@ -432,9 +432,9 @@ class SemanticCheckerVisitor(object):
         node.VALUE_TYPE = node.EXPRESSION.VALUE_TYPE
         return self.errors
 
-    @visitor.when(forNode)
+    @visitor.when(ForNode)
     # FOR CYCLE
-    def visit(self, node: forNode, scope: Scope = None):  # ✔️
+    def visit(self, node: ForNode, scope: Scope = None):  # ✔️
         # First check if the condition is bool
         self.visit(node.COLECTION, scope)
         if scope.AreRelated(node.COLECTION.VALUE_TYPE, 'Iterable'):

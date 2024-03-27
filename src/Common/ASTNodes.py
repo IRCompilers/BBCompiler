@@ -215,7 +215,7 @@ class SelfDestructiveExpression(SimpleExpressionNode):
         self.VALUE_TYPE='Object'
 				
 
-class whileNode(SimpleExpressionNode):
+class WhileNode(SimpleExpressionNode):
     '''
         Has the semantic for a while cicle. Contains the condition and the expressions
     '''
@@ -224,7 +224,7 @@ class whileNode(SimpleExpressionNode):
         self.EXPRESSION=expression
         self.VALUE_TYPE='Object'
 
-class forNode(SimpleExpressionNode):
+class ForNode(SimpleExpressionNode):
     '''
         Has the semantic for a for cicle. Contains the colection, the iterator and the expressions
     '''

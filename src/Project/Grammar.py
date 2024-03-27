@@ -113,8 +113,8 @@ expression_block %= expression_block + expression, lambda h, s: s[1] + s[2]
 simple_expression %= let + declaration + in_ + expression, lambda h, s: LetNode(s[2].variables, s[2].variables_values, s[3])
 simple_expression %= identifier + destruct + simple_expression, lambda h, s: DestructiveExpression(s[1], s[3])
 simple_expression %= if_ + if_block + else_block, lambda h, s: s[2] + s[3]
-simple_expression %= while_ + lparen + simple_expression + rparen + expression, lambda h, s: whileNode(s[3], s[5])
-simple_expression %= for_ + lparen + identifier + in_ + simple_expression + rparen + expression, lambda h, s: forNode(s[3], s[5], s[7])
+simple_expression %= while_ + lparen + simple_expression + rparen + expression, lambda h, s: WhileNode(s[3], s[5])
+simple_expression %= for_ + lparen + identifier + in_ + simple_expression + rparen + expression, lambda h, s: ForNode(s[3], s[5], s[7])
 simple_expression %= new + identifier + arguments, lambda h, s: NewNode(s[2], s[3])
 simple_expression %= disjunction, lambda h, s: s[1]
 #
