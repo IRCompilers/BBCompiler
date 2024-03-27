@@ -404,6 +404,28 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
 
         self.assertEqual(result, ['Flyable expression was expected instead of Bird'])
 
+    def test_variables_in_different_context(self):
+        scope = Scope()
+
+        # Define a LetNode in the 'if' branch
+        let_if = LetNode([ParameterNode("a", "Number")], [NumberNode(5)], NumberNode(5))
+
+        # Define a LetNode in the 'else' branch that tries to use 'a' from the 'if' branch
+        let_else = LetNode([ParameterNode("b", "Number")], [NumberNode(6)],
+                           ArithmeticExpression("+", VariableNode("a"), VariableNode("b")))
+
+        # Define an IfElseExpression with the LetNodes
+        if_else_expression = IfElseExpression([BooleanNode(True)], [let_if, let_else])
+
+        # Define a ProgramNode with the IfElseExpression
+        node = ProgramNode([], if_else_expression)
+
+        # Visit the node with the SemanticCheckerVisitor
+        result = self.visitor.visit(node, scope)
+
+        # Assert that the result is an error message indicating that 'a' doesn't exist in the current context
+        self.assertEqual(result, ["The a variable doesn't exist in the current context"])
+
     def test_is_expression(self):
         scope = Scope()
 
