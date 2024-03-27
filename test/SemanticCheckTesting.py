@@ -21,28 +21,28 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         self.assertEqual(result, [])
 
     def test_print_with_type_mismatch(self):
-        node = ProgramNode([], AritmethicExpression("+", NumberNode(2), StringNode("hello")))
+        node = ProgramNode([], ArithmeticExpression("+", NumberNode(2), StringNode("hello")))
         scope = Scope()
         result = self.visitor.visit(node, scope)
         self.assertEqual(result, ['Number expression was expected instead of String'])
 
     def test_function_decl_correct(self):
         scope = Scope()
-        sum_of_squares = AritmethicExpression(operation="+",
-                                              left=AritmethicExpression("*", VariableNode("a"), VariableNode("a")),
-                                              right=AritmethicExpression("*", VariableNode("b"), VariableNode("b")))
+        sum_of_squares = ArithmeticExpression(operation="+",
+                                              left=ArithmeticExpression("*", VariableNode("a"), VariableNode("a")),
+                                              right=ArithmeticExpression("*", VariableNode("b"), VariableNode("b")))
         function = FunctionNode(name="sumOfSquares",
                                 parameters=[ParameterNode("a", type="Number"), ParameterNode("b", type="Number")],
                                 corpus=sum_of_squares, type="Number")
 
-        node = ProgramNode([function], AritmethicExpression(" + ", NumberNode(2), NumberNode(2)))
+        node = ProgramNode([function], ArithmeticExpression(" + ", NumberNode(2), NumberNode(2)))
         result = self.visitor.visit(node, scope)
         self.assertEqual(result, [])
 
     def test_let_correct(self):
         scope = Scope()
         let_ = LetNode([ParameterNode("a", "Number")], [NumberNode(2)],
-                       AritmethicExpression("+", VariableNode("a"), NumberNode(2)))
+                       ArithmeticExpression("+", VariableNode("a"), NumberNode(2)))
 
         node = ProgramNode([], let_)
         result = self.visitor.visit(node, scope)
@@ -50,9 +50,9 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
 
     def test_let_type_missmatch(self):
         scope = Scope()
-        params = [StringNode("temp")]
+        params = [StringNode("true")]
         let_ = LetNode([ParameterNode("a", "Number")], [FunctionCallNode("print", params)],
-                       AritmethicExpression("+", VariableNode("a"), NumberNode(2)))
+                       ArithmeticExpression("+", VariableNode("a"), NumberNode(2)))
 
         node = ProgramNode([], let_)
         result = self.visitor.visit(node, scope)
@@ -69,9 +69,9 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
 
     def test_let_func_call_type_mismatch(self):
         scope = Scope()
-        sum_of_squares = AritmethicExpression(operation="+",
-                                              left=AritmethicExpression("*", VariableNode("a"), VariableNode("a")),
-                                              right=AritmethicExpression("*", VariableNode("b"), VariableNode("b"))
+        sum_of_squares = ArithmeticExpression(operation="+",
+                                              left=ArithmeticExpression("*", VariableNode("a"), VariableNode("a")),
+                                              right=ArithmeticExpression("*", VariableNode("b"), VariableNode("b"))
                                               )
         function = FunctionNode(name="sumOfSquares",
                                 parameters=[ParameterNode("a", type="Number"), ParameterNode("b", type="Number")],
@@ -182,6 +182,53 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         node = ProgramNode([type_], expression_block)
         result = self.visitor.visit(node, scope)
         self.assertEqual(result, ["The Person type doesn't have a definition for not_greet"])
+
+    def test_for_node_correct(self):
+        scope = Scope()
+        for_node = ForNode("i", FunctionCallNode("range", [NumberNode(0), NumberNode(10)]), NumberNode(1))
+        node = ProgramNode([], for_node)
+        result = self.visitor.visit(node, scope)
+        self.assertEqual(result, [])
+
+    def test_for_node_incorrect(self):
+        scope = Scope()
+        expression_block = ExpressionBlockNode([NewNode("Person", [StringNode("John")]), VariableNode("j")])
+        for_node = ForNode("i", FunctionCallNode("range", [NumberNode(0), StringNode(10)]), expression_block)
+        node = ProgramNode([], for_node)
+        result = self.visitor.visit(node, scope)
+        self.assertEqual(result, ['Number expression was expected instead of String',
+                                  "The Person type doesn't exist in the current context",
+                                  "The j variable doesn't exist in the current context"])
+
+    def test_while_node_correct(self):
+        scope = Scope()
+
+        destructive_expr = DestructiveExpression("i", ArithmeticExpression("+", VariableNode("i"), NumberNode(1)))
+        expr_block_1 = ExpressionBlockNode([FunctionCallNode("print", [VariableNode("i")]), destructive_expr])
+        while_ = WhileNode(ComparationExpression("<", VariableNode("i"), NumberNode(10)), expr_block_1)
+
+        expr_block_2 = ExpressionBlockNode([while_])
+        let_ = LetNode([ParameterNode("i", "Number")], [NumberNode(0)], expr_block_2)
+        node = ProgramNode([], let_)
+
+        result = self.visitor.visit(node, scope)
+        self.assertEqual(result, [])
+
+    def test_while_node_incorrect(self):
+        scope = Scope()
+
+        destructive_expr = DestructiveExpression("i", ArithmeticExpression("+", VariableNode("i"), NumberNode(1)))
+        expr_block_1 = ExpressionBlockNode([FunctionCallNode("printp", [VariableNode("j")]), destructive_expr])
+        while_ = WhileNode(ComparationExpression("<", VariableNode("i"), StringNode(10)), expr_block_1)
+
+        expr_block_2 = ExpressionBlockNode([while_])
+        let_ = LetNode([ParameterNode("i", "Number")], [NumberNode(0)], expr_block_2)
+        node = ProgramNode([], let_)
+
+        result = self.visitor.visit(node, scope)
+        self.assertEqual(result, ['Number expression was expected instead of String',
+                                  "The printp function doesn't exist in the current context",
+                                  "The j variable doesn't exist in the current context"])
 
 
 
