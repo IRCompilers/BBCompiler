@@ -1,4 +1,4 @@
-from Common.ASTNodes import *
+from src.Common.ASTNodes import *
 
 class Scope:
     def __init__(self, parent=None):
