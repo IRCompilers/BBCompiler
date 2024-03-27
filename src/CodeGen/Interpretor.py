@@ -125,7 +125,7 @@ class InterpretVisitor:
     @Visitor.when(ForNode)
     def visit(self, node:ForNode, context: CodeContext):
         #modificar: para aquello que sea iterable
-        self.visit(node.COLECTION,context)
+        self.visit(node.COLLECTION, context)
         collection=self.last_value_returned
         for_context=CodeContext(context)
         for_context.def_variable(node.NAME,None)

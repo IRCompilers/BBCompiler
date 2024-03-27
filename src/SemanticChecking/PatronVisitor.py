@@ -436,8 +436,8 @@ class SemanticCheckerVisitor(object):
     # FOR CYCLE
     def visit(self, node: ForNode, scope: Scope = None):  # ✔️
         # First check if the condition is bool
-        self.visit(node.COLECTION, scope)
-        if scope.AreRelated(node.COLECTION.VALUE_TYPE, 'Iterable'):
+        self.visit(node.COLLECTION, scope)
+        if scope.AreRelated(node.COLLECTION.VALUE_TYPE, 'Iterable'):
             self.errors.append(f'Collection was expected')
         # Defining the variable
         new_scope = scope.CreateChild('for expression')
