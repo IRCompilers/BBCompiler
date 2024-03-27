@@ -178,7 +178,7 @@ pow_ %= pow_ + power_asterisk + high_hierarchy_object, lambda h, s: ArithmeticEx
 pow_ %= pow_ + power + high_hierarchy_object, lambda h, s: ArithmeticExpression(s[2], s[1], s[3])
 #
 high_hierarchy_object %= object_exp, lambda h, s: s[1]
-high_hierarchy_object %= high_hierarchy_object + as_ + object_exp, lambda h, s: asNode(s[1], s[3])
+high_hierarchy_object %= high_hierarchy_object + as_ + object_exp, lambda h, s: AsNode(s[1], s[3])
 #
 object_exp %= lparen + simple_expression + rparen, lambda h, s: s[2]
 object_exp %= number, lambda h, s: NumberNode(s[1])

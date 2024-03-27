@@ -276,8 +276,8 @@ class InterpretVisitor:
         self.visit(node.COLLECTION,context)
         self.last_value_returned=self.last_value_returned[i]
     
-    @Visitor.when(asNode)#Implementar
-    def visit(self,node:asNode,context: CodeContext):
+    @Visitor.when(AsNode)#Implementar
+    def visit(self, node:AsNode, context: CodeContext):
         self.visit(node.EXPRESSION,context)
 
 # Test the above

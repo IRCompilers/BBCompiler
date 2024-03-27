@@ -345,7 +345,7 @@ class ArithmeticExpression(SimpleExpressionNode):
         self.VALUE_TYPE = 'Object'
 
 
-class asNode(SimpleExpressionNode):
+class AsNode(SimpleExpressionNode):
     '''
         as operator
     '''

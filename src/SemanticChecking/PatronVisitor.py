@@ -554,8 +554,8 @@ class SemanticCheckerVisitor(object):
         node.VALUE_TYPE = scope.VariableType(node.NAME)
         return self.errors
 
-    @visitor.when(asNode)
-    def visit(self, node: asNode, scope: Scope = None):  # ✔️✔️
+    @visitor.when(AsNode)
+    def visit(self, node: AsNode, scope: Scope = None):  # ✔️✔️
         # Casting operation
         # Checking if the type exist
         if not scope.IsTypeDefined(node.TYPE):
