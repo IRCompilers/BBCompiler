@@ -56,7 +56,7 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
 
         node = ProgramNode([], let_)
         result = self.visitor.visit(node, scope)
-        self.assertEqual(result, ['Number expression was expected instead of void'])
+        self.assertEqual(result, ['Number expression was expected instead of object'])
 
     def test_let_func_call_no_decl(self):
         scope = Scope()
