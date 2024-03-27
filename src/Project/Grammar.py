@@ -113,8 +113,8 @@ expression_block %= expression_block + expression, lambda h, s: s[1] + s[2]
 simple_expression %= let + declaration + in_ + expression, lambda h, s: LetNode(s[2].variables, s[2].variables_values, s[3])
 simple_expression %= identifier + destruct + simple_expression, lambda h, s: DestructiveExpression(s[1], s[3])
 simple_expression %= if_ + if_block + else_block, lambda h, s: s[2] + s[3]
-simple_expression %= while_ + lparen + simple_expression + rparen + expression, lambda h, s: whileNode(s[3], s[5])
-simple_expression %= for_ + lparen + identifier + in_ + simple_expression + rparen + expression, lambda h, s: forNode(s[3], s[5], s[7])
+simple_expression %= while_ + lparen + simple_expression + rparen + expression, lambda h, s: WhileNode(s[3], s[5])
+simple_expression %= for_ + lparen + identifier + in_ + simple_expression + rparen + expression, lambda h, s: ForNode(s[3], s[5], s[7])
 simple_expression %= new + identifier + arguments, lambda h, s: NewNode(s[2], s[3])
 simple_expression %= disjunction, lambda h, s: s[1]
 #
@@ -159,26 +159,26 @@ concatenation %= arithmetic_expression + concat_space + concatenation, lambda h,
 #
 
 arithmetic_expression %= module, lambda h, s: s[1]
-arithmetic_expression %= arithmetic_expression + plus + module, lambda h, s: AritmethicExpression(s[2], s[1], s[3])
-arithmetic_expression %= arithmetic_expression + minus + module, lambda h, s: AritmethicExpression(s[2], s[1], s[3])
+arithmetic_expression %= arithmetic_expression + plus + module, lambda h, s: ArithmeticExpression(s[2], s[1], s[3])
+arithmetic_expression %= arithmetic_expression + minus + module, lambda h, s: ArithmeticExpression(s[2], s[1], s[3])
 
 module %= product, lambda h, s: s[1]
-module %= module + modulus + product, lambda h, s: AritmethicExpression(s[2], s[1], s[3])
+module %= module + modulus + product, lambda h, s: ArithmeticExpression(s[2], s[1], s[3])
 #
 product %= monomial, lambda h, s: s[1]
-product %= product + times + monomial, lambda h, s: AritmethicExpression(s[2], s[1], s[3])
-product %= product + divide + monomial, lambda h, s: AritmethicExpression(s[2], s[1], s[3])
-product %= product + int_divide + monomial, lambda h, s: AritmethicExpression(s[2], s[1], s[3])
+product %= product + times + monomial, lambda h, s: ArithmeticExpression(s[2], s[1], s[3])
+product %= product + divide + monomial, lambda h, s: ArithmeticExpression(s[2], s[1], s[3])
+product %= product + int_divide + monomial, lambda h, s: ArithmeticExpression(s[2], s[1], s[3])
 #
 monomial %= pow_, lambda h, s: s[1]
-monomial %= minus + monomial, lambda h, s: AritmethicExpression(s[1], NumberNode(0), s[2])
+monomial %= minus + monomial, lambda h, s: ArithmeticExpression(s[1], NumberNode(0), s[2])
 #
 pow_ %= high_hierarchy_object, lambda h, s: s[1]
-pow_ %= pow_ + power_asterisk + high_hierarchy_object, lambda h, s: AritmethicExpression(s[2], s[1], s[3])
-pow_ %= pow_ + power + high_hierarchy_object, lambda h, s: AritmethicExpression(s[2], s[1], s[3])
+pow_ %= pow_ + power_asterisk + high_hierarchy_object, lambda h, s: ArithmeticExpression(s[2], s[1], s[3])
+pow_ %= pow_ + power + high_hierarchy_object, lambda h, s: ArithmeticExpression(s[2], s[1], s[3])
 #
 high_hierarchy_object %= object_exp, lambda h, s: s[1]
-high_hierarchy_object %= high_hierarchy_object + as_ + object_exp, lambda h, s: asNode(s[1], s[3])
+high_hierarchy_object %= high_hierarchy_object + as_ + object_exp, lambda h, s: AsNode(s[1], s[3])
 #
 object_exp %= lparen + simple_expression + rparen, lambda h, s: s[2]
 object_exp %= number, lambda h, s: NumberNode(s[1])
@@ -190,7 +190,7 @@ object_exp %= identifier + arguments, lambda h, s: FunctionCallNode(s[1], s[2])
 object_exp %= object_exp + period + identifier, lambda h, s: ClassAtributeCallNode(s[1], s[3])
 object_exp %= object_exp + period + identifier + arguments, lambda h, s: ClassFunctionCallNode(s[1], s[3], s[4])
 object_exp %= lbrack + list_ + rbrack, lambda h, s: s[2]
-object_exp %= object_exp + lbrack + simple_expression + rbrack, lambda h, s: InexingNode(s[1], s[3])
+object_exp %= object_exp + lbrack + simple_expression + rbrack, lambda h, s: IndexingNode(s[1], s[3])
 object_exp %= print_ + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1], s[3])
 object_exp %= sin + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1], s[3])
 object_exp %= cos + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1], s[3])

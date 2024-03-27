@@ -113,8 +113,8 @@ class InterpretVisitor:
         self.visit(node.EXPRESSION,context)
         context.edit_variable(node.VAR.NAME,self.last_value_returned)
 
-    @Visitor.when(whileNode)
-    def visit(self, node:whileNode, context: CodeContext):
+    @Visitor.when(WhileNode)
+    def visit(self, node:WhileNode, context: CodeContext):
         self.visit(node.CONDITIONS,context)
         while(self.last_value_returned):
             self.visit(node.EXPRESSION,context)
@@ -122,10 +122,10 @@ class InterpretVisitor:
             self.visit(node.CONDITIONS,context)
         self.last_value_returned=returnValue
 
-    @Visitor.when(forNode)
-    def visit(self, node:forNode, context: CodeContext):
+    @Visitor.when(ForNode)
+    def visit(self, node:ForNode, context: CodeContext):
         #modificar: para aquello que sea iterable
-        self.visit(node.COLECTION,context)
+        self.visit(node.COLLECTION, context)
         collection=self.last_value_returned
         for_context=CodeContext(context)
         for_context.def_variable(node.NAME,None)
@@ -186,8 +186,8 @@ class InterpretVisitor:
         else:
             self.last_value_returned=left+right
 
-    @Visitor.when(AritmethicExpression)
-    def visit(self, node:AritmethicExpression, context: CodeContext):
+    @Visitor.when(ArithmeticExpression)
+    def visit(self, node:ArithmeticExpression, context: CodeContext):
         self.visit(node.LEFT, context)
         left=self.last_value_returned
         self.visit(node.RIGHT, context)
@@ -269,21 +269,21 @@ class InterpretVisitor:
             elements.append(self.last_value_returned)
         self.last_value_returned= elements
     
-    @Visitor.when(InexingNode)
-    def visit(self, node:InexingNode, context: CodeContext):
+    @Visitor.when(IndexingNode)
+    def visit(self, node:IndexingNode, context: CodeContext):
         self.visit(node.INDEX,context)
         i=self.last_value_returned
         self.visit(node.COLLECTION,context)
         self.last_value_returned=self.last_value_returned[i]
     
-    @Visitor.when(asNode)#Implementar
-    def visit(self,node:asNode,context: CodeContext):
+    @Visitor.when(AsNode)#Implementar
+    def visit(self, node:AsNode, context: CodeContext):
         self.visit(node.EXPRESSION,context)
 
 # Test the above
 par_node = ParameterNode("x", "int")
 second_par_node = ParameterNode("y", "int")
-plus_node = AritmethicExpression("+", Variable("x"), Variable("y"))
+plus_node = ArithmeticExpression("+", Variable("x"), Variable("y"))
 let_node = LetNode([par_node, second_par_node], [NumberNode(111), NumberNode(222)], plus_node)
 print_node = FunctionCallNode('print',[let_node])
 program = ProgramNode([], print_node)
