@@ -4,7 +4,6 @@ import src.Common.Visitor as visitor
 from src.SemanticChecking.Auxiliars import *
 from src.SemanticChecking.Scope import Scope
 
-
 class SemanticCheckerVisitor(object):
     def __init__(self):
         self.errors = []
@@ -89,7 +88,7 @@ class SemanticCheckerVisitor(object):
             self.visit(Function, scope)
 
         # visiting the classes in topologic order 2nd time
-        TypeQuickAccess = dict([(x.NAME, x.INHERITS) for x in node.STATEMENTS if type(x) is TypeNode])
+        TypeQuickAccess = dict([(x.NAME, x) for x in node.STATEMENTS if type(x) is TypeNode])
         for Type in TypeOrder:
             if Type in defaultTypes:
                 continue
@@ -169,7 +168,7 @@ class SemanticCheckerVisitor(object):
     @visitor.when(TypeNode)
     def visit(self, node: TypeNode, scope: Scope = None):  # ✔️
 
-        firstVisit = scope.TypeVisited(node.NAME)
+        firstVisit = not scope.TypeVisited(node.NAME)
         # --------------------------------------------------------------------
         # CHECKING POSSIBLE ERRORS IN TYPE NODE ✔️
         # --------------------------------------------------------------------
@@ -193,28 +192,27 @@ class SemanticCheckerVisitor(object):
             if EqualObjects(AtributeNames):
                 self.errors.append(f"A type can't have 2 atributes with the same name")
             # Avoiding duplicated functions
-            AtributeNames = [x for x in node.CORPUS if type(x) is FunctionNode]
+            AtributeNames = [x.NAME for x in node.CORPUS if type(x) is FunctionNode]
             if EqualObjects(AtributeNames):
-                self.errors.append(
-                    f"A type can't have 2 functions with the same name and the same amount of parameters")
+                self.errors.append(f"A type can't have 2 functions with the same name")
+
+        else:
             # checking that the inherit parameters amount match with the Arguments number
             parentParameters = scope.SearchTypeParameters(node.INHERITS)
             if len(parentParameters) != len(node.ARGUMENTS):
                 self.errors.append(f"Expected {len(parentParameters)} arguments instead of {len(node.ARGUMENTS)}")
-
-        else:
             # Checking that the argument match with the parameters
-            parentParameters = scope.SearchTypeParameters(node.INHERITS)
-            for i in len(parentParameters):
+            for i in range(len(parentParameters)):
                 self.visit(node.ARGUMENTS[i])
                 if not scope.AreRelated(node.ARGUMENTS[i].VALUE_TYPE, parentParameters[i].TYPE):
                     self.errors.append(
-                        f"Expected type {parentParameters[i].TYPE} instead of {node.ARGUMENTS[i].VALUE_TYPE}")
+                        f"{parentParameters[i].TYPE} expression was expected instead of {node.ARGUMENTS[i].VALUE_TYPE}")
         # --------------------------------------------------------------------
         # SAVING EVERY PIECE OF INFORMATION NEEDED IN SCOPE✔️
         # --------------------------------------------------------------------
         if firstVisit:
             # Scope for parameters and self atribute
+            scope.AddTypeParameters(node.NAME,node.CONSTRUCTOR)
             new_scope = scope.CreateChild(node.NAME)
             [new_scope.AddVariable(x.NAME, x.TYPE) for x in node.CONSTRUCTOR]
             new_scope.ON_TYPE = True  # for self.Something
@@ -240,6 +238,7 @@ class SemanticCheckerVisitor(object):
 
         # TYPE FUNCTIONS
         if firstVisit:
+            special_scope = scope.GetChild(node.NAME)
             [self.visit(x, special_scope) for x in node.CORPUS if type(x) is FunctionNode]
         else:
             special_scope.AddVariable('self', node.NAME)
@@ -257,16 +256,11 @@ class SemanticCheckerVisitor(object):
     def visit(self, node: TypeAtributeNode, scope: Scope = None):  # ✔️
         # Define the variable on first visit
         self.visit(node.VAR, scope)
+        self.visit(node.VALUE, scope)
+        if not scope.AreRelated(node.VALUE.VALUE_TYPE, node.VAR.TYPE):
+            self.errors.append(f'{node.VAR.TYPE} expression was expected instead of {node.VALUE.VALUE_TYPE}')
         # The extra space is to lock the variable. To make it impossible to reference them
-        if scope.IsVariableDefined(' self.' + node.VAR.NAME):
-            scope.AddVariable(' self.' + node.VAR.NAME, node.VAR.TYPE)
-        # Explore the value on second visit
-        else:
-            scope.RemoveVariable(' self.' + node.VAR.NAME, node.VAR.TYPE)
-            self.visit(node.VALUE, scope)
-            if not scope.AreRelated(node.VALUE.VALUE_TYPE, node.VAR.TYPE):
-                self.errors.append(f'The expresion return {node.VALUE.VALUE_TYPE}, but {node.VAR.TYPE} was expected')
-            scope.AddVariable(' self.' + node.VAR, node.VALUE.VALUE_TYPE)
+        scope.AddVariable(' self.' + node.VAR.NAME, node.VALUE.VALUE_TYPE)
         return self.errors
 
     # _______________________________________________________________________________________
@@ -306,7 +300,7 @@ class SemanticCheckerVisitor(object):
             # --------------------------------------------------------------------
             node.CORPUS.VALUE_TYPE = node.CORPUS.VALUE_TYPE
             if not scope.AreRelated(node.CORPUS.VALUE_TYPE, node.TYPE):
-                self.errors.append(f"A object of type {node.TYPE} was expected, instead of {node.CORPUS.VALUE_TYPE}")
+                self.errors.append(f"{node.TYPE} expression was expected instead of {node.CORPUS.VALUE_TYPE}")
         # --------------------------------------------------------------------
         return self.errors
 
@@ -388,11 +382,11 @@ class SemanticCheckerVisitor(object):
         if len(Constructor) != len(node.ARGS):
             self.errors.append(f"Expected {len(Constructor)} arguments instead of {len(node.ARGS)}")
         # Visiting the arguments
-        for i in len(Constructor):
+        for i in range(len(Constructor)):
             self.visit(node.ARGS[i])
             try:
                 if not scope.AreRelated(node.ARGS[i].VALUE_TYPE, Constructor[i].TYPE):
-                    self.errors.append(f"Expected type {Constructor[i].TYPE} instead of {node.ARGS[i].VALUE_TYPE}")
+                    self.errors.append(f"{Constructor[i].TYPE} expression was expected instead of {node.ARGS[i].VALUE_TYPE}")
             except:
                 continue
         node.VALUE_TYPE = node.NAME
@@ -410,7 +404,7 @@ class SemanticCheckerVisitor(object):
         for i in range(len(node.CONDITIONS)):
             self.visit(node.CONDITIONS[i], scope)
             if node.CONDITIONS[i].VALUE_TYPE not in ['Boolean', 'Object']:
-                self.errors.append(f'Boolean expression was expected')
+                self.errors.append(f'Boolean expression was expected instead of {node.CONDITIONS[i].VALUE_TYPE}')
         # Getting all possible values
         PossibleValueReturns = []
         for i in range(len(node.CASES)):
@@ -496,11 +490,11 @@ class SemanticCheckerVisitor(object):
         # Checking the left
         self.visit(node.LEFT, scope)
         if node.LEFT.VALUE_TYPE not in ['Number', 'Object']:
-            self.errors.append(f'Number expression was expected')
+            self.errors.append(f'Number expression was expected instead of {node.LEFT.VALUE_TYPE}')
         # Checking the right
         self.visit(node.RIGHT, scope)
         if node.RIGHT.VALUE_TYPE not in ['Number', 'Object']:
-            self.errors.append(f'Number expression was expected')
+            self.errors.append(f'Number expression was expected instead of {node.RIGHT.VALUE_TYPE}')
         node.VALUE_TYPE = 'Number'
         return self.errors
 
@@ -577,9 +571,10 @@ class SemanticCheckerVisitor(object):
         # Searching the function
         function = scope.SearhFunction(node.FUNCT)
         if function == None:
-            self.errors.append(f"The function {node.FUNCT} doesn't exist in the current context")
+            self.errors.append(f"The {node.FUNCT} function doesn't exist in the current context")
             node.VALUE_TYPE = 'Object'
-            self.visit(node.ARGS[i], scope)
+            for arg in node.ARGS:
+                self.visit(arg, scope)
             return self.errors
         # Checking compatibility in number of arguments
         if len(function.PARAMETERS) != len(node.ARGS):
@@ -589,7 +584,7 @@ class SemanticCheckerVisitor(object):
             self.visit(node.ARGS[i], scope)
             # Checking compatibility between arguments and paramaters
             if not scope.AreRelated(node.ARGS[i].VALUE_TYPE, function.PARAMETERS[i].TYPE):
-                self.errors.append(f"Expected type {function.PARAMETERS[i].TYPE} instead of {node.ARGS[i].VALUE_TYPE}")
+                self.errors.append(f"{function.PARAMETERS[i].TYPE} expression was expected instead of {node.ARGS[i].VALUE_TYPE}")
         node.VALUE_TYPE = function.TYPE
         return self.errors
 
@@ -600,7 +595,7 @@ class SemanticCheckerVisitor(object):
         # Checking if is possible that the method belongs to the type
         function = scope.SearhFunction(node.FUNCT, node.CLASS.VALUE_TYPE)
         if function == None:
-            self.errors.append(f"The function {node.FUNCT} doesn't exist in the current context")
+            self.errors.append(f"The {node.FUNCT} function doesn't exist in the current context")
             node.VALUE_TYPE = 'Object'
         # Checking if the call is compatible
         elif len(function.PARAMETERS) != len(node.ARGS):
