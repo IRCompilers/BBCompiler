@@ -20,6 +20,9 @@ class SemanticCheckerVisitor(object):
         # CHECKING POSSIBLE ERRORS IN PROGRAM NODE ✔️
         # --------------------------------------------------------------------
         # Avoiding repited Types
+        if scope is None:
+            scope = Scope()
+
         defaultTypes = ['Object', 'Number', 'Boolean', 'String', 'Vector']
         TypeNames = defaultTypes + [x.NAME for x in node.STATEMENTS if type(x) is TypeNode]
         if EqualObjects(TypeNames):
