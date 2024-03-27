@@ -1,76 +1,84 @@
-from Common.ASTNodes import *
-from SemanticChecking.Scope import Scope
+from src.Common.ASTNodes import *
+from src.SemanticChecking.Scope import Scope
+
 
 def EqualObjects(names):
-    return len(names)!=len(set(names))
+    return len(names) != len(set(names))
 
-def AddBasicInfo(scope:Scope):
-    scope.AddProtocolFunctions('Iterable',[
-                ProtocolMethodNode('next',[],'Boolean'),
-                ProtocolMethodNode('current',[],'Object')
-    ])
-    scope.AddProtocolFunctions('Comparable',[
-                ProtocolMethodNode('CompareTo',[ParameterNode('element')],'Number')
-    ])
-    scope.AddProtocolFunctions('Printable',[
-                ProtocolMethodNode('ToString',[],'String')
-    ])
-    
-    scope.AddTypeFunctions('Object',[])
-    scope.AddTypeFunctions('Boolean',[])
-    scope.AddTypeFunctions('String',[FunctionNode('ToString',[],None,'String')])
-    scope.AddTypeFunctions('Number',[FunctionNode('ToString',[],None,'String'),
-                FunctionNode('CompareTo',[ParameterNode('element','Number')],None,'Object')])
-    scope.AddTypeFunctions('Vector', [FunctionNode('next',[],None,'Boolean'),
-                FunctionNode('current',[],None,'Object'),FunctionNode('size',[],None,'Number')])
-    
-    scope.AddTypeParameters('Object',[])
-    scope.AddTypeParameters('Number',[])
-    scope.AddTypeParameters('Boolean',[])
-    scope.AddTypeParameters('String',[])
-    scope.AddTypeParameters('Vector',[])
 
-    scope.AddFunctions(ProtocolMethodNode('sen',[ParameterNode('a','Number')],'Number'))
-    scope.AddFunctions(ProtocolMethodNode('cos',[ParameterNode('a','Number')],'Number'))
-    scope.AddFunctions(ProtocolMethodNode('exp',[ParameterNode('a','Number')],'Number'))
-    scope.AddFunctions(ProtocolMethodNode('sqrt',[ParameterNode('a','Number')],'Number'))
-    scope.AddFunctions(ProtocolMethodNode('rand',[],'Number'))
-    scope.AddFunctions(ProtocolMethodNode('log',[ParameterNode('a','Number'),ParameterNode('a','Number')],'Number'))
-    scope.AddFunctions(ProtocolMethodNode('print',[ParameterNode('a','Printable')],'String'))
+def AddBasicInfo(scope: Scope):
+    scope.AddProtocolFunctions('Iterable', [
+        ProtocolMethodNode('next', [], 'Boolean'),
+        ProtocolMethodNode('current', [], 'Object')
+    ])
+    scope.AddProtocolFunctions('Comparable', [
+        ProtocolMethodNode('CompareTo', [ParameterNode('element')], 'Number')
+    ])
+    scope.AddProtocolFunctions('Printable', [
+        ProtocolMethodNode('ToString', [], 'String')
+    ])
 
-def GetTopologicOrder(Graph:dict[str,str])->tuple[list[str],bool]:
-    colors=dict()
-    order=dict()
-    count=0
+    scope.AddTypeFunctions('Object', [])
+    scope.AddTypeFunctions('Boolean', [])
+    scope.AddTypeFunctions('String', [FunctionNode('ToString', [], None, 'String')])
+    scope.AddTypeFunctions('Number', [FunctionNode('ToString', [], None, 'String'),
+                                      FunctionNode('CompareTo', [ParameterNode('element', 'Number')], None, 'Object')])
+    scope.AddTypeFunctions('Vector', [FunctionNode('next', [], None, 'Boolean'),
+                                      FunctionNode('current', [], None, 'Object'),
+                                      FunctionNode('size', [], None, 'Number')])
+
+    scope.AddTypeParameters('Object', [])
+    scope.AddTypeParameters('Number', [])
+    scope.AddTypeParameters('Boolean', [])
+    scope.AddTypeParameters('String', [])
+    scope.AddTypeParameters('Vector', [])
+
+    scope.AddFunctions(ProtocolMethodNode('sen', [ParameterNode('a', 'Number')], 'Number'))
+    scope.AddFunctions(ProtocolMethodNode('cos', [ParameterNode('a', 'Number')], 'Number'))
+    scope.AddFunctions(ProtocolMethodNode('exp', [ParameterNode('a', 'Number')], 'Number'))
+    scope.AddFunctions(ProtocolMethodNode('sqrt', [ParameterNode('a', 'Number')], 'Number'))
+    scope.AddFunctions(ProtocolMethodNode('rand', [], 'Number'))
+    scope.AddFunctions(
+        ProtocolMethodNode('log', [ParameterNode('a', 'Number'), ParameterNode('a', 'Number')], 'Number'))
+    scope.AddFunctions(ProtocolMethodNode('print', [ParameterNode('a', 'Printable')], 'String'))
+    scope.AddFunctions(
+        ProtocolMethodNode('range', [ParameterNode('a', 'Number'), ParameterNode('b', 'Number')], 'Vector'))
+
+
+def GetTopologicOrder(Graph: dict[str, str]) -> tuple[list[str], bool]:
+    colors = dict()
+    order = dict()
+    count = 0
     for key in Graph.keys():
-        colors[key]='white'
+        colors[key] = 'white'
     for key in Graph.keys():
         try:
-            AllOK=DFS(Graph,key,colors,order,count)
+            AllOK = DFS(Graph, key, colors, order, count)
             if not AllOK:
-                return (Graph.keys(),False)
-            count=order[key]+1
+                return (Graph.keys(), False)
+            count = order[key] + 1
         except:
-            return (Graph.keys(),False)
-    sortedlist=list(map(lambda x:(order[x],x),Graph.keys()))
-    sortedlist.sort(key=lambda x:x[0])
-    return (list(map(lambda x:x[1],sortedlist)),True)
+            return (Graph.keys(), False)
+    sortedlist = list(map(lambda x: (order[x], x), Graph.keys()))
+    sortedlist.sort(key=lambda x: x[0])
+    return (list(map(lambda x: x[1], sortedlist)), True)
 
-def DFS(Graph,key,colors,order,count):
-    if colors[key]=='black':
+
+def DFS(Graph, key, colors, order, count):
+    if colors[key] == 'black':
         return True
-    if colors[key]=='grey':
+    if colors[key] == 'grey':
         return False
-    if Graph[key]=='':
-        colors[key]='black'
-        order[key]=count
-        return True    
+    if Graph[key] == '':
+        colors[key] = 'black'
+        order[key] = count
+        return True
     else:
-        colors[key]='grey'
-        if not DFS(Graph,Graph[key],colors,order,count):
+        colors[key] = 'grey'
+        if not DFS(Graph, Graph[key], colors, order, count):
             return False
-        colors[key]='black'
-        order[key]=count
-        count+=1
+        colors[key] = 'black'
+        order[key] = count
+        count += 1
 
         return True
