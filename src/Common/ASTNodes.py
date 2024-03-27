@@ -19,9 +19,9 @@ from typing import List, Union
             -IfElseExpression
             -DestructiveExpression
             -SelfDestructiveExpression
-            -whileNode
-            -forNode
-            -newNode
+            -WhileNode
+            -ForNode
+            -NewNode
             
             ___(Operations)___
             -OrAndExpression
@@ -55,7 +55,7 @@ class node:
 
 class StatementNode(node):
     """
-        A statement can be a Type definition, a method declaration, a expression or a protocol
+        A statement can be a Type definition, a method declaration, an expression or a protocol
     """
     pass
 
@@ -94,8 +94,8 @@ class ParameterNode(node):
 class FunctionNode(StatementNode):
     '''
         This contains a declaration of a function.
-        A function needs a name and and a expression.
-        And it may contains parameters and a return Type
+        A function needs a name and an expression.
+        And it may contain parameters and a return Type
     '''
 
     def __init__(self, name: str, parameters: list[ParameterNode],
@@ -120,7 +120,7 @@ class TypeNode(StatementNode):
     '''
         This contains a class declaration.
         Contains a name and a corpus.
-        It may have a constructor an a parent in hierarchy
+        It may have a constructor and a parent in hierarchy
         In case of hierarchy, you can call arguments for the parent
     '''
 
@@ -206,7 +206,7 @@ class IfElseExpression(SimpleExpressionNode):
 
 class DestructiveExpression(SimpleExpressionNode):
     '''
-        This is contains the semantic for := operator.
+        This contains the semantic for := operator.
         It has the varible name and the Expression.
     '''
 
@@ -330,9 +330,9 @@ class StringConcatenationNode(SimpleExpressionNode):
         self.VALUE_TYPE = 'Object'
 
 
-class AritmethicExpression(SimpleExpressionNode):
+class ArithmeticExpression(SimpleExpressionNode):
     '''
-        Contains all the aritmethic expressions:
+        Contains all the arithmetic expressions:
         + - * ** ^ / %
         The unary expression -Expression is included has 0-Expression
     '''
@@ -443,7 +443,7 @@ class ImplicitListNode(SimpleExpressionNode):
         self.VALUE_TYPE = 'Object'
 
 
-class InexingNode(SimpleExpressionNode):
+class IndexingNode(SimpleExpressionNode):
     '''
         This  node represents an indexing on a object
     '''

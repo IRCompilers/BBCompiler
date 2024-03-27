@@ -490,9 +490,9 @@ class SemanticCheckerVisitor(object):
         node.VALUE_TYPE = 'Boolean'
         return self.errors
 
-    @visitor.when(AritmethicExpression)
+    @visitor.when(ArithmeticExpression)
     # ARITMETHIC OPERATION BETWEEN NUMBERS
-    def visit(self, node: AritmethicExpression, scope: Scope = None):  # ✔️✔️
+    def visit(self, node: ArithmeticExpression, scope: Scope = None):  # ✔️✔️
         # Checking the left
         self.visit(node.LEFT, scope)
         if node.LEFT.VALUE_TYPE not in ['Number', 'Object']:
@@ -653,8 +653,8 @@ class SemanticCheckerVisitor(object):
         node.VALUE_TYPE = 'Vector'
         return self.errors
 
-    @visitor.when(InexingNode)
-    def visit(self, node: InexingNode, scope: Scope = None):  # ✔️✔️
+    @visitor.when(IndexingNode)
+    def visit(self, node: IndexingNode, scope: Scope = None):  # ✔️✔️
         self.visit(node.COLLECTION, scope)
         # The left has to be a collection
         if not scope.AreRelated('Iterable', node.COLLECTION.VALUE_TYPE):

@@ -186,8 +186,8 @@ class InterpretVisitor:
         else:
             self.last_value_returned=left+right
 
-    @Visitor.when(AritmethicExpression)
-    def visit(self, node:AritmethicExpression, context: CodeContext):
+    @Visitor.when(ArithmeticExpression)
+    def visit(self, node:ArithmeticExpression, context: CodeContext):
         self.visit(node.LEFT, context)
         left=self.last_value_returned
         self.visit(node.RIGHT, context)
@@ -269,8 +269,8 @@ class InterpretVisitor:
             elements.append(self.last_value_returned)
         self.last_value_returned= elements
     
-    @Visitor.when(InexingNode)
-    def visit(self, node:InexingNode, context: CodeContext):
+    @Visitor.when(IndexingNode)
+    def visit(self, node:IndexingNode, context: CodeContext):
         self.visit(node.INDEX,context)
         i=self.last_value_returned
         self.visit(node.COLLECTION,context)
@@ -283,7 +283,7 @@ class InterpretVisitor:
 # Test the above
 par_node = ParameterNode("x", "int")
 second_par_node = ParameterNode("y", "int")
-plus_node = AritmethicExpression("+", Variable("x"), Variable("y"))
+plus_node = ArithmeticExpression("+", Variable("x"), Variable("y"))
 let_node = LetNode([par_node, second_par_node], [NumberNode(111), NumberNode(222)], plus_node)
 print_node = FunctionCallNode('print',[let_node])
 program = ProgramNode([], print_node)
