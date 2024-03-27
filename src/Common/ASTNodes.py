@@ -35,7 +35,7 @@ from typing import List, Union
             -NumberNode
             -StringNode
             -BooleanNode
-            -Variable
+            -VariableNode
             -SelfVariableNode
             -FunctionCallNode
             -TypeFunctionCallNode
@@ -338,7 +338,7 @@ class BooleanNode(SimpleExpressionNode):
         self.VALUE=value
         self.VALUE_TYPE='Object'
 
-class Variable(SimpleExpressionNode):
+class VariableNode(SimpleExpressionNode):
     '''
         A variable
     '''

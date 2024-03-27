@@ -234,7 +234,7 @@ class SemanticCheckerVisitor(object):
         if firstVisit:
             [self.visit(x,special_scope) for x in node.CORPUS if type(x) is FunctionNode]
         else:
-            special_scope.AddVariable('scope',node.NAME)
+            special_scope.AddVariable('self',node.NAME)
             special_scope.SELF_ACTIVE=True
             for function in [x for x in node.CORPUS if type(x) is FunctionNode]:
                 parent_method=scope.SearhFunction(function.NAME,scope.TYPE_HIERARCHY[node.NAME])
@@ -535,8 +535,8 @@ class SemanticCheckerVisitor(object):
         node.VALUE_TYPE='String'
         return self.errors
 
-    @visitor.when(Variable)
-    def visit(self, node:Variable, scope:Scope=None): #✔️✔️
+    @visitor.when(VariableNode)
+    def visit(self, node:VariableNode, scope:Scope=None): #✔️✔️
         #Check if it is defined
         if not scope.IsVariableDefined(node.NAME):
             self.errors.append(f"{node.NAME} doesn't exist in the current context")
