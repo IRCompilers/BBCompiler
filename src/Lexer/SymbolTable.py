@@ -28,6 +28,7 @@ regex_table = [
     (exp, "exp"),
     (log, "log"),
     (rand, "rand"),
+    (base, "base"),
     (plus, "\+"),
     (times, "\*"),
     (minus, "-"),
