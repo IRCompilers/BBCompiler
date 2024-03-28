@@ -1,3 +1,5 @@
+import math
+
 from src.Common.Compiler import Grammar
 from src.Common.ASTNodes import *
 
@@ -196,6 +198,8 @@ function_stack %= function_stack + period + identifier + arguments, lambda h, s:
 #
 object_exp %= lparen + simple_expression + rparen, lambda h, s: s[2]
 object_exp %= number, lambda h, s: NumberNode(s[1])
+object_exp %= pi, lambda h, s: NumberNode(math.pi)
+object_exp %= e, lambda h, s: NumberNode(math.e)
 object_exp %= string, lambda h, s: StringNode(s[1])
 object_exp %= true, lambda h, s: BooleanNode(s[1])
 object_exp %= false, lambda h, s: BooleanNode(s[1])
@@ -215,6 +219,7 @@ object_exp %= log + lparen + simple_expression + comma + simple_expression + rpa
 object_exp %= rand + lparen + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [])
 object_exp %= range_ + lparen + simple_expression + comma + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [s[3]] + [s[5]])
 object_exp %= base + lparen + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [])
+
 
 #
 list_ %= simple_expression, lambda h, s: [s[1]]
