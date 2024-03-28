@@ -110,9 +110,10 @@ expression %= lbrace + expression_block + rbrace, lambda h, s: s[2]
 expression_block %= expression, lambda h, s: s[1]
 expression_block %= expression_block + expression, lambda h, s: s[1] + s[2]
 #
-simple_expression %= let + declaration + in_ + expression, lambda h, s: LetNode(s[2][0], s[2][1], s[3])
+simple_expression %= let + declaration + in_ + simple_expression, lambda h, s: LetNode(s[2][0], s[2][1], s[3])
+simple_expression %= let + declaration + in_ + lbrace + expression_block + rbrace, lambda h, s: LetNode(s[2][0], s[2][1], s[4])
 simple_expression %= identifier + destruct + simple_expression, lambda h, s: DestructiveExpression(s[1].Lemma, s[3])
-simple_expression %= if_ + if_block + else_block, lambda h, s: s[2] + s[3]
+simple_expression %= if_ + if_block + else_block, lambda h, s: IfElseExpression(s[2][0]+s[3][0], s[2][1] + s[3][1])
 simple_expression %= identifier + period + identifier + destruct + simple_expression, lambda h, s: SelfDestructiveExpression(SelfVariableNode(s[1].Lemma == 'self', s[3].Lemma), s[5])
 simple_expression %= while_ + lparen + simple_expression + rparen + expression, lambda h, s: WhileNode(s[3], s[5])
 simple_expression %= for_ + lparen + identifier + in_ + simple_expression + rparen + expression, lambda h, s: ForNode(s[3].Lemma, s[5], s[7])
@@ -120,13 +121,17 @@ simple_expression %= new + identifier + arguments, lambda h, s: NewNode(s[2].Lem
 simple_expression %= disjunction, lambda h, s: s[1]
 #
 declaration %= variable + equal + simple_expression, lambda h, s: ([s[1]], [s[3]])
-declaration %= variable + equal + simple_expression + comma + declaration, lambda h, s: ([s[1]]+s[5][0], [s[3]]+s[5][1])
+declaration %= variable + equal + simple_expression + comma + declaration, lambda h, s: ([s[1]] + s[5][0], [s[3]]+s[5][1])
+
+# testcase5 = 'if (1==1) print(1) else {print(2);};'
+# testcase8 = 'let a = 42 in print(if (a == 2) "1" else "2");'
 #
-if_block %= lparen + simple_expression + rparen + simple_expression, lambda h, s: IfElseExpression(s[2], s[4])
-if_block %= lparen + simple_expression + rparen + lbrace + expression_block + rbrace, lambda h, s: IfElseExpression(s[2], s[5])
+if_block %= lparen + simple_expression + rparen + simple_expression, lambda h, s: ([s[2]], [s[4]])
+if_block %= lparen + simple_expression + rparen + lbrace + expression_block + rbrace, lambda h, s: ([s[2]], [s[5]])
 #
-else_block %= else_ + expression, lambda h, s: s[2]
-else_block %= elif_ + if_block + else_block, lambda h, s: s[2] + s[3]
+else_block %= else_ + simple_expression, lambda h, s: ([], [s[2]])
+else_block %= else_ + lbrace + expression_block + rbrace, lambda h, s: ([], [s[3]])
+else_block %= elif_ + if_block + else_block, lambda h, s: (s[2][0]+s[3][0], s[2][1] + s[3][1])
 #
 arguments %= lparen + rparen, lambda h, s: []
 arguments %= lparen + argument_list + rparen, lambda h, s: s[2]

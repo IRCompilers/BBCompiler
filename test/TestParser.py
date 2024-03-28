@@ -158,7 +158,6 @@ for i, testcase in enumerate(testcases):
     print([token.Lemma for token in tokens])
     testing(tokens, i)
 
-mi = Terminal('-', G)
 
 # for x,y in parser.action.items():
 #     print(x[0] == 0 and str(x[1]) == 'for')
