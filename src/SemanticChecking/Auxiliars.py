@@ -52,33 +52,33 @@ def GetTopologicOrder(Graph: dict[str, str]) -> tuple[list[str], bool]:
     for key in Graph.keys():
         colors[key] = 'white'
     for key in Graph.keys():
-        try:
-            AllOK = DFS(Graph, key, colors, order, count)
-            if not AllOK:
-                return (Graph.keys(), False)
-            count = order[key] + 1
-        except:
-            return (Graph.keys(), False)
+        Error = DFS(Graph, key, colors, order, count)
+        if Error!=None:
+            return (Graph.keys(), Error)
+        count = order[key] + 1
     sortedlist = list(map(lambda x: (order[x], x), Graph.keys()))
     sortedlist.sort(key=lambda x: x[0])
-    return (list(map(lambda x: x[1], sortedlist)), True)
+    return (list(map(lambda x: x[1], sortedlist)), None)
 
 
-def DFS(Graph, key, colors, order, count):
+def DFS(Graph:dict, key, colors, order, count):
     if colors[key] == 'black':
-        return True
+        return None
     if colors[key] == 'grey':
-        return False
+        return (key,Graph[key])
     if Graph[key] == '':
         colors[key] = 'black'
         order[key] = count
-        return True
+        return None
+    elif Graph[key] not in Graph.keys():
+        return (Graph[key],)
     else:
         colors[key] = 'grey'
-        if not DFS(Graph, Graph[key], colors, order, count):
-            return False
+        error= DFS(Graph, Graph[key], colors, order, count)
+        if error!=None:
+            return error
         colors[key] = 'black'
         order[key] = count
         count += 1
 
-        return True
+        return None
