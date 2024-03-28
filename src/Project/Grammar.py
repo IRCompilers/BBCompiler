@@ -42,7 +42,6 @@ and_, or_, not_ = G.Terminals("& | !")
 
 modulus, power, power_asterisk = G.Terminals("% ^ **")
 destruct, concat = G.Terminals(":= @")
-concat_space = G.Terminal("@@")
 list_comprehension = G.Terminal("||")
 
 for_, let, if_, else_, elif_ = G.Terminals("for let if else elif")
@@ -110,7 +109,7 @@ expression %= simple_expression + semicolon, lambda h, s: s[1]
 expression %= lbrace + expression_block + rbrace, lambda h, s: s[2]
 #
 expression_block %= expression, lambda h, s: s[1]
-expression_block %= expression_block + expression, lambda h, s: s[1] + s[2]
+expression_block %= expression_block + expression, lambda h, s: s[2]
 #
 simple_expression %= let + declaration + in_ + simple_expression, lambda h, s: LetNode(s[2][0], s[2][1], s[3])
 simple_expression %= let + declaration + in_ + lbrace + expression_block + rbrace, lambda h, s: LetNode(s[2][0], s[2][1], s[4])
@@ -125,8 +124,8 @@ simple_expression %= disjunction, lambda h, s: s[1]
 declaration %= variable + equal + simple_expression, lambda h, s: ([s[1]], [s[3]])
 declaration %= variable + equal + simple_expression + comma + declaration, lambda h, s: ([s[1]] + s[5][0], [s[3]]+s[5][1])
 
-# testcase5 = 'if (1==1) print(1) else {print(2);};'
-# testcase8 = 'let a = 42 in print(if (a == 2) "1" else "2");'
+# testcase15 = ' let number = 42, test = "The meaning of life is" in print(test@@number);'
+
 #
 if_block %= lparen + simple_expression + rparen + simple_expression, lambda h, s: ([s[2]], [s[4]])
 if_block %= lparen + simple_expression + rparen + lbrace + expression_block + rbrace, lambda h, s: ([s[2]], [s[5]])
@@ -163,9 +162,8 @@ boolean %= boolean + greatt + concatenation, lambda h, s: ComparationExpression(
 #
 concatenation %= arithmetic_expression, lambda h, s: s[1]
 concatenation %= arithmetic_expression + concat + concatenation, lambda h, s: StringConcatenationNode(s[1], s[3])
-concatenation %= arithmetic_expression + concat_space + concatenation, lambda h, s: StringConcatenationNode(s[1], s[3], True)
+concatenation %= arithmetic_expression + concat + concat + concatenation, lambda h, s: StringConcatenationNode(s[1], s[4], True)
 #
-
 arithmetic_expression %= module, lambda h, s: s[1]
 arithmetic_expression %= arithmetic_expression + plus + module, lambda h, s: ArithmeticExpression(s[2].Lemma, s[1], s[3])
 arithmetic_expression %= arithmetic_expression + minus + module, lambda h, s: ArithmeticExpression(s[2].Lemma, s[1], s[3])
@@ -188,13 +186,8 @@ pow_ %= pow_ + power + high_hierarchy_object, lambda h, s: ArithmeticExpression(
 high_hierarchy_object %= object_exp, lambda h, s: s[1]
 high_hierarchy_object %= high_hierarchy_object + as_ + object_exp, lambda h, s: AsNode(s[1], s[3].Lemma)
 #
-# type_attribute %= object_exp, lambda h, s: s[1]
-# type_attribute %= identifier + period + identifier, lambda h, s: SelfVariableNode(s[1].Lemma=='self', s[3])
-# type_attribute %= identifier + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
-
 function_stack %= identifier + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
 function_stack %= function_stack + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
-
 #
 object_exp %= lparen + simple_expression + rparen, lambda h, s: s[2]
 object_exp %= number, lambda h, s: NumberNode(s[1])
