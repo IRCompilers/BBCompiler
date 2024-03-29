@@ -12,8 +12,7 @@ from typing import List, Union
         -ProtocolNode
     -ExpressionNode
         -ExpressionBlockNode
-        -SimpleExpressionNode
-            
+        
             ___(Less Priority)___
             -LetNode
             -IfElseExpression
@@ -167,22 +166,14 @@ class ExpressionBlockNode(ExpressionNode):
         self.EXPRESSIONS = expressions
         self.VALUE_TYPE = 'Object'
 
-
-class SimpleExpressionNode(ExpressionNode):
-    '''
-        This class is only a distinction of a ExpressionBlock
-    '''
-    pass
-
-
-class LetNode(SimpleExpressionNode):
+class LetNode(ExpressionNode):
     '''
         Contains a Let expression. Contains a list of variables,
         his corresponding expressions for his values and the expression to aplied
     '''
 
     def __init__(self, variable_names: List[ParameterNode],
-                 variable_values: List[SimpleExpressionNode],
+                 variable_values: List[ExpressionNode],
                  expression: ExpressionNode):
         self.VARS = variable_names
         self.VAR_VALUES = variable_values
@@ -190,7 +181,7 @@ class LetNode(SimpleExpressionNode):
         self.VALUE_TYPE = 'Object'
 
 
-class IfElseExpression(SimpleExpressionNode):
+class IfElseExpression(ExpressionNode):
     '''
         Contains the semantic of the conditionals.
         It has a list of conditions (the condition of the if, 
@@ -198,25 +189,25 @@ class IfElseExpression(SimpleExpressionNode):
         And a list of expression (the if case, the first elif case... and the else case)
     '''
 
-    def __init__(self, conditions: List[SimpleExpressionNode], expressions: List[ExpressionNode]):
+    def __init__(self, conditions: List[ExpressionNode], expressions: List[ExpressionNode]):
         self.CONDITIONS = conditions
         self.CASES = expressions
         self.VALUE_TYPE = 'Object'
 
 
-class DestructiveExpression(SimpleExpressionNode):
+class DestructiveExpression(ExpressionNode):
     '''
         This contains the semantic for := operator.
         It has the varible name and the Expression.
     '''
 
-    def __init__(self, name: str, expression: SimpleExpressionNode):
+    def __init__(self, name: str, expression: ExpressionNode):
         self.NAME = name
         self.EXPRESSION = expression
         self.VALUE_TYPE = 'Object'
 
 
-class SelfVariableNode(SimpleExpressionNode):
+class SelfVariableNode(ExpressionNode):
     '''
         The call of an atribute inside a class
     '''
@@ -227,136 +218,136 @@ class SelfVariableNode(SimpleExpressionNode):
         self.VALUE_TYPE = 'Object'
 
 
-class SelfDestructiveExpression(SimpleExpressionNode):
+class SelfDestructiveExpression(ExpressionNode):
     '''
         This is contains the semantic for := operator on the case that is for an attribute of a type
     '''
 
-    def __init__(self, var: SelfVariableNode, expression: SimpleExpressionNode):
+    def __init__(self, var: SelfVariableNode, expression: ExpressionNode):
         self.VAR = var
         self.EXPRESSION = expression
         self.VALUE_TYPE = 'Object'
 
 
-class WhileNode(SimpleExpressionNode):
+class WhileNode(ExpressionNode):
     '''
         Has the semantic for a while cicle. Contains the condition and the expressions
     '''
 
-    def __init__(self, condition: SimpleExpressionNode, expression: ExpressionNode):
+    def __init__(self, condition: ExpressionNode, expression: ExpressionNode):
         self.CONDITIONS = condition
         self.EXPRESSION = expression
         self.VALUE_TYPE = 'Object'
 
 
-class ForNode(SimpleExpressionNode):
+class ForNode(ExpressionNode):
     '''
         Has the semantic for a for cicle. Contains the colection, the iterator and the expressions
     '''
 
-    def __init__(self, name: str, collection: SimpleExpressionNode, expression: ExpressionNode):
+    def __init__(self, name: str, collection: ExpressionNode, expression: ExpressionNode):
         self.NAME = name
         self.COLLECTION = collection
         self.EXPRESSION = expression
         self.VALUE_TYPE = 'Object'
 
 
-class NewNode(SimpleExpressionNode):
+class NewNode(ExpressionNode):
     '''
         Contains the new operator. Contains the name of a Type and the constructor arguments
     '''
 
-    def __init__(self, name: str, arguments: List[SimpleExpressionNode]):
+    def __init__(self, name: str, arguments: List[ExpressionNode]):
         self.NAME = name
         self.ARGS = arguments
         self.VALUE_TYPE = 'Object'
 
 
-class OrAndExpression(SimpleExpressionNode):
+class OrAndExpression(ExpressionNode):
     '''
         Contains the operators &, |.
     '''
 
-    def __init__(self, operation: str, left: SimpleExpressionNode, right: SimpleExpressionNode):
+    def __init__(self, operation: str, left: ExpressionNode, right: ExpressionNode):
         self.LEFT = left
         self.RIGHT = right
         self.OPERATION = operation
         self.VALUE_TYPE = 'Object'
 
 
-class NotExpression(SimpleExpressionNode):
+class NotExpression(ExpressionNode):
     '''
         Contains the operator !.
     '''
 
-    def __init__(self, expression: SimpleExpressionNode):
+    def __init__(self, expression: ExpressionNode):
         self.EXPRESSION = expression
         self.VALUE_TYPE = 'Object'
 
 
-class ComparationExpression(SimpleExpressionNode):
+class ComparationExpression(ExpressionNode):
     '''
         Contains the operators >, <, <=, >=, ==. Recive 2 expressions and compares them
     '''
 
-    def __init__(self, operation: str, left: SimpleExpressionNode, right: SimpleExpressionNode = None):
+    def __init__(self, operation: str, left: ExpressionNode, right: ExpressionNode = None):
         self.LEFT = left
         self.RIGHT = right
         self.OPERATION = operation
         self.VALUE_TYPE = 'Object'
 
 
-class IsExpression(SimpleExpressionNode):
+class IsExpression(ExpressionNode):
     '''
         Contains the operator is
     '''
 
-    def __init__(self, left: SimpleExpressionNode, name: str):
+    def __init__(self, left: ExpressionNode, name: str):
         self.LEFT = left
         self.NAME = name
         self.VALUE_TYPE = 'Object'
 
 
-class StringConcatenationNode(SimpleExpressionNode):
+class StringConcatenationNode(ExpressionNode):
     '''
         Contains the @ and @@ operators
     '''
 
-    def __init__(self, left: SimpleExpressionNode
-                 , right: SimpleExpressionNode, double: bool = False):
+    def __init__(self, left: ExpressionNode
+                 , right: ExpressionNode, double: bool = False):
         self.LEFT = left
         self.RIGHT = right
         self.DOUBLE = double
         self.VALUE_TYPE = 'Object'
 
 
-class ArithmeticExpression(SimpleExpressionNode):
+class ArithmeticExpression(ExpressionNode):
     '''
         Contains all the arithmetic expressions:
         + - * ** ^ / %
         The unary expression -Expression is included has 0-Expression
     '''
 
-    def __init__(self, operation: str, left: SimpleExpressionNode
-                 , right: SimpleExpressionNode):
+    def __init__(self, operation: str, left: ExpressionNode
+                 , right: ExpressionNode):
         self.LEFT = left
         self.RIGHT = right
         self.OPERATION = operation
         self.VALUE_TYPE = 'Object'
 
 
-class AsNode(SimpleExpressionNode):
+class AsNode(ExpressionNode):
     '''
         as operator
     '''
 
-    def __init__(self, left: SimpleExpressionNode, right: str):
+    def __init__(self, left: ExpressionNode, right: str):
         self.EXPRESSION = left
         self.TYPE = right
         self.VALUE_TYPE = 'Object'
 
 
-class NumberNode(SimpleExpressionNode):
+class NumberNode(ExpressionNode):
     '''
         Contains a number value
     '''
@@ -366,7 +357,7 @@ class NumberNode(SimpleExpressionNode):
         self.VALUE_TYPE = 'Object'
 
 
-class StringNode(SimpleExpressionNode):
+class StringNode(ExpressionNode):
     '''
         Contains a string value
     '''
@@ -376,7 +367,7 @@ class StringNode(SimpleExpressionNode):
         self.VALUE_TYPE = 'Object'
 
 
-class BooleanNode(SimpleExpressionNode):
+class BooleanNode(ExpressionNode):
     '''
         True or False
     '''
@@ -386,7 +377,7 @@ class BooleanNode(SimpleExpressionNode):
         self.VALUE_TYPE = 'Object'
 
 
-class VariableNode(SimpleExpressionNode):
+class VariableNode(ExpressionNode):
     '''
         A variable
     '''
@@ -396,59 +387,59 @@ class VariableNode(SimpleExpressionNode):
         self.VALUE_TYPE = 'Object'
 
 
-class FunctionCallNode(SimpleExpressionNode):
+class FunctionCallNode(ExpressionNode):
     '''
         A function call. Recieves a name and arguments
     '''
 
-    def __init__(self, name: str, arguments: List[SimpleExpressionNode]):
+    def __init__(self, name: str, arguments: List[ExpressionNode]):
         self.FUNCT = name
         self.ARGS = arguments
         self.VALUE_TYPE = 'Object'
 
 
-class TypeFunctionCallNode(SimpleExpressionNode):
+class TypeFunctionCallNode(ExpressionNode):
     '''
         The combination of the last two
     '''
 
-    def __init__(self, class_calling: SimpleExpressionNode, name: str, arguments: List[SimpleExpressionNode]):
+    def __init__(self, class_calling: ExpressionNode, name: str, arguments: List[ExpressionNode]):
         self.CLASS = class_calling
         self.FUNCT = name
         self.ARGS = arguments
         self.VALUE_TYPE = 'Object'
 
 
-class ListNode(SimpleExpressionNode):
+class ListNode(ExpressionNode):
     '''
         Represents a list in code. It receives an array with its elements
     '''
 
-    def __init__(self, expressions: List[SimpleExpressionNode]):
+    def __init__(self, expressions: List[ExpressionNode]):
         self.ELEMENTS = expressions
         self.VALUE_TYPE = 'Object'
 
 
-class ImplicitListNode(SimpleExpressionNode):
+class ImplicitListNode(ExpressionNode):
     '''
         This is for a implicit list.
         The operator is an operation to do to each element of a collection
         The iterator is the name of a element from the collection in the operator
     '''
 
-    def __init__(self, operator: SimpleExpressionNode, iterator: str, collection: SimpleExpressionNode):
+    def __init__(self, operator: ExpressionNode, iterator: str, collection: ExpressionNode):
         self.OPERATION = operator
         self.ITERATION = iterator
         self.COLLECTION = collection
         self.VALUE_TYPE = 'Object'
 
 
-class IndexingNode(SimpleExpressionNode):
+class IndexingNode(ExpressionNode):
     '''
         This  node represents an indexing on a object
     '''
 
-    def __init__(self, collection: SimpleExpressionNode, index: SimpleExpressionNode):
+    def __init__(self, collection: ExpressionNode, index: ExpressionNode):
         self.COLLECTION = collection
         self.INDEX = index
         self.VALUE_TYPE = 'Object'
