@@ -1,0 +1,74 @@
+type Person(firstname, lastname) {
+    firstname = firstname;
+    lastname = lastname;
+
+    name() => self.firstname @@ self.lastname;
+    sound() => print("Hello");
+}
+
+type Knight inherits Person {
+    name() => "Sir" @@ base();
+}
+
+protocol Animal {
+    sound();
+}
+
+type Dog {
+    sound() => print("Woof");
+}
+
+type Cat {
+    sound() => print("Meow");
+}
+
+type Pet inherits Dog {
+    sound() => print("Pet \"sound\"");
+}
+
+type SmartCat inherits Cat {
+
+    square_sum(a, b) {
+        (a + b) * (a + b);
+    }
+}
+
+let a: Person = Person("John", "Doe"), b: Animal = Dog(), c: Animal = Cat(), d: Animal = Pet(), e: Animal = SmartCat() in {
+
+    for (x in range(0, 10)) {
+
+        if (x % 2 == 1 & x != 1) {
+            a.sound();
+        } else if (x == 2) {
+            b.sound();
+        } else if (x == 4) {
+            c.sound();
+        } else if (x == 6) {
+            d.sound();
+        } else if (x == 8) {
+            print((e as SmartCat).square_sum(3, 4));
+        } else if (x == 0) {
+
+            if (a is Knight) {
+                print("Knight");
+            } else {
+                print("Person");
+            }
+
+            if (b is Dog) {
+                print("Dog");
+            } else {
+                print("Animal");
+            }
+
+        } else {
+            let numbers = [x ^ 2 || for x in [1,2,3]] in
+                for (y in numbers)
+                    print(x @@ y);
+        }
+
+    }
+
+    let numbers = [1,2,3,4] in print(numbers[0] @ numbers[3]);
+
+}

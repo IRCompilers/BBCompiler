@@ -97,7 +97,6 @@ if (x > 10) {
 """
 
 
-# Use the @pytest.mark.parametrize decorator to specify different sets of data
 @pytest.mark.parametrize("input_, expected", [
     (test_case_1, "Hello, World!\n"),
     (test_case_2, "LEXER ERROR: Invalid token \"?\" at position: (0, 0)\n"),
@@ -122,10 +121,32 @@ if (x > 10) {
     (test_case_20, "SEMANTIC ERROR: Parent doesn't have a definition for name"),
     (test_case_21, "PARSER ERROR: Expected tokens { else }\n")
 ])
-def test_print_message(capsys, input_, expected):
-    # Call the function with the input parameter
+def test_basic(capsys, input_, expected):
     run_pipeline(input_, "../models")
+    captured = capsys.readouterr()
+
+    assert captured.out == expected
+
+
+@pytest.mark.parametrize("input_, expected", [
+    ("1", "SEMANTIC ERROR: Circular inheritance detected between A and B\n"),
+    ("2", "5.0\n"),
+    ("3", "Sir Phil Collins\n"),
+    ("4", "42\n"),
+    ("5", "0\n1\n2\n3\n4\n"),
+    ("6", "SEMANTIC ERROR: Iterable expression was expected instead of ArrayIterator"),
+    ("leviathan", "Person\nDog\n1 1\n1 4\n1 9\nWoof\nHello\nMeow\nHello\nPet \"sound\"\nHello\n49\nHello\n14")
+])
+def test_playground(capsys, input_, expected):
+    # Call the pipeline with the input of the playground/input_ filename
+    text = ""
+    with open(f"playground/{input_}.hlk", 'r') as file:
+        for line in file:
+            text += line
+
+    run_pipeline(text, "../models")
+
     # Capture the output
     captured = capsys.readouterr()
-    # Assert that the captured output matches the expected output
+
     assert captured.out == expected
