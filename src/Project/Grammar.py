@@ -30,6 +30,7 @@ arithmetic_expression = G.NonTerminal("<arithmetic_expression>")
 module, product, monomial, pow_ = G.NonTerminals("<module> <product> <monomial> <pow>")
 high_hierarchy_object, object_exp = G.NonTerminals("<high_hierarchy_object> <object_exp>")
 list_, main_expression, function_stack = G.NonTerminals("<list> <main_expression> <function_stack>")
+not_sc_expression, else_block_not_sc = G.NonTerminals("<not_sc_expression> <else_block_not_sc>")
 
 
 # Terminals
@@ -109,13 +110,24 @@ typed_parameter_list %= identifier + colon + identifier + typed_parameter_list, 
 #----------------#
 
 main_expression %= simple_expression + semicolon, lambda h, s: s[1]
-main_expression %= lbrace + expression_block + rbrace, lambda h, s: s[2]
+main_expression %= not_sc_expression, lambda h, s: s[1]
 
 expression %= simple_expression, lambda h, s: s[1]
 expression %= lbrace + expression_block + rbrace, lambda h, s: s[2]
 
 expression_block %= main_expression, lambda h, s: s[1]
 expression_block %= expression_block + main_expression, lambda h, s: s[2]
+
+not_sc_expression %= let + declaration + in_ + not_sc_expression, lambda h, s: LetNode(s[2][0], s[2][1], s[4])
+not_sc_expression %= identifier + destruct + not_sc_expression, lambda h, s: DestructiveExpression(s[1].Lemma, s[3])
+not_sc_expression %= identifier + period + identifier + destruct + not_sc_expression, lambda h, s: SelfDestructiveExpression(SelfVariableNode(s[1].Lemma == 'self', s[3].Lemma), s[5])
+not_sc_expression %= if_ + lparen + expression + rparen + expression + else_block_not_sc, lambda h, s: IfElseExpression([s[3]] + s[6][0], [s[5]] + s[6][1])
+not_sc_expression %= while_ + lparen + expression + rparen + not_sc_expression, lambda h, s: WhileNode(s[3], s[5])
+not_sc_expression %= for_ + lparen + identifier + in_ + expression + rparen + not_sc_expression, lambda h, s: ForNode(s[3].Lemma, s[5], s[7])
+not_sc_expression %= lbrace + expression_block + rbrace, lambda h, s: s[2]
+
+else_block_not_sc %= else_ + not_sc_expression, lambda h, s: ([], [s[2]])
+else_block_not_sc %= elif_ + lparen + expression + rparen + expression + else_block_not_sc, lambda h, s: ([s[3]] + s[6][0], [s[5]] + s[6][1])
 
 simple_expression %= let + declaration + in_ + expression, lambda h, s: LetNode(s[2][0], s[2][1], s[4])
 simple_expression %= identifier + destruct + expression, lambda h, s: DestructiveExpression(s[1].Lemma, s[3])
@@ -214,7 +226,7 @@ object_exp %= base + lparen + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, 
 #
 list_ %= expression, lambda h, s: [s[1]]
 list_ %= expression + comma + list_, lambda h, s: [s[1]] + s[3]
-list_ %= expression + list_comprehension + identifier + in_ + expression, lambda h, s: ImplicitListNode(s[1], s[4].Lemma, s[6])
+list_ %= expression + list_comprehension + identifier + in_ + expression, lambda h, s: ImplicitListNode(s[1], s[3].Lemma, s[5])
 
 
 def GetKeywords():
