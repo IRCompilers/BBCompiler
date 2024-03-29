@@ -135,6 +135,9 @@ testcase50 = ('type A { a = 0; b = 0; c = 0; d: int = 1; getX() => self.a; }'
               'print(4);')
 testcase51 = 'while(true){print(1); print(1);};'
 
+testcase52 = '{"we did it".x().x();}'
+
+
 number = 0
 
 

@@ -198,30 +198,31 @@ high_hierarchy_object %= high_hierarchy_object + as_ + identifier, lambda h, s: 
 #
 function_stack %= identifier + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
 function_stack %= function_stack + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
+function_stack %= identifier + arguments, lambda h, s: FunctionCallNode(s[1].Lemma, s[2])
+function_stack %= print_ + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
+function_stack %= sin + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
+function_stack %= cos + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
+function_stack %= tan + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
+function_stack %= sqrt + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
+function_stack %= exp + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
+function_stack %= log + lparen + expression + comma + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [s[3]] + [s[5]]) # duda
+function_stack %= rand + lparen + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [])
+function_stack %= range_ + lparen + expression + comma + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [s[3]] + [s[5]])
+function_stack %= base + lparen + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [])
+function_stack %= identifier + period + identifier, lambda h, s: SelfVariableNode(type(s[1]) is VariableNode and s[1].NAME == 'self', s[3].Lemma)
+function_stack %= lparen + expression + rparen, lambda h, s: s[2]
+function_stack %= number, lambda h, s: NumberNode(s[1])
+function_stack %= pi, lambda h, s: NumberNode(math.pi)
+function_stack %= e, lambda h, s: NumberNode(math.e)
+function_stack %= string, lambda h, s: StringNode(s[1].Lemma)
+function_stack %= true, lambda h, s: BooleanNode(s[1])
+function_stack %= false, lambda h, s: BooleanNode(s[1])
+function_stack %= lbrack + list_ + rbrack, lambda h, s: ListNode(s[1])
+function_stack %= object_exp + lbrack + expression + rbrack, lambda h, s: IndexingNode(s[1], s[3])
+
 #
-object_exp %= lparen + expression + rparen, lambda h, s: s[2]
-object_exp %= number, lambda h, s: NumberNode(s[1])
-object_exp %= pi, lambda h, s: NumberNode(math.pi)
-object_exp %= e, lambda h, s: NumberNode(math.e)
-object_exp %= string, lambda h, s: StringNode(s[1].Lemma)
-object_exp %= true, lambda h, s: BooleanNode(s[1])
-object_exp %= false, lambda h, s: BooleanNode(s[1])
 object_exp %= identifier, lambda h, s: VariableNode(s[1].Lemma)
-object_exp %= identifier + arguments, lambda h, s: FunctionCallNode(s[1].Lemma, s[2])
-object_exp %= function_stack, lambda h, s: s[2]
-object_exp %= identifier + period + identifier, lambda h, s: SelfVariableNode(type(s[1]) is VariableNode and s[1].NAME == 'self', s[3].Lemma)
-object_exp %= lbrack + list_ + rbrack, lambda h, s: ListNode(s[1])
-object_exp %= object_exp + lbrack + expression + rbrack, lambda h, s: IndexingNode(s[1], s[3])
-object_exp %= print_ + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
-object_exp %= sin + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
-object_exp %= cos + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
-object_exp %= tan + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
-object_exp %= sqrt + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
-object_exp %= exp + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
-object_exp %= log + lparen + expression + comma + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [s[3]] + [s[5]]) # duda
-object_exp %= rand + lparen + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [])
-object_exp %= range_ + lparen + expression + comma + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [s[3]] + [s[5]])
-object_exp %= base + lparen + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [])
+object_exp %= function_stack, lambda h, s: s[1]
 
 #
 list_ %= expression, lambda h, s: [s[1]]
