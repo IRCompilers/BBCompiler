@@ -62,7 +62,7 @@ let a: Person = Person("John", "Doe"), b: Animal = Dog(), c: Animal = Cat(), d: 
             }
 
         } else {
-            let numbers = [x ^ 2 || for x in [1,2,3]] in
+            let numbers = [x ^ 2 || x in [1,2,3]] in
                 for (y in numbers)
                     print(x @@ y);
         }
