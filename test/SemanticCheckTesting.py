@@ -112,7 +112,7 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
     def test_two_types_one_mismatch_other_non_declared(self):
         scope = Scope()
         type_ = TypeNode("Person",
-                         [TypeAtributeNode(ParameterNode("age", "Number"), StringNode(-1)),
+                         [TypeAtributeNode(ParameterNode("age", "Number"), StringNode('aaa')),
                           TypeAtributeNode(ParameterNode("name", "String"), StringNode("Unnamed"))],
                          [ParameterNode("name", "String"), ParameterNode("age", "Number")])
 
@@ -158,8 +158,8 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
                        FunctionNode("greet", greet_params, greet_body, "String")]
         type_ = TypeNode("Person", type_corpus, [ParameterNode("name", "String")])
 
-        function_call = TypeFunctionCallNode(StringNode("person"), "greet", [StringNode("John"), NumberNode(2)])
-        expression_block = ExpressionBlockNode([NewNode("Person", [StringNode("John")]), function_call])
+        function_call = TypeFunctionCallNode(VariableNode("John"), "greet", [StringNode("John"), NumberNode(2)])
+        expression_block = LetNode([ParameterNode("John",'Person')],[NewNode("Person",[StringNode("John")] )], function_call)
         node = ProgramNode([type_], expression_block)
         result = self.visitor.visit(node, scope)
         self.assertEqual(result, [])
@@ -177,8 +177,8 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
                        FunctionNode("greet", greet_params, greet_body, "String")]
         type_ = TypeNode("Person", type_corpus, [ParameterNode("name", "String")])
 
-        function_call = TypeFunctionCallNode(StringNode("person"), "not_greet", [StringNode("John"), NumberNode(2)])
-        expression_block = ExpressionBlockNode([NewNode("Person", [StringNode("John")]), function_call])
+        function_call = TypeFunctionCallNode(VariableNode("Juan"), "not_greet", [StringNode("John"), NumberNode(2)])
+        expression_block = LetNode([ParameterNode('Juan')],[NewNode("Person", [StringNode("Juan")])], function_call)
         node = ProgramNode([type_], expression_block)
         result = self.visitor.visit(node, scope)
         self.assertEqual(result, ["The Person type doesn't have a definition for not_greet"])
