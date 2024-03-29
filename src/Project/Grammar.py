@@ -48,7 +48,7 @@ list_comprehension = G.Terminal("||")
 
 for_, let, if_, else_, elif_ = G.Terminals("for let if else elif")
 while_, function, pi, e, print_ = G.Terminals("while function pi e print")
-new, inherits, protocol, type_, self_, in_, range_, extends = G.Terminals("new inherits protocol type self in range extends")
+new, inherits, protocol, type_, in_, range_, extends = G.Terminals("new inherits protocol type in range extends")
 true, false = G.Terminals("true false")
 
 rand = G.Terminal("rand")
@@ -196,7 +196,7 @@ object_exp %= lparen + simple_expression + rparen, lambda h, s: s[2]
 object_exp %= number, lambda h, s: NumberNode(s[1])
 object_exp %= pi, lambda h, s: NumberNode(math.pi)
 object_exp %= e, lambda h, s: NumberNode(math.e)
-object_exp %= string, lambda h, s: StringNode(s[1])
+object_exp %= string, lambda h, s: StringNode(s[1].Lemma)
 object_exp %= true, lambda h, s: BooleanNode(s[1])
 object_exp %= false, lambda h, s: BooleanNode(s[1])
 object_exp %= identifier, lambda h, s: s[1]
@@ -220,10 +220,10 @@ object_exp %= base + lparen + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, 
 #
 list_ %= simple_expression, lambda h, s: [s[1]]
 list_ %= simple_expression + comma + list_, lambda h, s: [s[1]] + s[3]
-list_ %= simple_expression + list_comprehension + identifier + in_ + simple_expression, lambda h, s: ImplicitListNode(s[1], s[3].Lemma, s[5])
+list_ %= simple_expression + list_comprehension + identifier + in_ + simple_expression, lambda h, s: ImplicitListNode(s[1], s[4].Lemma, s[6])
 
 
 def GetKeywords():
     return [for_, let, if_, else_, elif_, while_, function, pi, e, print_,
-            new, inherits, protocol, type_, self_, in_, range_, true, false, extends, as_,
+            new, inherits, protocol, type_, in_, range_, true, false, extends, as_,
             rand, sin, cos, sqrt, exp, log, is_, tan, base]

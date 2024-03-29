@@ -155,6 +155,8 @@ while True:
         break
 
 for i, testcase in enumerate(testcases):
+    if i == 49:
+        print(49)
     tokens, errors = lexer.Tokenize(testcase)
     print([token.Lemma for token in tokens])
     testing(tokens, i)

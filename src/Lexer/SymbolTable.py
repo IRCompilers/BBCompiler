@@ -15,7 +15,6 @@ regex_table = [
     (inherits, "inherits"),
     (protocol, "protocol"),
     (type_, "type"),
-    (self_, "self"),
     (in_, "in"),
     (range_, "range"),
     (true, "true"),
