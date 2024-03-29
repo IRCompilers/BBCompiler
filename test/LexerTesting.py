@@ -82,11 +82,20 @@ class TestLexer(unittest.TestCase):
         tokens, errors = self.lexer.Tokenize(
             "def \n \n \n plus (a2, b) \n 50 + 12.3  \"long string def : let print\" let x = 10 \"Hola Mundo\"")
 
-        expected_lemmas = ['def', 'plus', '(', 'a2', ',', 'b', ')', '50', '+', '12.3', '\"long string def : let print\"',
+        expected_lemmas = ['def', 'plus', '(', 'a2', ',', 'b', ')', '50', '+', '12.3',
+                           '\"long string def : let print\"',
                            'let', 'x', '=', '10', '\"Hola Mundo\"', '$']
         expected_types = [identifier.Name, identifier.Name, lparen.Name, identifier.Name, comma.Name, identifier.Name,
                           rparen.Name, number.Name, plus.Name, number.Name, string.Name, let.Name, identifier.Name,
                           equal.Name, number.Name, string.Name, G.EOF.Name]
+
+        self.check_equal(expected_types, expected_lemmas, tokens)
+
+    def test_tokenization_9(self):
+        tokens, errors = self.lexer.Tokenize("print(\"Hello, World!\")")
+
+        expected_lemmas = ['print', '(', '\"Hello, World!\"', ')', '$']
+        expected_types = [print_.Name, lparen.Name, string.Name, rparen.Name, G.EOF.Name]
 
         self.check_equal(expected_types, expected_lemmas, tokens)
 
