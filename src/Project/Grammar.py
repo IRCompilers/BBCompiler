@@ -29,7 +29,9 @@ concatenation = G.NonTerminal("<concatenation>")
 arithmetic_expression = G.NonTerminal("<arithmetic_expression>")
 module, product, monomial, pow_ = G.NonTerminals("<module> <product> <monomial> <pow>")
 high_hierarchy_object, object_exp = G.NonTerminals("<high_hierarchy_object> <object_exp>")
-list_, type_attribute, function_stack = G.NonTerminals("<list> <type_attribute> <function_stack>")
+list_, type_attribute, function_stack, sub_expression = G.NonTerminals("<list> <type_attribute> <function_stack> <sub_expression>")
+middle_expression, temp_expression = G.NonTerminals("<middle_expression> <temp_expression>")
+
 
 # Terminals
 string, identifier, number = G.Terminals("<string> <id> <number>")
@@ -46,25 +48,24 @@ list_comprehension = G.Terminal("||")
 
 for_, let, if_, else_, elif_ = G.Terminals("for let if else elif")
 while_, function, pi, e, print_ = G.Terminals("while function pi e print")
-new, inherits, protocol, type_, self_, in_, range_ = G.Terminals("new inherits protocol type self in range")
+new, inherits, protocol, type_, self_, in_, range_, extends = G.Terminals("new inherits protocol type self in range extends")
 true, false = G.Terminals("true false")
 
-extends = G.Terminal("extends")
 rand = G.Terminal("rand")
 sin, cos, sqrt, exp, log, tan, base = G.Terminals("sin cos sqrt exp log tan base")
 as_, is_ = G.Terminals("as is")
 
 init_ %= program, lambda h, s: s[1]
 
-program %= expression, lambda h, s: ProgramNode([], s[1])
+program %= sub_expression, lambda h, s: ProgramNode([], s[1])
 program %= statement + program, lambda h, s: ProgramNode([s[1]] + s[2].STATEMENTS, s[2].EXPRESSION)
 
 statement %= function + identifier + parameters + function_style, lambda h, s: FunctionNode(s[2].Lemma, s[3], s[4])
 statement %= type_ + identifier + type_def, lambda h, s: TypeNode(s[2].Lemma, s[3][3], s[3][0], s[3][1], s[3][2])
 statement %= protocol_declare, lambda h, s: s[1]
 #
-function_style %= darrow + simple_expression + semicolon, lambda h, s: s[2]
-function_style %= colon + identifier + darrow + simple_expression + semicolon, lambda h, s: s[4]
+function_style %= darrow + sub_expression, lambda h, s: s[2]
+function_style %= colon + identifier + darrow + sub_expression, lambda h, s: s[4]
 function_style %= lbrace + expression_block + rbrace, lambda h, s: s[2]
 function_style %= colon + identifier + lbrace + expression_block + rbrace, lambda h, s: s[4]
 #
@@ -84,17 +85,17 @@ type_def %= lparen + parameter_list + rparen + inherits + identifier + class_blo
 type_def %= lparen + parameter_list + rparen + inherits + identifier + lparen + argument_list + rparen + class_block, lambda h, s: (s[2], s[5].Lemma, s[7], s[9])
 type_def %= inherits + identifier + lparen + argument_list + rparen + class_block, lambda h, s: ([], s[2].Lemma, s[4], s[6])
 #
-class_block %= lbrack + rbrack, lambda h, s: []
-class_block %= lbrack + class_body + rbrack, lambda h, s: s[2]
+class_block %= lbrace + rbrace, lambda h, s: []
+class_block %= lbrace + class_body + rbrace, lambda h, s: s[2]
 #
 class_body %= class_declaration, lambda h, s: s[1]
-class_body %= class_declaration + class_body, lambda h, s: s[1] + s[2]
+class_body %= class_declaration + class_body, lambda h, s: s[1]
 #
 class_declaration %= variable + equal + simple_expression + semicolon, lambda h, s: TypeAtributeNode(s[1], s[3])
 class_declaration %= function_style, lambda h, s: s[1]
 #
-protocol_declare %= protocol + identifier + lbrack + protocol_body + rbrack, lambda h, s: ProtocolNode(s[2].Lemma, s[4])
-protocol_declare %= protocol + identifier + extends + identifier + lbrack + protocol_body + rbrack, lambda h, s: ProtocolNode(s[2].Lemma, s[6], s[4].Lemma)
+protocol_declare %= protocol + identifier + lbrace + protocol_body + rbrace, lambda h, s: ProtocolNode(s[2].Lemma, s[4])
+protocol_declare %= protocol + identifier + extends + identifier + lbrace + protocol_body + lbrace, lambda h, s: ProtocolNode(s[2].Lemma, s[6], s[4].Lemma)
 #
 protocol_body %= identifier + typed_parameters + colon + identifier + semicolon, lambda h, s: ProtocolMethodNode(s[1].Lemma, s[2], s[4].Lemma)
 protocol_body %= identifier + typed_parameters + colon + identifier + semicolon + protocol_body, lambda h, s: [ProtocolMethodNode(s[1].Lemma, s[2], s[3].Lemma)] + s[6]
@@ -105,33 +106,35 @@ typed_parameters %= lparen + typed_parameter_list + rparen, lambda h, s: s[2]
 typed_parameter_list %= identifier + colon + identifier, lambda h, s: [ParameterNode(s[1].Lemma, s[2].Lemma)]
 typed_parameter_list %= identifier + colon + identifier + typed_parameter_list, lambda h, s: [ParameterNode(s[1].Lemma, s[2].Lemma)] + s[4]
 #
+sub_expression %= expression, lambda h, s: s[1]
+sub_expression %= while_ + lparen + simple_expression + rparen + sub_expression, lambda h, s: WhileNode(s[3], s[5])
+sub_expression %= for_ + lparen + identifier + in_ + simple_expression + rparen + sub_expression, lambda h, s: ForNode(s[3].Lemma, s[5], s[7])
+sub_expression %= if_ + if_block + else_block, lambda h, s: IfElseExpression(s[2][0] + s[3][0], s[2][1] + s[3][1])
+
 expression %= simple_expression + semicolon, lambda h, s: s[1]
 expression %= lbrace + expression_block + rbrace, lambda h, s: s[2]
+expression %= let + declaration + in_ + sub_expression, lambda h, s: LetNode(s[2][0], s[2][1], s[4])
+
+middle_expression %= simple_expression, lambda h, s: s[1]
+middle_expression %= let + declaration + in_ + simple_expression, lambda h, s: LetNode(s[2][0], s[2][1], s[4])
+middle_expression %= if_ + if_block + else_block, lambda h, s: IfElseExpression(s[2][0]+s[3][0], s[2][1] + s[3][1])
 #
-expression_block %= expression, lambda h, s: s[1]
-expression_block %= expression_block + expression, lambda h, s: s[2]
+expression_block %= sub_expression, lambda h, s: s[1]
+expression_block %= expression_block + sub_expression, lambda h, s: s[2]
 #
-simple_expression %= let + declaration + in_ + simple_expression, lambda h, s: LetNode(s[2][0], s[2][1], s[3])
-simple_expression %= let + declaration + in_ + lbrace + expression_block + rbrace, lambda h, s: LetNode(s[2][0], s[2][1], s[4])
-simple_expression %= identifier + destruct + simple_expression, lambda h, s: DestructiveExpression(s[1].Lemma, s[3])
-simple_expression %= if_ + if_block + else_block, lambda h, s: IfElseExpression(s[2][0]+s[3][0], s[2][1] + s[3][1])
-simple_expression %= identifier + period + identifier + destruct + simple_expression, lambda h, s: SelfDestructiveExpression(SelfVariableNode(s[1].Lemma == 'self', s[3].Lemma), s[5])
-simple_expression %= while_ + lparen + simple_expression + rparen + expression, lambda h, s: WhileNode(s[3], s[5])
-simple_expression %= for_ + lparen + identifier + in_ + simple_expression + rparen + expression, lambda h, s: ForNode(s[3].Lemma, s[5], s[7])
-simple_expression %= new + identifier + arguments, lambda h, s: NewNode(s[2].Lemma, s[3])
 simple_expression %= disjunction, lambda h, s: s[1]
+simple_expression %= identifier + destruct + simple_expression, lambda h, s: DestructiveExpression(s[1].Lemma, s[3])
+simple_expression %= identifier + period + identifier + destruct + simple_expression, lambda h, s: SelfDestructiveExpression(SelfVariableNode(s[1].Lemma == 'self', s[3].Lemma), s[5])
+simple_expression %= new + identifier + arguments, lambda h, s: NewNode(s[2].Lemma, s[3])
 #
 declaration %= variable + equal + simple_expression, lambda h, s: ([s[1]], [s[3]])
 declaration %= variable + equal + simple_expression + comma + declaration, lambda h, s: ([s[1]] + s[5][0], [s[3]]+s[5][1])
-
-# testcase15 = ' let number = 42, test = "The meaning of life is" in print(test@@number);'
-
 #
 if_block %= lparen + simple_expression + rparen + simple_expression, lambda h, s: ([s[2]], [s[4]])
 if_block %= lparen + simple_expression + rparen + lbrace + expression_block + rbrace, lambda h, s: ([s[2]], [s[5]])
 #
-else_block %= else_ + simple_expression, lambda h, s: ([], [s[2]])
-else_block %= else_ + lbrace + expression_block + rbrace, lambda h, s: ([], [s[3]])
+else_block %= else_ + sub_expression, lambda h, s: ([], [s[2]])
+# else_block %= else_ + lbrace + expression_block + rbrace, lambda h, s: ([], [s[3]])
 else_block %= elif_ + if_block + else_block, lambda h, s: (s[2][0]+s[3][0], s[2][1] + s[3][1])
 #
 arguments %= lparen + rparen, lambda h, s: []
@@ -202,7 +205,7 @@ object_exp %= function_stack, lambda h, s: s[2]
 object_exp %= identifier + period + identifier, lambda h, s: SelfVariableNode(s[1].Lemma == 'self', s[3])
 object_exp %= lbrack + list_ + rbrack, lambda h, s: ListNode(s[1])
 object_exp %= object_exp + lbrack + simple_expression + rbrack, lambda h, s: IndexingNode(s[1], s[3])
-object_exp %= print_ + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
+object_exp %= print_ + lparen + middle_expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
 object_exp %= sin + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
 object_exp %= cos + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
 object_exp %= tan + lparen + simple_expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
