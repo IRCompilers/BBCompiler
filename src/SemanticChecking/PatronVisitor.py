@@ -12,16 +12,15 @@ class SemanticCheckerVisitor(object):
     def visit(self, node, scope: Scope):
         pass
 
-    # _______________________________________________________________________________________
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode, scope: Scope = None):  # ✔️
         # --------------------------------------------------------------------
         # CHECKING POSSIBLE ERRORS IN PROGRAM NODE ✔️
         # --------------------------------------------------------------------
-        # Avoiding repited Types
         if scope is None:
             scope = Scope()
 
+        # Avoiding repited Types
         defaultTypes = ['Object', 'Number', 'Boolean', 'String', 'Vector']
         TypeNames = defaultTypes + [x.NAME for x in node.STATEMENTS if type(x) is TypeNode]
         if EqualObjects(TypeNames):
@@ -47,7 +46,6 @@ class SemanticCheckerVisitor(object):
         Inherence['String'] = 'Object'
         Inherence['Vector'] = 'Object'
         TypeOrder, Error = GetTopologicOrder(Inherence)
-        #EDIT
         if Error!=None:
             if len(Error)==2:
                 self.errors.append(f"Circular inheritance detected between {Error[0]} and {Error[1]}")
@@ -75,6 +73,7 @@ class SemanticCheckerVisitor(object):
         # -----------------------------------------------------------------------
         # VISITING ALL CHILDREN ✔️
         # -----------------------------------------------------------------------
+        
         # visiting the protocols
         for Protocol in [x for x in node.STATEMENTS if type(x) is ProtocolNode]:
             self.visit(Protocol, scope)
@@ -106,7 +105,6 @@ class SemanticCheckerVisitor(object):
         # -----------------------------------------------------------------------
         return self.errors
 
-    # _______________________________________________________________________________________
 
     @visitor.when(ProtocolNode)
     def visit(self, node: ProtocolNode, scope: Scope = None):  # ✔️✔️
@@ -133,8 +131,6 @@ class SemanticCheckerVisitor(object):
         [self.visit(x, scope) for x in node.CORPUS]
         # -----------------------------------------------------------------------
         return self.errors
-
-    # _______________________________________________________________________________________
 
     @visitor.when(ProtocolMethodNode)
     def visit(self, node: ProtocolMethodNode, scope: Scope = None):  # ✔️✔️
@@ -166,7 +162,7 @@ class SemanticCheckerVisitor(object):
             # --------------------------------------------------------------------
         return self.errors
 
-    # _______________________________________________________________________________________
+   
 
     @visitor.when(TypeNode)
     def visit(self, node: TypeNode, scope: Scope = None):  # ✔️
@@ -271,7 +267,7 @@ class SemanticCheckerVisitor(object):
         scope.AddVariable(' self.' + node.VAR.NAME, node.VALUE.VALUE_TYPE)
         return self.errors
 
-    # _______________________________________________________________________________________
+   
 
     @visitor.when(FunctionNode)
     def visit(self, node: FunctionNode, scope: Scope = None):  # ✔️
@@ -312,9 +308,9 @@ class SemanticCheckerVisitor(object):
         # --------------------------------------------------------------------
         return self.errors
 
-    # _______________________________________________________________________________________
-    # _______________________________________________________________________________________
-    # _______________________________________________________________________________________
+   
+   
+   
 
     @visitor.when(ExpressionBlockNode)
     def visit(self, node: ExpressionBlockNode, scope: Scope = None):  # ✔️✔️
@@ -323,9 +319,9 @@ class SemanticCheckerVisitor(object):
         node.VALUE_TYPE = node.EXPRESSIONS[-1].VALUE_TYPE
         return self.errors
 
-    # _______________________________________________________________________________________
-    # _______________________________________________________________________________________
-    # _______________________________________________________________________________________
+   
+   
+   
 
     # ---------------------------------------------------------------------------------------
     # DEFINING VARIABLES
@@ -341,7 +337,7 @@ class SemanticCheckerVisitor(object):
         self.visit(node.VARS[0], scope)
         # Checking compatibility
         if not scope.AreRelated(ValueType, node.VARS[0].TYPE):
-            self.errors.append(f'The expresion return {ValueType}, but {node.VARS[0].TYPE} was expected')
+            self.errors.append(f'{node.VARS[0].TYPE} expression was expected instead of {ValueType}')
         # Creating a new scope for let expression
         new_scope = scope.CreateChild('let expression')
         new_scope.AddVariable(node.VARS[0].NAME, ValueType)
@@ -400,7 +396,7 @@ class SemanticCheckerVisitor(object):
         node.VALUE_TYPE = node.NAME
         return self.errors
 
-    # _______________________________________________________________________________________
+   
     # ---------------------------------------------------------------------------------------
     # CONDITIONALS AND CYCLES
     # ---------------------------------------------------------------------------------------
@@ -449,7 +445,7 @@ class SemanticCheckerVisitor(object):
         node.VALUE_TYPE = node.EXPRESSION.VALUE_TYPE
         return self.errors
 
-    # _______________________________________________________________________________________
+   
 
     # ---------------------------------------------------------------------------------------
     # OPERATIONS
@@ -489,7 +485,7 @@ class SemanticCheckerVisitor(object):
         self.visit(node.RIGHT, scope)
         if not scope.AreRelated(node.LEFT.VALUE_TYPE, 'Comparable'):
             self.errors.append(f'{node.LEFT.VALUE_TYPE} type is not Comparable')
-        if node.LEFT.VALUE_TYPE !=node.RIGHT.VALUE_TYPE:
+        if not scope.AreRelated(node.LEFT.VALUE_TYPE,node.RIGHT.VALUE_TYPE):
             self.errors.append(f"{node.LEFT.VALUE_TYPE} expression was expected instead of {node.RIGHT.VALUE_TYPE}")
         node.VALUE_TYPE = 'Boolean'
         return self.errors
@@ -530,7 +526,6 @@ class SemanticCheckerVisitor(object):
         node.VALUE_TYPE = 'Boolean'
         return self.errors
 
-    # _____________________________________________________________________________________________________________________________
     # -------------------------------------------------------------------------------------------------------------------
     # TYPE NODES
     # -------------------------------------------------------------------------------------------------------------------
@@ -570,10 +565,9 @@ class SemanticCheckerVisitor(object):
             self.errors.append(f"The type of the expression doesn't match correctly")
         node.VALUE_TYPE = node.TYPE
         return self.errors
-
-    # ______________________________________________________________________________
-    # ------------------------------------------------------------------------------
-    # FUNCTION CALLS AND CLASS PROPERTY CALLS
+    
+    #----------------------------------------------------------------------------
+    # FUNCTION CALLS AND TYPE PROPERTY CALLS
     # ------------------------------------------------------------------------------
 
     @visitor.when(FunctionCallNode)
@@ -630,9 +624,7 @@ class SemanticCheckerVisitor(object):
         else:
             node.VALUE_TYPE = scope.VariableType('self.' + node.NAME)
         return self.errors
-
-    # ______________________________________________________________________________
-    # ------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------
     # VECTORS. EXPLICIT, IMPLICIT AND INDEXING
     # ------------------------------------------------------------------------------
 
