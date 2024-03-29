@@ -29,7 +29,7 @@ concatenation = G.NonTerminal("<concatenation>")
 arithmetic_expression = G.NonTerminal("<arithmetic_expression>")
 module, product, monomial, pow_ = G.NonTerminals("<module> <product> <monomial> <pow>")
 high_hierarchy_object, object_exp = G.NonTerminals("<high_hierarchy_object> <object_exp>")
-list_, main_expression, function_stack, sub_expression = G.NonTerminals("<list> <main_expression> <function_stack>")
+list_, main_expression, function_stack = G.NonTerminals("<list> <main_expression> <function_stack>")
 
 
 # Terminals
@@ -75,7 +75,7 @@ parameter_list %= variable, lambda h, s: [s[1]]
 parameter_list %= variable + comma + parameter_list, lambda h, s: [s[1]] + s[3]
 #
 variable %= identifier, lambda h, s: ParameterNode(s[1].Lemma)
-variable %= identifier + colon + identifier, lambda h, s: ParameterNode(s[1].Lemma, s[3])
+variable %= identifier + colon + identifier, lambda h, s: ParameterNode(s[1].Lemma, s[3].Lemma)
 #
 type_def %= class_block, lambda h, s: ([], 'Object', [], s[0])
 type_def %= inherits + identifier + class_block, lambda h, s: ([], s[2].Lemma, [], s[3])
@@ -87,16 +87,16 @@ type_def %= inherits + identifier + lparen + argument_list + rparen + class_bloc
 class_block %= lbrace + rbrace, lambda h, s: []
 class_block %= lbrace + class_body + rbrace, lambda h, s: s[2]
 #
-class_body %= class_declaration, lambda h, s: s[1]
-class_body %= class_declaration + class_body, lambda h, s: s[1]
+class_body %= class_declaration, lambda h, s: [s[1]]
+class_body %= class_declaration + class_body, lambda h, s: [s[1]] + s[2]
 #
 class_declaration %= variable + equal + main_expression, lambda h, s: TypeAtributeNode(s[1], s[3])
-class_declaration %= function_style, lambda h, s: s[1]
+class_declaration %= identifier + parameters + function_style, lambda h, s: FunctionNode(s[1], s[2], s[3])
 #
 protocol_declare %= protocol + identifier + lbrace + protocol_body + rbrace, lambda h, s: ProtocolNode(s[2].Lemma, s[4])
-protocol_declare %= protocol + identifier + extends + identifier + lbrace + protocol_body + lbrace, lambda h, s: ProtocolNode(s[2].Lemma, s[6], s[4].Lemma)
+protocol_declare %= protocol + identifier + extends + identifier + lbrace + protocol_body + rbrace, lambda h, s: ProtocolNode(s[2].Lemma, s[6], s[4].Lemma)
 #
-protocol_body %= identifier + typed_parameters + colon + identifier + semicolon, lambda h, s: ProtocolMethodNode(s[1].Lemma, s[2], s[4].Lemma)
+protocol_body %= identifier + typed_parameters + colon + identifier + semicolon, lambda h, s: [ProtocolMethodNode(s[1].Lemma, s[2], s[4].Lemma)]
 protocol_body %= identifier + typed_parameters + colon + identifier + semicolon + protocol_body, lambda h, s: [ProtocolMethodNode(s[1].Lemma, s[2], s[3].Lemma)] + s[6]
 #
 typed_parameters %= lparen + rparen, lambda h, s: []
@@ -120,7 +120,7 @@ expression_block %= expression_block + main_expression, lambda h, s: s[2]
 simple_expression %= let + declaration + in_ + expression, lambda h, s: LetNode(s[2][0], s[2][1], s[4])
 simple_expression %= identifier + destruct + expression, lambda h, s: DestructiveExpression(s[1].Lemma, s[3])
 simple_expression %= identifier + period + identifier + destruct + expression, lambda h, s: SelfDestructiveExpression(SelfVariableNode(s[1].Lemma == 'self', s[3].Lemma), s[5])
-simple_expression %= if_ + lparen + expression + rparen + expression + else_block, lambda h, s: IfElseExpression([s[3]] + s[4][0], [s[5]] + s[6][1])
+simple_expression %= if_ + lparen + expression + rparen + expression + else_block, lambda h, s: IfElseExpression([s[3]] + s[6][0], [s[5]] + s[6][1])
 simple_expression %= while_ + lparen + expression + rparen + expression, lambda h, s: WhileNode(s[3], s[5])
 simple_expression %= for_ + lparen + identifier + in_ + expression + rparen + expression, lambda h, s: ForNode(s[3].Lemma, s[5], s[7])
 simple_expression %= new + identifier + arguments, lambda h, s: NewNode(s[2].Lemma, s[3])
@@ -182,7 +182,7 @@ pow_ %= pow_ + power_asterisk + high_hierarchy_object, lambda h, s: ArithmeticEx
 pow_ %= pow_ + power + high_hierarchy_object, lambda h, s: ArithmeticExpression(s[2].Lemma, s[1], s[3])
 #
 high_hierarchy_object %= object_exp, lambda h, s: s[1]
-high_hierarchy_object %= high_hierarchy_object + as_ + object_exp, lambda h, s: AsNode(s[1], s[3].Lemma)
+high_hierarchy_object %= high_hierarchy_object + as_ + identifier, lambda h, s: AsNode(s[1], s[3].Lemma)
 #
 function_stack %= identifier + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
 function_stack %= function_stack + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
@@ -212,9 +212,9 @@ object_exp %= range_ + lparen + expression + comma + expression + rparen, lambda
 object_exp %= base + lparen + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [])
 
 #
-list_ %= simple_expression, lambda h, s: [s[1]]
-list_ %= simple_expression + comma + list_, lambda h, s: [s[1]] + s[3]
-list_ %= simple_expression + list_comprehension + identifier + in_ + simple_expression, lambda h, s: ImplicitListNode(s[1], s[4].Lemma, s[6])
+list_ %= expression, lambda h, s: [s[1]]
+list_ %= expression + comma + list_, lambda h, s: [s[1]] + s[3]
+list_ %= expression + list_comprehension + identifier + in_ + expression, lambda h, s: ImplicitListNode(s[1], s[4].Lemma, s[6])
 
 
 def GetKeywords():
