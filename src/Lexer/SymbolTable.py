@@ -52,6 +52,7 @@ regex_table = [
     (darrow, "=>"),
     (and_, "&"),
     (or_, "\|"),
+    (list_comprehension, "\|\|"),
     (not_, "\!"),
     (modulus, "%"),
     (power, "^"),
