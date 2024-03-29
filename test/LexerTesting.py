@@ -99,11 +99,20 @@ class TestLexer(unittest.TestCase):
 
         self.check_equal(expected_types, expected_lemmas, tokens)
 
+    def test_tokenization_10(self):
+        tokens, errors = self.lexer.Tokenize("protocol Equatable extends Hashable{ }")
+
+        expected_lemmas = ['protocol', 'Equatable', 'extends', 'Hashable', '{', '}', '$']
+        expected_types = [protocol.Name, identifier.Name, extends.Name, identifier.Name, lbrace.Name, rbrace.Name, G.EOF.Name]
+
+        self.check_equal(expected_types, expected_lemmas, tokens)
+
     def check_equal(self, expected_types, expected_lemmas, tokens):
         token_lemmas = [token.Lemma for token in tokens]
         token_types = [token.TokenType.Name for token in tokens]
         self.assertEqual(expected_types, token_types)
         self.assertEqual(expected_lemmas, token_lemmas)
+
 
 
 if __name__ == '__main__':
