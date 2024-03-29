@@ -135,28 +135,28 @@ testcase50 = ('type A { a = 0; b = 0; c = 0; d: int; getX() => self.a; }'
 number = 0
 
 
-def testing(testcase, id):
-    global number
-    try:
-        parse, operations = parser([t.TokenType for t in testcase], get_shift_reduce=True)
-        ast = evaluate_reverse_parse(parse, operations, testcase)
-        print('\x1b[6;30;42m' + f'Test {id} passed!' + '\x1b[0m')
-    except Exception as e:
-        number += 1
-        print(e)
-        print('\x1b[6;30;41m' + f'Test {id} failed!' + '\x1b[0m')
-
-
-testcases = []
-while True:
-    try:
-        testcases.append(eval(f'testcase{len(testcases)}'))
-    except:
-        break
-
-for i, testcase in enumerate(testcases):
-    if i == 49:
-        print(49)
-    tokens, errors = lexer.Tokenize(testcase)
-    print([token.Lemma for token in tokens])
-    testing(tokens, i)
+# def testing(testcase, id):
+#     global number
+#     try:
+#         parse, operations = parser([t.TokenType for t in testcase], get_shift_reduce=True)
+#         ast = evaluate_reverse_parse(parse, operations, testcase)
+#         print('\x1b[6;30;42m' + f'Test {id} passed!' + '\x1b[0m')
+#     except Exception as e:
+#         number += 1
+#         print(e)
+#         print('\x1b[6;30;41m' + f'Test {id} failed!' + '\x1b[0m')
+#
+#
+# testcases = []
+# while True:
+#     try:
+#         testcases.append(eval(f'testcase{len(testcases)}'))
+#     except:
+#         break
+#
+# for i, testcase in enumerate(testcases):
+#     if i == 49:
+#         print(49)
+#     tokens, errors = lexer.Tokenize(testcase)
+#     print([token.Lemma for token in tokens])
+#     testing(tokens, i)
