@@ -35,7 +35,7 @@ class ParserLR1(ShiftReduceParser):
                     next_symbol = item.NextSymbol
                     if next_symbol.IsTerminal:
                         self.add(self.action, (idx, next_symbol),
-                                       (SROperations.SHIFT, node[next_symbol.Name][0].idx))
+                                 (SROperations.SHIFT, node[next_symbol.Name][0].idx))
                     else:
                         self.add(self.goto, (idx, next_symbol), node[next_symbol.Name][0].idx)
 
