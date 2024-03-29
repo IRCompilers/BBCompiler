@@ -281,12 +281,12 @@ class InterpretVisitor:
         self.visit(node.EXPRESSION,context)
 
 # Test the above
-par_node = ParameterNode("x", "int")
-second_par_node = ParameterNode("y", "int")
-plus_node = ArithmeticExpression("+", Variable("x"), Variable("y"))
-let_node = LetNode([par_node, second_par_node], [NumberNode(111), NumberNode(222)], plus_node)
-print_node = FunctionCallNode('print',[let_node])
-program = ProgramNode([], print_node)
-
-interpreter = InterpretVisitor()
-interpreter.visit(program)
+# par_node = ParameterNode("x", "int")
+# second_par_node = ParameterNode("y", "int")
+# plus_node = ArithmeticExpression("+", Variable("x"), Variable("y"))
+# let_node = LetNode([par_node, second_par_node], [NumberNode(111), NumberNode(222)], plus_node)
+# print_node = FunctionCallNode('print',[let_node])
+# program = ProgramNode([], print_node)
+#
+# interpreter = InterpretVisitor()
+# interpreter.visit(program)

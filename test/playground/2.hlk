@@ -1,0 +1,21 @@
+type Point {
+    x = 0;
+    y = 0;
+
+    getX() => self.x;
+    getY() => self.y;
+
+    setX(x) => self.x := x;
+    setY(y) => self.y := y;
+}
+
+type PolarPoint inherits Point {
+    rho() => sqrt(self.getX() ^ 2 + self.getY() ^ 2);
+}
+
+let p = PolarPoint() in {
+    p.setX(3);
+    p.setY(4);
+    print(p.rho());
+    print(p.theta());
+}
