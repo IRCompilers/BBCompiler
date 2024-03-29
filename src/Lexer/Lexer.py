@@ -2,6 +2,8 @@ import os
 import pickle
 from typing import List
 
+import dill
+
 from src.Common.Automata import State
 from src.Common.Exceptions import LexerError
 from src.Common.Token import Token
@@ -17,13 +19,13 @@ class Lexer:
 
         if os.path.exists(file_path):
             with open(file_path, 'rb') as f:
-                self.automaton = pickle.load(f)
+                self.automaton = dill.load(f)
         else:
             self.regex_builder = RegexBuilder()
             self.regexs = self._build_regexs(table)
             self.automaton = self._build_automaton()
             with open(file_path, 'wb') as f:
-                pickle.dump(self.automaton, f)
+                dill.dump(self.automaton, f)
 
     def _build_regexs(self, table):
         regexs = []
@@ -121,32 +123,3 @@ class Lexer:
         tokens.append(Token("$", G.EOF, (rows, cols)))
 
         return tokens, errors
-
-
-# start_time = time.time()
-
-# Calculate the elapsed time
-# lexer = Lexer(regex_table)
-# string = "?\"temp\""
-# # #
-# # # temp = RegexBuilder()
-# # # string_regex: DFA = temp.build_regex(regex_table[-1][1], True)[0]
-# # #
-# # #
-# # # print(string_regex.recognize(string))
-# #
-# # # print(string_regex.transitions)
-# # # print("Finals: ", string_regex.finals)
-# #
-# # # print(string_regex)
-# #
-# #
-# tokens, errors = lexer.Tokenize(string)
-# # #
-# # # print(string)
-# # #
-# for v in tokens:
-#     print(v.Lemma, v.TokenType, v.Pos)
-#
-# for e in errors:
-#     print('\033[91m' + str(e) + '\033[0m')
