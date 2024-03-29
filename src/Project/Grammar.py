@@ -206,10 +206,10 @@ object_exp %= e, lambda h, s: NumberNode(math.e)
 object_exp %= string, lambda h, s: StringNode(s[1].Lemma)
 object_exp %= true, lambda h, s: BooleanNode(s[1])
 object_exp %= false, lambda h, s: BooleanNode(s[1])
-object_exp %= identifier, lambda h, s: s[1]
+object_exp %= identifier, lambda h, s: VariableNode(s[1].Lemma)
 object_exp %= identifier + arguments, lambda h, s: FunctionCallNode(s[1].Lemma, s[2])
 object_exp %= function_stack, lambda h, s: s[2]
-object_exp %= identifier + period + identifier, lambda h, s: SelfVariableNode(s[1].Lemma == 'self', s[3])
+object_exp %= identifier + period + identifier, lambda h, s: SelfVariableNode(type(s[1]) is VariableNode and s[1].NAME == 'self', s[3].Lemma)
 object_exp %= lbrack + list_ + rbrack, lambda h, s: ListNode(s[1])
 object_exp %= object_exp + lbrack + expression + rbrack, lambda h, s: IndexingNode(s[1], s[3])
 object_exp %= print_ + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
