@@ -116,10 +116,7 @@ class SemanticCheckerVisitor(object):
             self.errors.append(f"The protocol {node.EXTENDS} doesn't exist in the current context")
         # Cheking that the protocol extend something that exist
         if not scope.IsProtocolDefined(node.EXTENDS) and node.EXTENDS != '':
-            if scope.IsTypeDefined(node.EXTENDS):
-                self.errors.append(f"The {node.NAME} protocol cannot extend the {node.EXTENDS} type")
-            else:
-                self.errors.append(f"The {node.EXTENDS} protocol doesn't exist in the current context")
+            self.errors.append(f"The protocol {node.EXTENDS} doesn't exist in the current context")
         # Avoiding repited Functions
         FuncNames = [x.NAME for x in node.CORPUS]
         if EqualObjects(FuncNames):
@@ -184,10 +181,7 @@ class SemanticCheckerVisitor(object):
                 node.INHERITS='Object'
             # Cheking that the type inherits exist
             elif not scope.IsTypeDefined(node.INHERITS):
-                if scope.IsProtocolDefined(node.INHERITS):
-                    self.errors.append(f"The {node.NAME} type cannot inherit from {node.INHERITS} protocol")
-                else:
-                    self.errors.append(f"The {node.INHERITS} type doesn't exist in the current context")
+                self.errors.append(f"The {node.INHERITS} type doesn't exist in the current context")
                 node.INHERITS='Object'
 
             # Avoid inherints from basic types
@@ -246,9 +240,7 @@ class SemanticCheckerVisitor(object):
             scope.AddTypeFunctions(node.NAME, [x for x in node.CORPUS if type(x) is FunctionNode])
             # Unlocking the variables
             special_scope.UnlockVariables()
-            #Removing constructor variables
-            [special_scope.RemoveVariable(x.NAME,x.TYPE) for x in node.CONSTRUCTOR]
-
+           
         # TYPE FUNCTIONS
         if firstVisit:
             special_scope = scope.GetChild(node.NAME)

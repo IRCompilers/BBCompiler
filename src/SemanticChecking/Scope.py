@@ -189,7 +189,7 @@ class Scope:
     def Descend(self,Child:str, Ancestor:str)->bool:
         #Check if a type is the ancestor of the other
         aux=Child
-        while(aux!='Object'):    
+        while(aux!=''):    
             if aux==Ancestor:
                 return True
             if not aux in self.TYPE_HIERARCHY.keys():
@@ -240,8 +240,8 @@ class Scope:
         if self.PARENT!=None:
             return self.PARENT.AreRelated(Type1,Type2)
         #if one is object, this is obviously related
-        #if Type1=='Object' or Type2=='Object':
-        #    return True
+        if Type1=='Object' or Type2=='Object':
+            return True
         #Check if they are both types
         if Type1 in self.TYPE_NAMES and Type2 in self.TYPE_NAMES:
             return self.Descend(Type1,Type2)
