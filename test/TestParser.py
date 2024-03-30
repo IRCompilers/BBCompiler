@@ -1,8 +1,8 @@
 import unittest
 
 from src.Project.Grammar import G
-from src.Common.Compiler import Terminal
-from src.Parser.ParserLR1 import LR1Parser, evaluate_reverse_parse
+from src.Parser.ParserLR1 import ParserLR1
+from src.Parser.UtilMethods import evaluate_reverse_parse
 from src.Lexer.Lexer import Lexer
 from src.Lexer.SymbolTable import regex_table
 
@@ -17,7 +17,7 @@ from src.Lexer.SymbolTable import regex_table
 #         testcase0 = '-5;'
 
 lexer = Lexer(regex_table, file_path="../models/lexer_automaton.pkl")
-parser = LR1Parser(G, verbose=False)
+parser = ParserLR1(G, verbose=False)
 
 testcase0 = '-5;'
 testcase1 = '1+2*3;'
@@ -87,8 +87,7 @@ testcase31 = 'let numbers = [x^2 || x in range(1,10)] in print(x);'
 testcase32 = 'print("The \\"message is " @ 1);'
 
 # testing type declaration
-testcase33 = ('type Point { x = 0; y=0; getX()=> self.x;}'
-            'print(a);')
+testcase33 = 'type Point { x = 0; y=0; getX()=> self.x;}'
 
 # testing instance and function calls
 testcase34 = 'let pt = new Point() in print("x: " @ pt.getX() @ " y: " @ pt.getY());'
@@ -135,7 +134,9 @@ testcase50 = ('type A { a = 0; b = 0; c = 0; d: int = 1; getX() => self.a; }'
               'print(4);')
 testcase51 = 'while(true){print(1); print(1);};'
 
-testcase52 = '{"we did it".x().x();}'
+testcase52 = '{self.x().x();}'
+
+testcase53 = 'type Point{ x=0; y=0; getX()=>self.x; getY()=>self.y; setX(x)=>self.x:=x; getY(y)=>self.y:=y;}'
 
 
 number = 0

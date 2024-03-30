@@ -2,7 +2,8 @@ from src.CodeGen.Interpreter import InterpretVisitor
 from src.Common.Exceptions import SemanticCheckError
 from src.Lexer.Lexer import Lexer
 from src.Lexer.SymbolTable import regex_table
-from src.Parser.ParserLR1 import LR1Parser, evaluate_reverse_parse
+from src.Parser.ParserLR1 import ParserLR1
+from src.Parser.UtilMethods import evaluate_reverse_parse
 from src.Project.Grammar import G
 from src.SemanticChecking.PatronVisitor import SemanticCheckerVisitor
 
@@ -17,7 +18,7 @@ def run_pipeline(text: str, model_folder: str):
     if(len(errors_lexer)>0):
         return    
     
-    parser = LR1Parser(G, verbose=False)
+    parser = ParserLR1(G, verbose=False)
     derivation, operations = parser(tokens)
     #QUE HACER SI HAY ERRORES EN EL PARSER??
     if(derivation==None):
