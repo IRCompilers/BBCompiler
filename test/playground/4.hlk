@@ -9,7 +9,7 @@ protocol Equatable extends Hashable {
 type Person {
 
     hash() : Number {
-        return 42;
+        42;
     }
 }
 
