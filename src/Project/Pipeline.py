@@ -18,30 +18,30 @@ def run_pipeline(text: str, model_folder: str, verbose: bool = True):
     for e in errors_lexer:
         print('\033[91m' + str(e) + '\033[0m')
 
-    # if (len(errors_lexer) > 0):
-    #     return
+    if (len(errors_lexer) > 0):
+        return
 
-    # parser = LR1Parser(G, verbose=False)
-    # derivation, operations = parser(tokens)
-    #
-    # # QUE HACER SI HAY ERRORES EN EL PARSER??
-    # if derivation == None:
-    #     return
-    #
-    # ast = evaluate_reverse_parse(derivation, operations, tokens)
-    #
-    # semantic_checker = SemanticCheckerVisitor()
-    # errors = semantic_checker.visit(ast, None)
-    #
-    # if len(errors) > 0:
-    #     for e in errors:
-    #         error = SemanticCheckError("SEMANTIC ERROR: " + e)
-    #         print('\033[91m' + str(error) + '\033[0m')
-    #
-    #     return
-    #
-    # interpreter = InterpretVisitor()
-    # interpreter.visit(ast, None)
+    parser = LR1Parser(G, verbose=False)
+    derivation, operations = parser(tokens)
+
+    # QUE HACER SI HAY ERRORES EN EL PARSER??
+    if derivation == None:
+        return
+
+    ast = evaluate_reverse_parse(derivation, operations, tokens)
+
+    semantic_checker = SemanticCheckerVisitor()
+    errors = semantic_checker.visit(ast, None)
+
+    if len(errors) > 0:
+        for e in errors:
+            error = SemanticCheckError("SEMANTIC ERROR: " + e)
+            print('\033[91m' + str(error) + '\033[0m')
+
+        return
+
+    interpreter = InterpretVisitor()
+    interpreter.visit(ast)
 
 
 if __name__ == '__main__':

@@ -159,7 +159,8 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         type_ = TypeNode("Person", type_corpus, [ParameterNode("name", "String")])
 
         function_call = TypeFunctionCallNode(VariableNode("person"), "greet", [StringNode("John"), NumberNode(2)])
-        expression_block = LetNode([ParameterNode("person", "Person")], [NewNode("Person", [StringNode("John")])], function_call)
+        expression_block = LetNode([ParameterNode("person", "Person")], [NewNode("Person", [StringNode("John")])],
+                                   function_call)
         node = ProgramNode([type_], expression_block)
         result = self.visitor.visit(node, scope)
         self.assertEqual(result, [])
@@ -402,7 +403,8 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         node = ProgramNode([protocol, type_a], let_)
         result = self.visitor.visit(node, scope)
 
-        self.assertEqual(result, ['Flyable expression was expected instead of Bird', "The Bird type doesn't have a definition for fly"])
+        self.assertEqual(result, ['Flyable expression was expected instead of Bird',
+                                  "The Bird type doesn't have a definition for fly"])
 
     def test_variables_in_different_context(self):
         scope = Scope()
@@ -437,6 +439,23 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
             "The instance variable doesn't exist in the current context",
             "The NonExistentType type doesn't exist in the current context"
         ])
+
+    def test_recursion(self):
+        """
+        function factorial(x: Number) => x * factorial(x-1);
+
+        print(factorial(5))
+        """
+        scope = Scope()
+        fact_body_recursion = FunctionCallNode("factorial",
+                                               [ArithmeticExpression("-", VariableNode("x"), NumberNode(1))])
+        fact_body = ArithmeticExpression("*", VariableNode("x"), fact_body_recursion)
+        fact = FunctionNode("factorial", [ParameterNode("x", "Number")], fact_body)
+        print_ = FunctionCallNode("print", [FunctionCallNode("factorial", [NumberNode(5)])])
+        node = ProgramNode([fact], print_)
+        result = self.visitor.visit(node, scope)
+
+        self.assertEqual(result, [])
 
     def test_ultimate(self):
         scope = Scope()

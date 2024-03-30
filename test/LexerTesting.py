@@ -100,11 +100,20 @@ class TestLexer(unittest.TestCase):
         self.check_equal(expected_types, expected_lemmas, tokens)
 
     def test_tokenization_10(self):
-        tokens, erros = self.lexer.Tokenize("a.b")
+        tokens, errors = self.lexer.Tokenize("a.b")
         expected_lemmas = ['a', '.', 'b', '$']
         expected_types = [identifier.Name, period.Name, identifier.Name, G.EOF.Name]
 
         self.check_equal(expected_types, expected_lemmas, tokens)
+
+    def test_tokenization_11(self):
+        tokens, errors = self.lexer.Tokenize('print("The \" message is" @ 1);')
+        expected_lemmas = ['print', '(', "\"The \"", "message", "is", "@", '1', ")", ";", "$"]
+        expected_types = [print_.Name, lparen.Name, string.Name, identifier.Name, is_.Name, concat.Name, number.Name, rparen.Name, semicolon.Name, G.EOF.Name]
+
+        self.check_equal(expected_types, expected_lemmas, tokens)
+
+        assert len(errors) == 1
 
     def check_equal(self, expected_types, expected_lemmas, tokens):
         token_lemmas = [token.Lemma for token in tokens]
