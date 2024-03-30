@@ -24,7 +24,7 @@ class InterpretVisitor(object):
         "print": lambda x: print(x[0]),
         "sen": lambda x: math.sin(x[0]),
         "cos": lambda x:math.cos(x[0]),
-        "range": lambda x: range(x[0],x[1]),
+        "range": lambda x: range(int(x[0]),int(x[1])),
         "exp": lambda x: math.exp(x[0]),
         "log": lambda x: math.exp(x[0],x[1]),
         "sqrt": lambda x: math.sqrt(x[0]),
@@ -33,7 +33,7 @@ class InterpretVisitor(object):
         for f in built_in_functions.keys():
             context.def_function(f,built_in_functions[f])
         
-        for v in [x for x in node.STATEMENTS if not type(v) is ProtocolNode]:
+        for v in [x for x in node.STATEMENTS if not type(x) is ProtocolNode]:
             self.visit(v, context)
             if type(v) is TypeNode:
                 context.def_type(v.NAME,self.last_value_returned)

@@ -2,7 +2,7 @@ from src.CodeGen.Interpreter import InterpretVisitor
 from src.Common.Exceptions import SemanticCheckError
 from src.Lexer.Lexer import Lexer
 from src.Lexer.SymbolTable import regex_table
-from src.Parser.ParserLR1 import ParserLR1, evaluate_reverse_parse
+from src.Parser.ParserLR1 import LR1Parser, evaluate_reverse_parse
 from src.Project.Grammar import G
 from src.SemanticChecking.PatronVisitor import SemanticCheckerVisitor
 
@@ -13,14 +13,14 @@ def run_pipeline(text: str, model_folder: str):
 
     for e in errors_lexer:
         print('\033[91m' + str(e) + '\033[0m')
-
-    parser = ParserLR1(G, verbose=False)
+        
+    parser = LR1Parser(G, verbose=False)
     derivation, operations = parser(tokens)
 
     ast = evaluate_reverse_parse(derivation, operations, tokens)
 
     semantic_checker = SemanticCheckerVisitor()
-    errors = semantic_checker.visit(ast)
+    errors = semantic_checker.visit(ast, None)
 
     if len(errors_lexer) > 0:
         return
@@ -33,8 +33,8 @@ def run_pipeline(text: str, model_folder: str):
         return
 
     interpreter = InterpretVisitor()
-    interpreter.visit(ast)
+    interpreter.visit(ast, None)
 
 
 if __name__ == '__main__':
-    run_pipeline("5;", "../../models")
+    run_pipeline("print(\"Hello, World!\");", "models")
