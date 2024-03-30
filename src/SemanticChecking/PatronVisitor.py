@@ -4,6 +4,7 @@ import src.Common.Visitor as visitor
 from src.SemanticChecking.Auxiliars import *
 from src.SemanticChecking.Scope import Scope
 
+
 class SemanticCheckerVisitor(object):
     def __init__(self):
         self.errors = []
@@ -12,15 +13,16 @@ class SemanticCheckerVisitor(object):
     def visit(self, node, scope: Scope):
         pass
 
+    # _______________________________________________________________________________________
     @visitor.when(ProgramNode)
     def visit(self, node: ProgramNode, scope: Scope = None):  # ✔️
         # --------------------------------------------------------------------
         # CHECKING POSSIBLE ERRORS IN PROGRAM NODE ✔️
         # --------------------------------------------------------------------
+        # Avoiding repited Types
         if scope is None:
             scope = Scope()
 
-        # Avoiding repited Types
         defaultTypes = ['Object', 'Number', 'Boolean', 'String', 'Vector']
         TypeNames = defaultTypes + [x.NAME for x in node.STATEMENTS if type(x) is TypeNode]
         if EqualObjects(TypeNames):
@@ -45,20 +47,18 @@ class SemanticCheckerVisitor(object):
         Inherence['Boolean'] = 'Object'
         Inherence['String'] = 'Object'
         Inherence['Vector'] = 'Object'
-        TypeOrder, Error = GetTopologicOrder(Inherence)
-        if Error!=None:
-            if len(Error)==2:
-                self.errors.append(f"Circular inheritance detected between {Error[0]} and {Error[1]}")
+        TypeOrder, TreeForm = GetTopologicOrder(Inherence)
+        if not TreeForm:
+            self.errors.append("There is a circular dependence between protocols")
 
         # Avoiding circular extensions
         Extensions = dict([(x.NAME, x.EXTENDS) for x in node.STATEMENTS if type(x) is ProtocolNode])
         Extensions['Iterable'] = ''
         Extensions['Printable'] = ''
         Extensions['Comparable'] = ''
-        _, Error = GetTopologicOrder(Extensions)
-        if Error!=None:
-            if len(Error)==2:
-                self.errors.append(f"There is a circular dependence between {Error[0]} and {Error[1]}")
+        _, TreeForm = GetTopologicOrder(Extensions)
+        if not TreeForm:
+            self.errors.append("There is a circular dependence between protocols")
 
         # -----------------------------------------------------------------------
         # SAVING EVERY PIECE OF INFORMATION NEEDED IN SCOPE✔️
@@ -73,7 +73,6 @@ class SemanticCheckerVisitor(object):
         # -----------------------------------------------------------------------
         # VISITING ALL CHILDREN ✔️
         # -----------------------------------------------------------------------
-        
         # visiting the protocols
         for Protocol in [x for x in node.STATEMENTS if type(x) is ProtocolNode]:
             self.visit(Protocol, scope)
@@ -90,7 +89,7 @@ class SemanticCheckerVisitor(object):
             self.visit(Function, scope)
 
         # visiting the classes in topologic order 2nd time
-        TypeQuickAccess = dict([(x.NAME, x) for x in node.STATEMENTS if type(x) is TypeNode])
+        TypeQuickAccess = dict([(x.NAME, x.INHERITS) for x in node.STATEMENTS if type(x) is TypeNode])
         for Type in TypeOrder:
             if Type in defaultTypes:
                 continue
@@ -105,6 +104,7 @@ class SemanticCheckerVisitor(object):
         # -----------------------------------------------------------------------
         return self.errors
 
+    # _______________________________________________________________________________________
 
     @visitor.when(ProtocolNode)
     def visit(self, node: ProtocolNode, scope: Scope = None):  # ✔️✔️
@@ -131,6 +131,8 @@ class SemanticCheckerVisitor(object):
         [self.visit(x, scope) for x in node.CORPUS]
         # -----------------------------------------------------------------------
         return self.errors
+
+    # _______________________________________________________________________________________
 
     @visitor.when(ProtocolMethodNode)
     def visit(self, node: ProtocolMethodNode, scope: Scope = None):  # ✔️✔️
@@ -162,29 +164,26 @@ class SemanticCheckerVisitor(object):
             # --------------------------------------------------------------------
         return self.errors
 
-   
+    # _______________________________________________________________________________________
 
     @visitor.when(TypeNode)
     def visit(self, node: TypeNode, scope: Scope = None):  # ✔️
 
-        firstVisit = not scope.TypeVisited(node.NAME)
+        firstVisit = scope.TypeVisited(node.NAME)
         # --------------------------------------------------------------------
         # CHECKING POSSIBLE ERRORS IN TYPE NODE ✔️
         # --------------------------------------------------------------------
         if firstVisit:
             # Avoiding self inherence
             if node.INHERITS == node.NAME:
-                self.errors.append(f"The {node.INHERITS} type doesn't exist in the current context")
-                node.INHERITS='Object'
+                self.errors.append(f"The protocol {node.INHERITS} doesn't exist in the current context")
             # Cheking that the type inherits exist
-            elif not scope.IsTypeDefined(node.INHERITS):# and not scope.IsProtocolDefined(node.INHERITS):
-                self.errors.append(f"The {node.INHERITS} type doesn't exist in the current context")
-                node.INHERITS='Object'
-
-            # Avoid inherints from basic types
+            if not scope.IsTypeDefined(node.INHERITS) and not scope.IsProtocolDefined(node.INHERITS):
+                self.errors.append(f"The type {node.INHERITS} doesn't exist in the current context")
+                # Avoid inherints from basic types
             for x in ['Number', 'Boolean', 'String', 'Vector']:
                 if x == node.INHERITS:
-                    self.errors.append(f"Type {node.NAME} can't inherit from reserved type {x}")
+                    self.errors.append(f"The type {x} cannot have any descendents")
                     # Avoiding duplicated constructor parameters
             ParameterNames = [x.NAME for x in node.CONSTRUCTOR]
             if EqualObjects(ParameterNames):
@@ -194,27 +193,28 @@ class SemanticCheckerVisitor(object):
             if EqualObjects(AtributeNames):
                 self.errors.append(f"A type can't have 2 atributes with the same name")
             # Avoiding duplicated functions
-            AtributeNames = [x.NAME for x in node.CORPUS if type(x) is FunctionNode]
+            AtributeNames = [x for x in node.CORPUS if type(x) is FunctionNode]
             if EqualObjects(AtributeNames):
-                self.errors.append(f"A type can't have 2 functions with the same name")
-
-        else:
+                self.errors.append(
+                    f"A type can't have 2 functions with the same name and the same amount of parameters")
             # checking that the inherit parameters amount match with the Arguments number
             parentParameters = scope.SearchTypeParameters(node.INHERITS)
             if len(parentParameters) != len(node.ARGUMENTS):
-                self.errors.append(f"Missmatch of parent constructor parameters on inheritance of {node.NAME} from {node.INHERITS}")
+                self.errors.append(f"Expected {len(parentParameters)} arguments instead of {len(node.ARGUMENTS)}")
+
+        else:
             # Checking that the argument match with the parameters
-            for i in range(len(parentParameters)):
-                self.visit(node.ARGUMENTS[i],scope.GetChild(node.NAME))
+            parentParameters = scope.SearchTypeParameters(node.INHERITS)
+            for i in len(parentParameters):
+                self.visit(node.ARGUMENTS[i])
                 if not scope.AreRelated(node.ARGUMENTS[i].VALUE_TYPE, parentParameters[i].TYPE):
                     self.errors.append(
-                        f"{parentParameters[i].TYPE} expression was expected instead of {node.ARGUMENTS[i].VALUE_TYPE}")
+                        f"Expected type {parentParameters[i].TYPE} instead of {node.ARGUMENTS[i].VALUE_TYPE}")
         # --------------------------------------------------------------------
         # SAVING EVERY PIECE OF INFORMATION NEEDED IN SCOPE✔️
         # --------------------------------------------------------------------
         if firstVisit:
             # Scope for parameters and self atribute
-            scope.AddTypeParameters(node.NAME,node.CONSTRUCTOR)
             new_scope = scope.CreateChild(node.NAME)
             [new_scope.AddVariable(x.NAME, x.TYPE) for x in node.CONSTRUCTOR]
             new_scope.ON_TYPE = True  # for self.Something
@@ -240,7 +240,6 @@ class SemanticCheckerVisitor(object):
 
         # TYPE FUNCTIONS
         if firstVisit:
-            special_scope = scope.GetChild(node.NAME)
             [self.visit(x, special_scope) for x in node.CORPUS if type(x) is FunctionNode]
         else:
             special_scope.AddVariable('self', node.NAME)
@@ -248,11 +247,9 @@ class SemanticCheckerVisitor(object):
             for function in [x for x in node.CORPUS if type(x) is FunctionNode]:
                 parent_method = scope.SearhFunction(function.NAME, scope.TYPE_HIERARCHY[node.NAME])
                 if parent_method != None:
-                    special_scope.AddFunctions(ProtocolMethodNode('base', [], parent_method.TYPE))
-                    self.visit(function, special_scope)
+                    special_scope.AddFunctions(ProtocolMethodNode('base', parent_method.PARAMETERS, parent_method.TYPE))
+                    self.visit(x, special_scope)
                     special_scope.RemoveFunction('base')
-                else:
-                    self.visit(function, special_scope)
         # --------------------------------------------------------------------
         return self.errors
 
@@ -260,14 +257,19 @@ class SemanticCheckerVisitor(object):
     def visit(self, node: TypeAtributeNode, scope: Scope = None):  # ✔️
         # Define the variable on first visit
         self.visit(node.VAR, scope)
-        self.visit(node.VALUE, scope)
-        if not scope.AreRelated(node.VALUE.VALUE_TYPE, node.VAR.TYPE):
-            self.errors.append(f'{node.VAR.TYPE} expression was expected instead of {node.VALUE.VALUE_TYPE}')
         # The extra space is to lock the variable. To make it impossible to reference them
-        scope.AddVariable(' self.' + node.VAR.NAME, node.VALUE.VALUE_TYPE)
+        if scope.IsVariableDefined(' self.' + node.VAR.NAME):
+            scope.AddVariable(' self.' + node.VAR.NAME, node.VAR.TYPE)
+        # Explore the value on second visit
+        else:
+            scope.RemoveVariable(' self.' + node.VAR.NAME, node.VAR.TYPE)
+            self.visit(node.VALUE, scope)
+            if not scope.AreRelated(node.VALUE.VALUE_TYPE, node.VAR.TYPE):
+                self.errors.append(f'The expresion return {node.VALUE.VALUE_TYPE}, but {node.VAR.TYPE} was expected')
+            scope.AddVariable(' self.' + node.VAR, node.VALUE.VALUE_TYPE)
         return self.errors
 
-   
+    # _______________________________________________________________________________________
 
     @visitor.when(FunctionNode)
     def visit(self, node: FunctionNode, scope: Scope = None):  # ✔️
@@ -304,13 +306,13 @@ class SemanticCheckerVisitor(object):
             # --------------------------------------------------------------------
             node.CORPUS.VALUE_TYPE = node.CORPUS.VALUE_TYPE
             if not scope.AreRelated(node.CORPUS.VALUE_TYPE, node.TYPE):
-                self.errors.append(f"{node.TYPE} expression was expected instead of {node.CORPUS.VALUE_TYPE}")
+                self.errors.append(f"A object of type {node.TYPE} was expected, instead of {node.CORPUS.VALUE_TYPE}")
         # --------------------------------------------------------------------
         return self.errors
 
-   
-   
-   
+    # _______________________________________________________________________________________
+    # _______________________________________________________________________________________
+    # _______________________________________________________________________________________
 
     @visitor.when(ExpressionBlockNode)
     def visit(self, node: ExpressionBlockNode, scope: Scope = None):  # ✔️✔️
@@ -319,9 +321,9 @@ class SemanticCheckerVisitor(object):
         node.VALUE_TYPE = node.EXPRESSIONS[-1].VALUE_TYPE
         return self.errors
 
-   
-   
-   
+    # _______________________________________________________________________________________
+    # _______________________________________________________________________________________
+    # _______________________________________________________________________________________
 
     # ---------------------------------------------------------------------------------------
     # DEFINING VARIABLES
@@ -337,7 +339,7 @@ class SemanticCheckerVisitor(object):
         self.visit(node.VARS[0], scope)
         # Checking compatibility
         if not scope.AreRelated(ValueType, node.VARS[0].TYPE):
-            self.errors.append(f'{node.VARS[0].TYPE} expression was expected instead of {ValueType}')
+            self.errors.append(f'The expresion return {ValueType}, but {node.VARS[0].TYPE} was expected')
         # Creating a new scope for let expression
         new_scope = scope.CreateChild('let expression')
         new_scope.AddVariable(node.VARS[0].NAME, ValueType)
@@ -386,17 +388,17 @@ class SemanticCheckerVisitor(object):
         if len(Constructor) != len(node.ARGS):
             self.errors.append(f"Expected {len(Constructor)} arguments instead of {len(node.ARGS)}")
         # Visiting the arguments
-        for i in range(len(Constructor)):
+        for i in len(Constructor):
             self.visit(node.ARGS[i])
             try:
                 if not scope.AreRelated(node.ARGS[i].VALUE_TYPE, Constructor[i].TYPE):
-                    self.errors.append(f"{Constructor[i].TYPE} expression was expected instead of {node.ARGS[i].VALUE_TYPE}")
+                    self.errors.append(f"Expected type {Constructor[i].TYPE} instead of {node.ARGS[i].VALUE_TYPE}")
             except:
                 continue
         node.VALUE_TYPE = node.NAME
         return self.errors
 
-   
+    # _______________________________________________________________________________________
     # ---------------------------------------------------------------------------------------
     # CONDITIONALS AND CYCLES
     # ---------------------------------------------------------------------------------------
@@ -408,7 +410,7 @@ class SemanticCheckerVisitor(object):
         for i in range(len(node.CONDITIONS)):
             self.visit(node.CONDITIONS[i], scope)
             if node.CONDITIONS[i].VALUE_TYPE not in ['Boolean', 'Object']:
-                self.errors.append(f'Boolean expression was expected instead of {node.CONDITIONS[i].VALUE_TYPE}')
+                self.errors.append(f'Boolean expression was expected')
         # Getting all possible values
         PossibleValueReturns = []
         for i in range(len(node.CASES)):
@@ -435,7 +437,7 @@ class SemanticCheckerVisitor(object):
     def visit(self, node: ForNode, scope: Scope = None):  # ✔️
         # First check if the condition is bool
         self.visit(node.COLLECTION, scope)
-        if not scope.AreRelated(node.COLLECTION.VALUE_TYPE, 'Iterable'):
+        if scope.AreRelated(node.COLLECTION.VALUE_TYPE, 'Iterable'):
             self.errors.append(f'Collection was expected')
         # Defining the variable
         new_scope = scope.CreateChild('for expression')
@@ -445,7 +447,7 @@ class SemanticCheckerVisitor(object):
         node.VALUE_TYPE = node.EXPRESSION.VALUE_TYPE
         return self.errors
 
-   
+    # _______________________________________________________________________________________
 
     # ---------------------------------------------------------------------------------------
     # OPERATIONS
@@ -485,8 +487,6 @@ class SemanticCheckerVisitor(object):
         self.visit(node.RIGHT, scope)
         if not scope.AreRelated(node.LEFT.VALUE_TYPE, 'Comparable'):
             self.errors.append(f'{node.LEFT.VALUE_TYPE} type is not Comparable')
-        if not scope.AreRelated(node.LEFT.VALUE_TYPE,node.RIGHT.VALUE_TYPE):
-            self.errors.append(f"{node.LEFT.VALUE_TYPE} expression was expected instead of {node.RIGHT.VALUE_TYPE}")
         node.VALUE_TYPE = 'Boolean'
         return self.errors
 
@@ -496,11 +496,11 @@ class SemanticCheckerVisitor(object):
         # Checking the left
         self.visit(node.LEFT, scope)
         if node.LEFT.VALUE_TYPE not in ['Number', 'Object']:
-            self.errors.append(f'Number expression was expected instead of {node.LEFT.VALUE_TYPE}')
+            self.errors.append(f'Number expression was expected')
         # Checking the right
         self.visit(node.RIGHT, scope)
         if node.RIGHT.VALUE_TYPE not in ['Number', 'Object']:
-            self.errors.append(f'Number expression was expected instead of {node.RIGHT.VALUE_TYPE}')
+            self.errors.append(f'Number expression was expected')
         node.VALUE_TYPE = 'Number'
         return self.errors
 
@@ -521,11 +521,12 @@ class SemanticCheckerVisitor(object):
     @visitor.when(IsExpression)
     def visit(self, node: IsExpression, scope: Scope = None):  # ✔️✔️
         self.visit(node.LEFT, scope)
-        if not scope.IsTypeDefined(node.NAME):
+        if scope.IsTypeDefined(node.NAME):
             self.errors.append(f"The {node.NAME} type doesn't exist in the current context")
         node.VALUE_TYPE = 'Boolean'
         return self.errors
 
+    # _____________________________________________________________________________________________________________________________
     # -------------------------------------------------------------------------------------------------------------------
     # TYPE NODES
     # -------------------------------------------------------------------------------------------------------------------
@@ -549,7 +550,7 @@ class SemanticCheckerVisitor(object):
     def visit(self, node: VariableNode, scope: Scope = None):  # ✔️✔️
         # Check if it is defined
         if not scope.IsVariableDefined(node.NAME):
-            self.errors.append(f"The {node.NAME} variable doesn't exist in the current context")
+            self.errors.append(f"{node.NAME} doesn't exist in the current context")
         node.VALUE_TYPE = scope.VariableType(node.NAME)
         return self.errors
 
@@ -565,9 +566,10 @@ class SemanticCheckerVisitor(object):
             self.errors.append(f"The type of the expression doesn't match correctly")
         node.VALUE_TYPE = node.TYPE
         return self.errors
-    
-    #----------------------------------------------------------------------------
-    # FUNCTION CALLS AND TYPE PROPERTY CALLS
+
+    # ______________________________________________________________________________
+    # ------------------------------------------------------------------------------
+    # FUNCTION CALLS AND CLASS PROPERTY CALLS
     # ------------------------------------------------------------------------------
 
     @visitor.when(FunctionCallNode)
@@ -575,10 +577,9 @@ class SemanticCheckerVisitor(object):
         # Searching the function
         function = scope.SearhFunction(node.FUNCT)
         if function == None:
-            self.errors.append(f"The {node.FUNCT} function doesn't exist in the current context")
+            self.errors.append(f"The function {node.FUNCT} doesn't exist in the current context")
             node.VALUE_TYPE = 'Object'
-            for arg in node.ARGS:
-                self.visit(arg, scope)
+            self.visit(node.ARGS[i], scope)
             return self.errors
         # Checking compatibility in number of arguments
         if len(function.PARAMETERS) != len(node.ARGS):
@@ -588,7 +589,7 @@ class SemanticCheckerVisitor(object):
             self.visit(node.ARGS[i], scope)
             # Checking compatibility between arguments and paramaters
             if not scope.AreRelated(node.ARGS[i].VALUE_TYPE, function.PARAMETERS[i].TYPE):
-                self.errors.append(f"{function.PARAMETERS[i].TYPE} expression was expected instead of {node.ARGS[i].VALUE_TYPE}")
+                self.errors.append(f"Expected type {function.PARAMETERS[i].TYPE} instead of {node.ARGS[i].VALUE_TYPE}")
         node.VALUE_TYPE = function.TYPE
         return self.errors
 
@@ -599,7 +600,7 @@ class SemanticCheckerVisitor(object):
         # Checking if is possible that the method belongs to the type
         function = scope.SearhFunction(node.FUNCT, node.CLASS.VALUE_TYPE)
         if function == None:
-            self.errors.append(f"The {node.CLASS.VALUE_TYPE} type doesn't have a definition for {node.FUNCT}")
+            self.errors.append(f"The function {node.FUNCT} doesn't exist in the current context")
             node.VALUE_TYPE = 'Object'
         # Checking if the call is compatible
         elif len(function.PARAMETERS) != len(node.ARGS):
@@ -616,15 +617,17 @@ class SemanticCheckerVisitor(object):
     # THIS NODE IS ONLY FOR THE CASE self.ATRIBUTE
     def visit(self, node: SelfVariableNode, scope: Scope = None):  # ✔️✔️
         if not node.IS_SELF:
-            self.errors.append(f"Attributes are private")
+            self.errors.append(f'{node.NAME} is not defined in the current context')
             node.VALUE_TYPE = 'Object'
         if not scope.IsVariableDefined('self.' + node.NAME):
-            self.errors.append(f"The current type doesn't have a definition for {node.NAME}")
+            self.errors.append(f'{node.NAME} is not defined in the current context')
             node.VALUE_TYPE = 'Object'
         else:
             node.VALUE_TYPE = scope.VariableType('self.' + node.NAME)
         return self.errors
-    #----------------------------------------------------------------------------
+
+    # ______________________________________________________________________________
+    # ------------------------------------------------------------------------------
     # VECTORS. EXPLICIT, IMPLICIT AND INDEXING
     # ------------------------------------------------------------------------------
 

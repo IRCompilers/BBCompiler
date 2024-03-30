@@ -5,17 +5,20 @@ from src.Parser.SROperations import SROperations
 
 class ShiftReduceParser:
 
-    def __init__(self, grammar, verbose=False):
+    def __init__(self, grammar, verbose=False, action={}, goto={}):
         self.Grammar = grammar
         self.verbose = verbose
-        self.action = {}
-        self.goto = {}
+        self.action = action
+        self.goto = goto
         self.build_parsing_table()
+
+        print(f'Building parsing table...\n\n '
+              f'G: {self.Grammar},\n')
 
     def build_parsing_table(self):
         raise NotImplementedError()
 
-    def __call__(self, w: List[Token], get_shift_reduce=True):
+    def __call__(self, w, get_shift_reduce=True):
         stack = [0]
         cursor = 0
         output = []
@@ -29,11 +32,12 @@ class ShiftReduceParser:
 
             if (state, lookahead) not in self.action:
                 print("Error. Aborting...")
+                print(state)
+                print(lookahead)
                 return None
 
             if self.action[state, lookahead] == SROperations.OK:
                 action = SROperations.OK
-
             else:
                 action, tag = self.action[state, lookahead]
 

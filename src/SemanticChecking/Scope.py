@@ -42,7 +42,7 @@ class Scope:
     def SearchTypeParameters(self,name:str)->list[ParameterNode]:
     #SEARCH THE CONSTRUCTOR OF A TYPE
         if name in self.TYPE_NAMES:
-            return self.CONSTRUCTORS[name] if name in self.CONSTRUCTORS.keys() else []
+            return self.CONSTRUCTORS[name]
         elif self.PARENT==None:
             return []
         return self.PARENT.SearchTypeParameters(name)
@@ -149,7 +149,7 @@ class Scope:
         #Asking the parent
         if self.PARENT==None:
             return None
-        return self.PARENT.SearhFunction(name,OnType)
+        return self.PARENT.SearhFunction(self,name,OnType)
     
     def ExtendedSearch(self,type_name:str):
     #RETURN THE FUNCTIONS FROM THE TYPE

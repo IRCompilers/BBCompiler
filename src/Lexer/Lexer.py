@@ -109,9 +109,6 @@ class Lexer:
                 cols += 1
                 continue
             except AttributeError:
-                errors.append(LexerError(f"LEXER ERROR: Invalid token \"{text[index]}\" at position: {(rows, cols)}"))
-                index, rows, cols = self.CleanupText(index, text, cols, rows, skip=1)
-                cols += 1
                 continue
 
             if not final:

@@ -40,7 +40,7 @@ def AddBasicInfo(scope: Scope):
     scope.AddFunctions(ProtocolMethodNode('rand', [], 'Number'))
     scope.AddFunctions(
         ProtocolMethodNode('log', [ParameterNode('a', 'Number'), ParameterNode('a', 'Number')], 'Number'))
-    scope.AddFunctions(ProtocolMethodNode('print', [ParameterNode('a', 'Printable')], 'Object'))
+    scope.AddFunctions(ProtocolMethodNode('print', [ParameterNode('a', 'Printable')], 'String'))
     scope.AddFunctions(
         ProtocolMethodNode('range', [ParameterNode('a', 'Number'), ParameterNode('b', 'Number')], 'Vector'))
 
@@ -52,33 +52,33 @@ def GetTopologicOrder(Graph: dict[str, str]) -> tuple[list[str], bool]:
     for key in Graph.keys():
         colors[key] = 'white'
     for key in Graph.keys():
-        Error = DFS(Graph, key, colors, order, count)
-        if Error!=None:
-            return (Graph.keys(), Error)
-        count = order[key] + 1
+        try:
+            AllOK = DFS(Graph, key, colors, order, count)
+            if not AllOK:
+                return (Graph.keys(), False)
+            count = order[key] + 1
+        except:
+            return (Graph.keys(), False)
     sortedlist = list(map(lambda x: (order[x], x), Graph.keys()))
     sortedlist.sort(key=lambda x: x[0])
-    return (list(map(lambda x: x[1], sortedlist)), None)
+    return (list(map(lambda x: x[1], sortedlist)), True)
 
 
-def DFS(Graph:dict, key, colors, order, count):
+def DFS(Graph, key, colors, order, count):
     if colors[key] == 'black':
-        return None
+        return True
     if colors[key] == 'grey':
-        return (key,Graph[key])
+        return False
     if Graph[key] == '':
         colors[key] = 'black'
         order[key] = count
-        return None
-    elif Graph[key] not in Graph.keys():
-        return (Graph[key],)
+        return True
     else:
         colors[key] = 'grey'
-        error= DFS(Graph, Graph[key], colors, order, count)
-        if error!=None:
-            return error
+        if not DFS(Graph, Graph[key], colors, order, count):
+            return False
         colors[key] = 'black'
         order[key] = count
         count += 1
 
-        return None
+        return True

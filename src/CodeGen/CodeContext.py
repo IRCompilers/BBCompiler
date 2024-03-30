@@ -20,8 +20,8 @@ class CodeContext(IContext):
     def has_variable(self, name: str) -> bool:
         return name in self.variables or (self.parent and self.parent.has_variable(name))
 
-    def has_function(self, name: str, lookup=True) -> bool:
-        return name in self.functions or (self.parent and self.parent.has_function(name) and lookup)
+    def has_function(self, name: str) -> bool:
+        return name in self.functions or (self.parent and self.parent.has_function(name))
 
     def has_type(self, name: str) -> bool:
         return name in self.types or (self.parent and self.parent.has_type(name))
@@ -53,6 +53,3 @@ class CodeContext(IContext):
         elif self.parent:
             return self.parent.get_type(name)
         return None
-    
-    def remove_function(self,name):
-        self.functions.pop(name)

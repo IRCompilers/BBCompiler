@@ -5,7 +5,7 @@ from src.Common.IContext import Variable
 import math
 import random
 
-class InterpretVisitor(object):
+class InterpretVisitor:
     def __init__(self):
         self.last_value_returned=None
 
@@ -30,7 +30,7 @@ class InterpretVisitor(object):
         "sqrt": lambda x: math.sqrt(x[0]),
         "rand": lambda x: random.random()
         }
-        for f in built_in_functions.keys():
+        for f in built_in_functions.keys:
             context.def_function(f,built_in_functions[f])
         
         for v in [x for x in node.STATEMENTS if not type(v) is ProtocolNode]:
@@ -43,23 +43,15 @@ class InterpretVisitor(object):
 
     @Visitor.when(TypeNode)
     def visit(self, node:TypeNode, context:CodeContext):
-
         type_context=CodeContext(context)
         visitor=self
-
+        #modificar, añadir clase heredada
         class NewType:
             def __init__(self, parameters):
                 constructor_context=CodeContext(context)
 
-                for i in range(len(node.CONSTRUCTOR)):
+                for i in len(node.CONSTRUCTOR):
                     constructor_context.def_variable(node.CONSTRUCTOR[i].NAME,parameters[i])
-                
-                args=[]
-                for arg in node.ARGUMENTS:
-                    visitor.visit(arg,constructor_context)
-                    args.append(visitor.last_value_returned)
-
-                self.Parent=context.get_type(node.NAME)(args)
                 
                 for x in [x for x in node.CORPUS if type(x) is TypeAtributeNode]:
                     visitor.visit(x.VALUE,constructor_context)
@@ -70,26 +62,16 @@ class InterpretVisitor(object):
                     type_context.def_function(x,visitor.last_value_returned)
             
             def call(self,name,parameters):
-                if not self.has_function(name,False):
-                    return self.Parent.call(name,parameters)
-                override=self.Parent.has_function(name)
-                if override:
-                    type_context.def_function('base',lambda x: self.Parent.call(name,parameters))
-                returnValue=type_context.get_function(name,False)(parameters)
-                if override:
-                    type_context.remove_function('base')
-                return returnValue
-                      
-            def has_function(self,name):
-                return type_context.has_function(name)
-            
+                return type_context.get_function(name,False)(parameters)
+        
         self.last_value_returned=NewType
+
 
     @Visitor.when(FunctionNode)
     def visit(self, node:FunctionNode,context):
         function_context=CodeContext(context)
         def new_function(parameters):
-            for i in range(len(node.PARAMETERS)):
+            for i in len(node.PARAMETERS):
                 function_context.def_variable(node.PARAMETERS[i].NAME,parameters[i])
             self.visit(node.CORPUS,function_context)
             return self.last_value_returned
@@ -98,7 +80,7 @@ class InterpretVisitor(object):
     @Visitor.when(ExpressionBlockNode)
     def visit(self, node:ExpressionBlockNode, context: CodeContext):
         for e in node.EXPRESSIONS:
-            self.visit(e,context)
+            self.visit(e)
 
     @Visitor.when(LetNode)
     def visit(self, node:LetNode, context: CodeContext):
@@ -113,7 +95,7 @@ class InterpretVisitor(object):
 
     @Visitor.when(IfElseExpression)
     def visit(self, node:IfElseExpression, context: CodeContext):
-        for case in range(len(node.CONDITIONS)):
+        for case in len(node.CONDITIONS):
             self.visit(node.CONDITIONS[case],context)
             if self.last_value_returned:
                 self.visit(node.CASES[case],context)
@@ -127,11 +109,9 @@ class InterpretVisitor(object):
 
     @Visitor.when(SelfDestructiveExpression)
     def visit(self, node:SelfDestructiveExpression, context: CodeContext):
+        #modificar, evitar el caso de sobrecarga
         self.visit(node.EXPRESSION,context)
-        correct_context=context
-        while correct_context.parent.parent!=None:
-            correct_context=correct_context.parent
-        correct_context.edit_variable(node.VAR.NAME,self.last_value_returned)
+        context.edit_variable(node.VAR.NAME,self.last_value_returned)
 
     @Visitor.when(WhileNode)
     def visit(self, node:WhileNode, context: CodeContext):
@@ -155,11 +135,7 @@ class InterpretVisitor(object):
     
     @Visitor.when(NewNode)
     def visit(self, node:NewNode, context: CodeContext):
-        args=[]
-        for arg in node.ARGS:
-            self.visit(arg,context)
-            args.append(self.last_value_returned)
-        self.last_value_returned=context.get_type(node.NAME)(args)
+        self.last_value_returned=context.get_type(node.NAME)(node.ARGS)
 
     @Visitor.when(OrAndExpression)
     def visit(self, node:OrAndExpression, context: CodeContext):
@@ -246,14 +222,12 @@ class InterpretVisitor(object):
 
     @Visitor.when(VariableNode)
     def visit(self, node:VariableNode, context: CodeContext):
-        self.last_value_returned= context.get_variable(node.NAME)
+        self.last_value_returned= context.get_variable(node.NAME).value
 
     @Visitor.when(SelfVariableNode)
     def visit(self, node:SelfVariableNode, context: CodeContext):
-        correct_context=context
-        while correct_context.parent.parent!=None:
-            correct_context=correct_context.parent
-        self.last_value_returned= correct_context.get_variable(node.NAME)
+        #modificar. buscar donde es
+        self.last_value_returned= context.get_variable(node.NAME).value
 
     @Visitor.when(FunctionCallNode)
     def visit(self, node:FunctionCallNode, context: CodeContext):
@@ -263,15 +237,15 @@ class InterpretVisitor(object):
             Arguments.append(self.last_value_returned)
         self.last_value_returned= context.get_function(node.FUNCT)(Arguments)
 
+
     @Visitor.when(TypeFunctionCallNode)
     def visit(self, node:TypeFunctionCallNode, context: CodeContext):
         Arguments=[]
         for x in node.ARGS:
             self.visit(x,context)
             Arguments.append(self.last_value_returned)
-        self.visit(node.CLASS,context)
-        self.last_value_returned=self.last_value_returned.call(node.FUNCT,Arguments)
-
+        self.last_value_returned= context.get_type(node.CLASS).call(node.FUNCT,Arguments)
+    
     @Visitor.when(ListNode)
     def visit(self, node:ListNode, context: CodeContext):
         elements=[]
@@ -302,7 +276,7 @@ class InterpretVisitor(object):
         self.visit(node.COLLECTION,context)
         self.last_value_returned=self.last_value_returned[i]
     
-    @Visitor.when(AsNode)
+    @Visitor.when(AsNode)#Implementar
     def visit(self, node:AsNode, context: CodeContext):
         self.visit(node.EXPRESSION,context)
 
