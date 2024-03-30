@@ -306,7 +306,7 @@ class SemanticCheckerVisitor(object):
         # --------------------------------------------------------------------
         else:
             # Creating the scope for parameters
-            new_scope = scope.CreateChild(node.NAME + ' ')
+            new_scope = scope.CreateChild(node.NAME + ' function')
             [new_scope.AddVariable(x.NAME, x.TYPE) for x in node.PARAMETERS]
             # visiting the corpus
             self.visit(node.CORPUS, new_scope)
