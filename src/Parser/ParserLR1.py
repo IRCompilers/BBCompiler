@@ -18,14 +18,14 @@ class ParserLR1(ShiftReduceParser):
         else:
             return
 
-        os.chdir("..")
-        file_path = os.path.join(os.getcwd(), "models")
+        # os.chdir("..")
+        # file_path = os.path.join(os.getcwd(), "models")
         sys.setrecursionlimit(5000)
-        if os.path.exists(f"{file_path}/parser_automaton.pkl"):
-            with open(f"{file_path}/parser_automaton.pkl", 'rb') as f:
+        if os.path.exists(f"models/parser_automaton.pkl"):
+            with open(f"models/parser_automaton.pkl", 'rb') as f:
                 self.automaton = dill.load(f)
         else:
-            with open(f"{file_path}/parser_automaton.pkl", 'wb') as f:
+            with open(f"models/parser_automaton.pkl", 'wb') as f:
                 self.automaton = build_lr1_automaton(aug_grammar)
                 dill.dump(self.automaton, f)
 
