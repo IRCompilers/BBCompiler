@@ -80,7 +80,13 @@ class Scope:
     def AddProtocolExtensions(self,extensions:dict[str,str])->None:
     #ADD THE PROTOCOL EXTENSIONS
         self.PROTOCOL_EXTENSIONS=extensions
-
+    
+    def ProtocolHasFunction(self,protocol,function):
+        if protocol in self.PROTOCOL_NAMES:
+            return function in self.PROTOCOL_FUNCT
+        if self.PARENT==None:
+            return False
+        return self.PARENT.ProtocolHasFunction(protocol,function)
 #----------------------------------------------------------------------------
     #MANAGE THE VARIABLES OF THE SCOPE
 #----------------------------------------------------------------------------
@@ -123,6 +129,8 @@ class Scope:
     def RemoveFunction(self,method:str):
     #REMOVE A FUNCTION
         self.FUNCTIONS=[x for x in self.FUNCTIONS if x.NAME==method]
+    def EditFunctionType(self,name,new_type):
+        self.FUNCTIONS=[ProtocolMethodNode(name,x.PARAMETERS,new_type) if name==x.NAME else x for x in self.FUNCTIONS]
 
     def FunctionVisited(self,name:str)->bool:
     #ALLOWS TO VISIT A METHOD TWICE, (only for program node)
@@ -174,19 +182,21 @@ class Scope:
     #RETURN A SCOPE WITH A NAME
         return self.CHILDREN[name]
 
+#----------------------------------------------------------------------------
+    #CHECK RELATION BETWEEN TYPES AND PROTOCOLS
+#----------------------------------------------------------------------------
+    
     def Descend(self,Child:str, Ancestor:str)->bool:
         #Check if a type is the ancestor of the other
         aux=Child
-        while(aux!='Object'):    
+        while(aux!=''):    
             if aux==Ancestor:
                 return True
             if not aux in self.TYPE_HIERARCHY.keys():
                 return False
             aux=self.TYPE_HIERARCHY[aux]
         return False
-#----------------------------------------------------------------------------
-    #CHECK RELATION BETWEEN TYPES AND PROTOCOLS
-#----------------------------------------------------------------------------
+    
     def Extends(self,Extension:str,Base:str)->bool:
         #Check if a protocol extends the other
         aux=Extension
@@ -234,10 +244,10 @@ class Scope:
             return True
         #Check if they are both types
         if Type1 in self.TYPE_NAMES and Type2 in self.TYPE_NAMES:
-            return self.Descend(Type1,Type2) or self.Descend(Type2,Type1)
+            return self.Descend(Type1,Type2)
         #Check if they are both protocols
         if Type1 in self.PROTOCOL_NAMES and Type2 in self.PROTOCOL_NAMES:
-            return self.Extends(Type1,Type2) or self.Extends(Type2,Type1)
+            return self.Extends(Type1,Type2)
         #else, one is a type and the other is a protocol
         Type=Type1 if Type1 in self.TYPE_NAMES else Type2
         Protocol= Type1 if  Type1 in self.PROTOCOL_NAMES else Type2
