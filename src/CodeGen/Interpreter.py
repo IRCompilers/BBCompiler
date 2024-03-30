@@ -58,20 +58,21 @@ class InterpretVisitor(object):
                     visitor.visit(arg, constructor_context)
                     args.append(visitor.last_value_returned)
 
-                self.Parent = context.get_type(node.NAME)(args)
-
+                self.Parent = context.get_type(node.INHERITS)
+                if self.Parent!=None:
+                    self.Parent=self.Parent(args)
                 for x in [x for x in node.CORPUS if type(x) is TypeAtributeNode]:
                     visitor.visit(x.VALUE, constructor_context)
                     type_context.def_variable(x.VAR.NAME, visitor.last_value_returned)
 
                 for x in [x for x in node.CORPUS if type(x) is FunctionNode]:
                     visitor.visit(x, type_context)
-                    type_context.def_function(x, visitor.last_value_returned)
+                    type_context.def_function(x.NAME, visitor.last_value_returned)
 
             def call(self, name, parameters):
-                if not self.has_function(name, False):
+                if not self.has_function(name):
                     return self.Parent.call(name, parameters)
-                override = self.Parent.has_function(name)
+                override = self.Parent.has_function(name) if self.Parent!=None else False
                 if override:
                     type_context.def_function('base', lambda x: self.Parent.call(name, parameters))
                 returnValue = type_context.get_function(name, False)(parameters)
@@ -80,7 +81,7 @@ class InterpretVisitor(object):
                 return returnValue
 
             def has_function(self, name):
-                return type_context.has_function(name)
+                return type_context.has_function(name, False)
 
         self.last_value_returned = NewType
 
@@ -207,9 +208,9 @@ class InterpretVisitor(object):
         self.visit(node.RIGHT, context)
         right = self.last_value_returned
         if node.DOUBLE:
-            self.last_value_returned = left + ' ' + right
+            self.last_value_returned = str(left) + ' ' + str(right)
         else:
-            self.last_value_returned = left + right
+            self.last_value_returned = str(left) + str(right)
 
     @Visitor.when(ArithmeticExpression)
     def visit(self, node: ArithmeticExpression, context: CodeContext):
