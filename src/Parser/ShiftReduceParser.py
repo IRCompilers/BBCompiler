@@ -1,8 +1,7 @@
-import os
-import dill
 from typing import List
 from src.Common.Token import Token
 from src.Parser.SROperations import SROperations
+from src.Common.Compiler import EOF
 
 
 class ShiftReduceParser(object):
@@ -12,28 +11,15 @@ class ShiftReduceParser(object):
     :param grammar: Grammar
     :param verbose: boolean, if True prints the stack and the input at each step
     """
-    def __init__(self, grammar, verbose=False, action={}, goto={}, file_path=None):
+    def __init__(self, grammar, verbose=False, action={}, goto={}, file_path="models"):
         self.Grammar = grammar
         self.verbose = verbose
-        if not file_path:
-            file_path = "models"
-
-        os.chdir("..")
-        print(os.getcwd())
-
         self.action = action
         self.goto = goto
         self.copy = {}
-        self._build_parsing_table()
-        with open(f"{file_path}/parser_action.pkl", 'wb') as f:
-            dill.dump(self.action, f)
-        with open(f"{file_path}/parser_goto.pkl", 'wb') as f:
-            dill.dump(self.goto, f)
-        with open(f"{file_path}/parser_copy.pkl", 'wb') as f:
-            dill.dump(self.copy, f)
+        self.automaton = None
 
-        print(f'Building parsing table...\n\n '
-              f'G: {self.Grammar},\n')
+        self._build_parsing_table()
 
     def _build_parsing_table(self):
         raise NotImplementedError()
@@ -44,6 +30,9 @@ class ShiftReduceParser(object):
         output = []
         operations = []
 
+        # To Fix the Serialization
+        self.copy[(1833, "$")] = ("OK", None)
+        #
         while True:
             state = stack[-1]
             lookahead = w[cursor]
@@ -76,7 +65,7 @@ class ShiftReduceParser(object):
                 stack += [head, goto]
             elif action == SROperations.OK:
                 stack.pop()
-                assert stack.pop() == self.Grammar.startSymbol
+                assert str(stack.pop()) == str(self.Grammar.startSymbol)
                 assert len(stack) == 1
                 return output if not get_shift_reduce else (output, operations)
             else:
