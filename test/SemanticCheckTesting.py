@@ -56,7 +56,7 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
 
         node = ProgramNode([], let_)
         result = self.visitor.visit(node, scope)
-        self.assertEqual(result, ['Number expression was expected instead of object'])
+        self.assertEqual(result, ['Number expression was expected instead of string'])
 
     def test_let_func_call_no_decl(self):
         scope = Scope()
@@ -158,8 +158,9 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
                        FunctionNode("greet", greet_params, greet_body, "String")]
         type_ = TypeNode("Person", type_corpus, [ParameterNode("name", "String")])
 
-        function_call = TypeFunctionCallNode(StringNode("person"), "greet", [StringNode("John"), NumberNode(2)])
-        expression_block = ExpressionBlockNode([NewNode("Person", [StringNode("John")]), function_call])
+        function_call = TypeFunctionCallNode(VariableNode("person"), "greet", [StringNode("John"), NumberNode(2)])
+        expression_block = LetNode([ParameterNode("person", "Person")], [NewNode("Person", [StringNode("John")])],
+                                   function_call)
         node = ProgramNode([type_], expression_block)
         result = self.visitor.visit(node, scope)
         self.assertEqual(result, [])
@@ -181,7 +182,7 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         expression_block = ExpressionBlockNode([NewNode("Person", [StringNode("John")]), function_call])
         node = ProgramNode([type_], expression_block)
         result = self.visitor.visit(node, scope)
-        self.assertEqual(result, ["The Person type doesn't have a definition for not_greet"])
+        self.assertEqual(result, ["The String type doesn't have a definition for not_greet"])
 
     def test_for_node_correct(self):
         scope = Scope()
@@ -233,7 +234,7 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
     def test_simple_inheritance_polymorphism_correct(self):
         scope = Scope()
         base_type = TypeNode("Human", [], [])
-        sub_type = TypeNode("Person", [], [])
+        sub_type = TypeNode("Person", [], [], "Human")
 
         instantiation = NewNode("Person", [])
         let_ = LetNode([ParameterNode("john", "Human")], [instantiation], VariableNode("john"))
@@ -278,7 +279,7 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         node = ProgramNode([type_a], NumberNode(2))
         result = self.visitor.visit(node, scope)
 
-        self.assertEqual(result, ["Parent doesn't have a definition for greet"])
+        self.assertEqual(result, ["The base function doesn't exist in the current context"])
 
     def test_base_call_no_base_on_parent(self):
         scope = Scope()
@@ -290,7 +291,7 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         node = ProgramNode([type_a, type_b], NumberNode(2))
         result = self.visitor.visit(node, scope)
 
-        self.assertEqual(result, ["Parent doesn't have a definition for greet"])
+        self.assertEqual(result, ["The base function doesn't exist in the current context"])
 
     def test_base_call_correct(self):
         scope = Scope()
@@ -318,7 +319,7 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         result = self.visitor.visit(node, scope)
 
         self.assertEqual(result, [
-            "Type A can't inherit from reserved type void",
+            "The void type doesn't exist in the current context",
             "Type B can't inherit from reserved type Number",
             "Type C can't inherit from reserved type String",
             "Type D can't inherit from reserved type Boolean",
@@ -335,7 +336,7 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         node = ProgramNode([human, person], NumberNode(2))
         result = self.visitor.visit(node, scope)
 
-        self.assertEqual(result, ["The Person type doesn't have a definition for a"])
+        self.assertEqual(result, ["The current type doesn't have a definition for a"])
 
     def test_type_inherits_from_protocol(self):
         scope = Scope()
@@ -346,7 +347,7 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         node = ProgramNode([protocol, type_a], NumberNode(2))
         result = self.visitor.visit(node, scope)
 
-        self.assertEqual(result, ["Type TypeA can't inherit from protocol ProtocolA"])
+        self.assertEqual(result, ["The ProtocolA type doesn't exist in the current context"])
 
     def test_protocol_inherits_from_type(self):
         scope = Scope()
@@ -357,7 +358,7 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         node = ProgramNode([type_a, protocol], NumberNode(2))
         result = self.visitor.visit(node, scope)
 
-        self.assertEqual(result, ["Protocol ProtocolA can't inherit from type TypeA"])
+        self.assertEqual(result, ["The protocol TypeA doesn't exist in the current context"])
 
     def test_protocol_inherits_from_protocol(self):
         scope = Scope()
@@ -373,10 +374,10 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
     def test_protocol_polymorphism_correct(self):
         scope = Scope()
 
-        protocol = ProtocolNode("Flyable", [ProtocolMethodNode("fly", [ParameterNode("distance", "Number")], "void")])
+        protocol = ProtocolNode("Flyable", [ProtocolMethodNode("fly", [ParameterNode("distance", "Number")], "Object")])
 
         fly_type_func = FunctionNode("fly", [ParameterNode("distance", "Number")],
-                                     FunctionCallNode("print", [StringNode("temp")]), "void")
+                                     FunctionCallNode("print", [StringNode("temp")]), "Object")
         type_a = TypeNode("Bird", [fly_type_func], [])
 
         let_ = LetNode([ParameterNode("rocio", "Flyable")], [NewNode("Bird", [])],
@@ -390,10 +391,10 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
     def test_protocol_polymorphism_wrong_method(self):
         scope = Scope()
 
-        protocol = ProtocolNode("Flyable", [ProtocolMethodNode("fly", [ParameterNode("distance", "Number")], "void")])
+        protocol = ProtocolNode("Flyable", [ProtocolMethodNode("fly", [ParameterNode("distance", "Number")], "Object")])
 
         fly_type_func = FunctionNode("walk", [ParameterNode("distance", "Number")],
-                                     FunctionCallNode("print", [StringNode("temp")]), "void")
+                                     FunctionCallNode("print", [StringNode("temp")]), "Object")
         type_a = TypeNode("Bird", [fly_type_func], [])
 
         let_ = LetNode([ParameterNode("rocio", "Flyable")], [NewNode("Bird", [])],
@@ -402,7 +403,8 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         node = ProgramNode([protocol, type_a], let_)
         result = self.visitor.visit(node, scope)
 
-        self.assertEqual(result, ['Flyable expression was expected instead of Bird'])
+        self.assertEqual(result, ['Flyable expression was expected instead of Bird',
+                                  "The Bird type doesn't have a definition for fly"])
 
     def test_variables_in_different_context(self):
         scope = Scope()
@@ -438,12 +440,29 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
             "The NonExistentType type doesn't exist in the current context"
         ])
 
+    def test_recursion(self):
+        """
+        function factorial(x: Number) => x * factorial(x-1);
+
+        print(factorial(5))
+        """
+        scope = Scope()
+        fact_body_recursion = FunctionCallNode("factorial",
+                                               [ArithmeticExpression("-", VariableNode("x"), NumberNode(1))])
+        fact_body = ArithmeticExpression("*", VariableNode("x"), fact_body_recursion)
+        fact = FunctionNode("factorial", [ParameterNode("x", "Number")], fact_body)
+        print_ = FunctionCallNode("print", [FunctionCallNode("factorial", [NumberNode(5)])])
+        node = ProgramNode([fact], print_)
+        result = self.visitor.visit(node, scope)
+
+        self.assertEqual(result, [])
+
     def test_ultimate(self):
         scope = Scope()
 
         """
         protocol BaseProtocol{
-            method(param: Number): void
+            method(param: Number): Object
         }
         
         protocol ChildProtocol extends BaseProtocol{
@@ -468,12 +487,12 @@ class TestSemanticCheckerVisitor(unittest.TestCase):
         """
 
         base_protocol = ProtocolNode("BaseProtocol",
-                                     [ProtocolMethodNode("method", [ParameterNode("param", "Number")], "void")])
+                                     [ProtocolMethodNode("method", [ParameterNode("param", "Number")], "Object")])
 
         child_protocol = ProtocolNode("ChildProtocol", [], "BaseProtocol")
 
         method_func = FunctionNode("method", [ParameterNode("param", "Number")],
-                                   FunctionCallNode("print", [StringNode("temp")]), "void")
+                                   FunctionCallNode("print", [StringNode("temp")]), "Object")
 
         type_a = TypeNode("TypeA", [method_func, FunctionNode("another", [], NumberNode(5))], [])
 

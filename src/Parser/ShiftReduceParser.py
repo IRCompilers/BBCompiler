@@ -12,8 +12,8 @@ class ShiftReduceParser:
         self.goto = goto
         self.build_parsing_table()
 
-        print(f'Building parsing table...\n\n '
-              f'G: {self.Grammar},\n')
+        # print(f'Building parsing table...\n\n '
+        #       f'G: {self.Grammar},\n')
 
     def build_parsing_table(self):
         raise NotImplementedError()
@@ -34,6 +34,9 @@ class ShiftReduceParser:
                 print("Error. Aborting...")
                 print(state)
                 print(lookahead)
+                # if lookahead.TokenType.Name == '$':
+                #     break
+
                 return None
 
             if self.action[state, lookahead] == SROperations.OK:

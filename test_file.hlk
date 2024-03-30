@@ -1,5 +1,3 @@
-??let g=45.12 in 98+52.23
+function sumOfSquares(a: Number, b: Number) => (a*a) + (b*b);
 
-for v in range(g):
-    print("Hello == \" World?")@?
-    print("Hel")
+print(sumOfSquares(2,2));

@@ -15,7 +15,7 @@ from src.Project.Grammar import G
 class Lexer:
     def __init__(self, table, file_path=None):
         if not file_path:
-            file_path = "models/lexer_automaton.pkl"
+            file_path = "../../models/lexer_automaton.pkl"
 
         if os.path.exists(file_path):
             with open(file_path, 'rb') as f:
