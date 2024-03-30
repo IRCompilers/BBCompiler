@@ -4,7 +4,8 @@ from src.Common.Token import Token
 from src.Common.Compiler import Item, EOF
 from src.Common.Automata import State
 from typing import List
-
+import os
+import dill
 
 def multiline_formatter(state):
     return '\n'.join(str(item) for item in state)
@@ -21,14 +22,43 @@ class ShiftReduceParser(object):
     REDUCE = "REDUCE"
     OK = "OK"
 
-    def __init__(self, G, verbose=False, action ={}, goto ={}):
+    def __init__(self, G, verbose=False, action ={}, goto ={}, file_path=None):
         self.G = G
         self.verbose = verbose
+        if not file_path:
+            file_path = "models"
+        if os.path.exists(f"{file_path}/parser_action.pkl") and os.path.exists(f"{file_path}/parser_goto.pkl") and os.path.exists(f"{file_path}/parser_copy.pkl"):
+            with open(f"{file_path}/parser_action.pkl", 'rb') as f:
+                self.action = dill.load(f)
+            with open(f"{file_path}/parser_goto.pkl", 'rb') as f:
+                self.goto = dill.load(f)
+                print(self.goto)
+                copy=dict()
+                for x,y in self.goto:
+                    copy[x,str(y)]=self.goto[x,y]
+                self.goto=copy
+            with open(f"{file_path}/parser_copy.pkl", 'rb') as f:
+                self.copy = dill.load(f)
+        else:
+            self.action = action
+            self.goto = goto
+            self.copy ={}
+            self._build_parsing_table()
+            with open(f"{file_path}/parser_action.pkl", 'wb') as f:
+                dill.dump(self.action, f)
+            with open(f"{file_path}/parser_goto.pkl", 'wb') as f:
+                dill.dump(self.goto, f)
+            with open(f"{file_path}/parser_copy.pkl", 'wb') as f:
+                dill.dump(self.copy, f)
+        '''
         self.action = action
         self.goto = goto
         self.copy ={}
         self._build_parsing_table()
-
+        '''
+        
+        
+        
         print(f'Building parsing table...\n\n '
               f'G: {self.G},\n')
 
@@ -47,19 +77,19 @@ class ShiftReduceParser(object):
             if self.verbose:
                 print(stack, '<---||--->', w[cursor:])
 
-            if (state, str(lookahead)) not in self.copy:
+            if (state, lookahead.TokenType.Name) not in self.copy:
                 print("Error. Aborting...")
                 print(state)
                 print(lookahead)
-                return None
+                return (None,None)
 
-            if self.copy[(state, str(lookahead))] == self.OK:
+            if self.copy[(state, lookahead.TokenType.Name)] == self.OK:
                 action = self.OK
             else:
-                action, tag = self.copy[(state, str(lookahead))]
+                action, tag = self.copy[(state, lookahead.TokenType.Name)]
             if action == self.SHIFT:
                 operations.append(self.SHIFT)
-                stack += [str(lookahead), tag]
+                stack += [lookahead.TokenType.Name, tag]
                 cursor += 1
             elif action == self.REDUCE:
                 operations.append(self.REDUCE)
@@ -69,11 +99,11 @@ class ShiftReduceParser(object):
                     stack.pop()
                     assert str(stack.pop()) == str(symbol)
                     state = stack[-1]
-                goto = self.goto[state, head]
+                goto = self.goto[(state, str(head))]
                 stack += [head, goto]
             elif action == self.OK:
                 stack.pop()
-                assert stack.pop() == self.G.startSymbol
+                assert stack.pop().Name == self.G.startSymbol.Name
                 assert len(stack) == 1
                 return output if not get_shift_reduce else (output, operations)
             else:

@@ -29,7 +29,7 @@ concatenation = G.NonTerminal("<concatenation>")
 arithmetic_expression = G.NonTerminal("<arithmetic_expression>")
 module, product, monomial, pow_ = G.NonTerminals("<module> <product> <monomial> <pow>")
 high_hierarchy_object, object_exp = G.NonTerminals("<high_hierarchy_object> <object_exp>")
-list_, main_expression, function_stack = G.NonTerminals("<list> <main_expression> <function_stack>")
+list_,explicit_list_, main_expression, function_stack = G.NonTerminals("<list> <explicit_list> <main_expression> <function_stack>")
 not_sc_expression, else_block_not_sc = G.NonTerminals("<not_sc_expression> <else_block_not_sc>")
 
 
@@ -115,8 +115,8 @@ main_expression %= not_sc_expression, lambda h, s: s[1]
 expression %= simple_expression, lambda h, s: s[1]
 expression %= lbrace + expression_block + rbrace, lambda h, s: s[2]
 
-expression_block %= main_expression, lambda h, s: s[1]
-expression_block %= expression_block + main_expression, lambda h, s: s[2]
+expression_block %= main_expression, lambda h, s: ExpressionBlockNode([s[1]])
+expression_block %= expression_block + main_expression, lambda h, s: ExpressionBlockNode(s[1].EXPRESSIONS+[s[2]])
 
 not_sc_expression %= let + declaration + in_ + not_sc_expression, lambda h, s: LetNode(s[2][0], s[2][1], s[4])
 not_sc_expression %= identifier + destruct + not_sc_expression, lambda h, s: DestructiveExpression(s[1].Lemma, s[3])
@@ -151,10 +151,10 @@ argument_list %= expression, lambda h, s: [s[1]]
 argument_list %= expression + comma + argument_list, lambda h, s: [s[1]] + s[3]
 
 disjunction %= conjunction, lambda h, s: s[1]
-disjunction %= conjunction + or_ + disjunction, lambda h, s: OrAndExpression(s[2].Lemma, s[1], s[3])
+disjunction %= conjunction + or_ + disjunction, lambda h, s: OrAndExpression('|', s[1], s[3])
 #
 conjunction %= literal, lambda h, s: s[1]
-conjunction %= literal + and_ + conjunction, lambda h, s: OrAndExpression(s[2].Lemma, s[1], s[3])
+conjunction %= literal + and_ + conjunction, lambda h, s: OrAndExpression('&', s[1], s[3])
 #
 literal %= proposition, lambda h, s: s[1]
 literal %= not_ + literal, lambda h, s: NotExpression(s[2])
@@ -163,71 +163,72 @@ proposition %= boolean, lambda h, s: s[1]
 proposition %= proposition + is_ + identifier, lambda h, s: IsExpression(s[1], s[3].Lemma)
 #
 boolean %= concatenation, lambda h, s: s[1]
-boolean %= boolean + dequal + concatenation, lambda h, s: ComparationExpression(s[2].Lemma, s[1], s[3])
-boolean %= boolean + notequal + concatenation, lambda h, s: ComparationExpression(s[2].Lemma, s[1], s[3])
-boolean %= boolean + lequal + concatenation, lambda h, s: ComparationExpression(s[2].Lemma, s[1], s[3])
-boolean %= boolean + gequal + concatenation, lambda h, s: ComparationExpression(s[2].Lemma, s[1], s[3])
-boolean %= boolean + lesst + concatenation, lambda h, s: ComparationExpression(s[2].Lemma, s[1], s[3])
-boolean %= boolean + greatt + concatenation, lambda h, s: ComparationExpression(s[2].Lemma, s[1], s[3])
+boolean %= boolean + dequal + concatenation, lambda h, s: ComparationExpression('==', s[1], s[3])
+boolean %= boolean + notequal + concatenation, lambda h, s: ComparationExpression('!=', s[1], s[3])
+boolean %= boolean + lequal + concatenation, lambda h, s: ComparationExpression('<=', s[1], s[3])
+boolean %= boolean + gequal + concatenation, lambda h, s: ComparationExpression('>=', s[1], s[3])
+boolean %= boolean + lesst + concatenation, lambda h, s: ComparationExpression('<', s[1], s[3])
+boolean %= boolean + greatt + concatenation, lambda h, s: ComparationExpression('>', s[1], s[3])
 #
 concatenation %= arithmetic_expression, lambda h, s: s[1]
 concatenation %= arithmetic_expression + concat + concatenation, lambda h, s: StringConcatenationNode(s[1], s[3])
 concatenation %= arithmetic_expression + concat + concat + concatenation, lambda h, s: StringConcatenationNode(s[1], s[4], True)
 #
 arithmetic_expression %= module, lambda h, s: s[1]
-arithmetic_expression %= arithmetic_expression + plus + module, lambda h, s: ArithmeticExpression(s[2].Lemma, s[1], s[3])
-arithmetic_expression %= arithmetic_expression + minus + module, lambda h, s: ArithmeticExpression(s[2].Lemma, s[1], s[3])
+arithmetic_expression %= arithmetic_expression + plus + module, lambda h, s: ArithmeticExpression('+', s[1], s[3])
+arithmetic_expression %= arithmetic_expression + minus + module, lambda h, s: ArithmeticExpression('-', s[1], s[3])
 
 module %= product, lambda h, s: s[1]
-module %= module + modulus + product, lambda h, s: ArithmeticExpression(s[2].Lemma, s[1], s[3])
+module %= module + modulus + product, lambda h, s: ArithmeticExpression('%', s[1], s[3])
 #
 product %= monomial, lambda h, s: s[1]
-product %= product + times + monomial, lambda h, s: ArithmeticExpression(s[2].Lemma, s[1], s[3])
-product %= product + divide + monomial, lambda h, s: ArithmeticExpression(s[2].Lemma, s[1], s[3])
-product %= product + int_divide + monomial, lambda h, s: ArithmeticExpression(s[2].Lemma, s[1], s[3])
+product %= product + times + monomial, lambda h, s: ArithmeticExpression('*', s[1], s[3])
+product %= product + divide + monomial, lambda h, s: ArithmeticExpression('/', s[1], s[3])
+product %= product + int_divide + monomial, lambda h, s: ArithmeticExpression('//', s[1], s[3])
 #
 monomial %= pow_, lambda h, s: s[1]
-monomial %= minus + monomial, lambda h, s: ArithmeticExpression(s[1].Lemma, NumberNode(0), s[2])
+monomial %= minus + monomial, lambda h, s: ArithmeticExpression('-', NumberNode(0), s[2])
 #
 pow_ %= high_hierarchy_object, lambda h, s: s[1]
-pow_ %= pow_ + power_asterisk + high_hierarchy_object, lambda h, s: ArithmeticExpression(s[2].Lemma, s[1], s[3])
-pow_ %= pow_ + power + high_hierarchy_object, lambda h, s: ArithmeticExpression(s[2].Lemma, s[1], s[3])
+pow_ %= pow_ + power_asterisk + high_hierarchy_object, lambda h, s: ArithmeticExpression('**', s[1], s[3])
+pow_ %= pow_ + power + high_hierarchy_object, lambda h, s: ArithmeticExpression('^', s[1], s[3])
 #
 high_hierarchy_object %= object_exp, lambda h, s: s[1]
 high_hierarchy_object %= high_hierarchy_object + as_ + identifier, lambda h, s: AsNode(s[1], s[3].Lemma)
 #
-function_stack %= identifier + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
+function_stack %= object_exp,lambda h, s: s[1]
 function_stack %= function_stack + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
-function_stack %= identifier + arguments, lambda h, s: FunctionCallNode(s[1].Lemma, s[2])
-function_stack %= print_ + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
-function_stack %= sin + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
-function_stack %= cos + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
-function_stack %= tan + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
-function_stack %= sqrt + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
-function_stack %= exp + lparen + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, s[3])
-function_stack %= log + lparen + expression + comma + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [s[3]] + [s[5]]) # duda
-function_stack %= rand + lparen + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [])
-function_stack %= range_ + lparen + expression + comma + expression + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [s[3]] + [s[5]])
-function_stack %= base + lparen + rparen, lambda h, s: FunctionCallNode(s[1].Lemma, [])
-function_stack %= identifier + period + identifier, lambda h, s: SelfVariableNode(type(s[1]) is VariableNode and s[1].NAME == 'self', s[3].Lemma)
-function_stack %= lparen + expression + rparen, lambda h, s: s[2]
-function_stack %= number, lambda h, s: NumberNode(s[1])
-function_stack %= pi, lambda h, s: NumberNode(math.pi)
-function_stack %= e, lambda h, s: NumberNode(math.e)
-function_stack %= string, lambda h, s: StringNode(s[1].Lemma)
-function_stack %= true, lambda h, s: BooleanNode(s[1])
-function_stack %= false, lambda h, s: BooleanNode(s[1])
-function_stack %= lbrack + list_ + rbrack, lambda h, s: ListNode(s[1])
-function_stack %= object_exp + lbrack + expression + rbrack, lambda h, s: IndexingNode(s[1], s[3])
 
 #
+object_exp %= identifier + arguments, lambda h, s: FunctionCallNode(s[1].Lemma, s[2])
+object_exp %= print_ + lparen + expression + rparen, lambda h, s: FunctionCallNode('print', [s[3]])
+object_exp %= sin + lparen + expression + rparen, lambda h, s: FunctionCallNode('sin', [s[3]])
+object_exp %= cos + lparen + expression + rparen, lambda h, s: FunctionCallNode('cos', [s[3]])
+object_exp %= tan + lparen + expression + rparen, lambda h, s: FunctionCallNode('tan', [s[3]])
+object_exp %= sqrt + lparen + expression + rparen, lambda h, s: FunctionCallNode('sqrt', [s[3]])
+object_exp %= exp + lparen + expression + rparen, lambda h, s: FunctionCallNode('exp', [s[3]])
+object_exp %= log + lparen + expression + comma + expression + rparen, lambda h, s: FunctionCallNode('log', [s[3]] + [s[5]]) # duda
+object_exp %= rand + lparen + rparen, lambda h, s: FunctionCallNode('rand', [])
+object_exp %= range_ + lparen + expression + comma + expression + rparen, lambda h, s: FunctionCallNode('range', [s[3]] + [s[5]])
+object_exp %= base + lparen + rparen, lambda h, s: FunctionCallNode('base', [])
+object_exp %= identifier + period + identifier, lambda h, s: SelfVariableNode(type(s[1]) is VariableNode and s[1].NAME == 'self', s[3].Lemma)
+object_exp %= lparen + expression + rparen, lambda h, s: s[2]
+object_exp %= number, lambda h, s: NumberNode(float(s[1].Lemma))
+object_exp %= pi, lambda h, s: NumberNode(math.pi)
+object_exp %= e, lambda h, s: NumberNode(math.e)
+object_exp %= string, lambda h, s: StringNode(s[1].Lemma)
+object_exp %= true, lambda h, s: BooleanNode(True)
+object_exp %= false, lambda h, s: BooleanNode(False)
+object_exp %= lbrack + list_ + rbrack, lambda h, s: s[2]
+object_exp %= object_exp + lbrack + expression + rbrack, lambda h, s: IndexingNode(s[1], s[3])
 object_exp %= identifier, lambda h, s: VariableNode(s[1].Lemma)
-object_exp %= function_stack, lambda h, s: s[1]
 
 #
-list_ %= expression, lambda h, s: [s[1]]
-list_ %= expression + comma + list_, lambda h, s: [s[1]] + s[3]
-list_ %= expression + list_comprehension + identifier + in_ + expression, lambda h, s: ImplicitListNode(s[1], s[3].Lemma, s[5])
+list_  %= explicit_list_, lambda h, s: [s[1]]
+list_  %= expression + list_comprehension + identifier + in_ + expression, lambda h, s: ImplicitListNode(s[1], s[3].Lemma, s[5])
+
+explicit_list_ %= expression, lambda h, s: ListNode([s[1]])
+explicit_list_ %= expression + comma + list_, lambda h, s: [s[1]] + s[3].ELEMENTS
 
 
 def GetKeywords():

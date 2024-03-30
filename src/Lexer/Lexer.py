@@ -15,7 +15,7 @@ from src.Project.Grammar import G
 class Lexer:
     def __init__(self, table, file_path=None):
         if not file_path:
-            file_path = "../../models/lexer_automaton.pkl"
+            file_path = "models/lexer_automaton.pkl"
 
         if os.path.exists(file_path):
             with open(file_path, 'rb') as f:
@@ -109,6 +109,9 @@ class Lexer:
                 cols += 1
                 continue
             except AttributeError:
+                errors.append(LexerError(f"LEXER ERROR: Invalid token \"{text[index]}\" at position: {(rows, cols)}"))
+                index, rows, cols = self.CleanupText(index, text, cols, rows, skip=1)
+                cols += 1
                 continue
 
             if not final:
