@@ -99,6 +99,13 @@ class TestLexer(unittest.TestCase):
 
         self.check_equal(expected_types, expected_lemmas, tokens)
 
+    def test_tokenization_10(self):
+        tokens, erros = self.lexer.Tokenize("a.b")
+        expected_lemmas = ['a', '.', 'b', '$']
+        expected_types = [identifier.Name, period.Name, identifier.Name, G.EOF.Name]
+
+        self.check_equal(expected_types, expected_lemmas, tokens)
+
     def check_equal(self, expected_types, expected_lemmas, tokens):
         token_lemmas = [token.Lemma for token in tokens]
         token_types = [token.TokenType.Name for token in tokens]
