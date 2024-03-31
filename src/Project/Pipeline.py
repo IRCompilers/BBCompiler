@@ -27,11 +27,11 @@ def run_pipeline(text: str, model_folder: str):
         return    
     
     parser = ParserLR1(G, verbose=False)
-    derivation, operations = parser([t.TokenType for t in tokens], get_shift_reduce=True)
+    derivation, operations, token = parser([t.TokenType for t in tokens], get_shift_reduce=True)
     #QUE HACER SI HAY ERRORES EN EL PARSER??
     if(derivation==None):
         return
-    ast = evaluate_reverse_parse(derivation, operations, tokens)
+    ast, error_build_ast = evaluate_reverse_parse(derivation, operations, tokens)
 
     semantic_checker = SemanticCheckerVisitor()
     errors = semantic_checker.visit(ast)
