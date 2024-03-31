@@ -214,7 +214,7 @@ function_stack %= log + lparen + expression + comma + expression + rparen, lambd
 function_stack %= rand + lparen + rparen, lambda h, s: FunctionCallNode('rand', [])
 function_stack %= range_ + lparen + expression + comma + expression + rparen, lambda h, s: FunctionCallNode('range', [s[3]] + [s[5]])
 function_stack %= base + lparen + rparen, lambda h, s: FunctionCallNode('base', [])
-function_stack %= identifier + period + identifier, lambda h, s: SelfVariableNode(type(s[1]) is VariableNode and s[1].NAME == 'self', s[3].Lemma)
+function_stack %= identifier + period + identifier, lambda h, s: SelfVariableNode(s[1].Lemma == 'self', s[3].Lemma)
 function_stack %= lparen + expression + rparen, lambda h, s: s[2]
 function_stack %= number, lambda h, s: NumberNode(float(s[1].Lemma))
 function_stack %= pi, lambda h, s: NumberNode(math.pi)
