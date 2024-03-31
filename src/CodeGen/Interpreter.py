@@ -19,8 +19,12 @@ class InterpretVisitor(object):
 
         context = CodeContext()
 
+        def auxPrint(x):
+            print(x)
+            return x
+
         built_in_functions = {
-            "print": lambda x: print(x[0]),
+            "print": lambda x: auxPrint(x[0]),
             "sin": lambda x: math.sin(x[0]),
             "cos": lambda x: math.cos(x[0]),
             "range": lambda x: list(range(int(x[0]), int(x[1]))),
@@ -59,12 +63,13 @@ class InterpretVisitor(object):
                     args.append(visitor.last_value_returned)
 
                 self.Parent = context.get_type(node.INHERITS)
-                if self.Parent!=None:
-                    self.Parent=self.Parent(args)
+                if self.Parent != None:
+                    self.Parent = self.Parent(args)
                 for x in [x for x in node.CORPUS if type(x) is TypeAtributeNode]:
                     visitor.visit(x.VALUE, constructor_context)
                     type_context.def_variable(x.VAR.NAME, visitor.last_value_returned)
 
+                type_context.def_variable('self', self)
                 for x in [x for x in node.CORPUS if type(x) is FunctionNode]:
                     visitor.visit(x, type_context)
                     type_context.def_function(x.NAME, visitor.last_value_returned)
@@ -72,7 +77,7 @@ class InterpretVisitor(object):
             def call(self, name, parameters):
                 if not self.has_function(name):
                     return self.Parent.call(name, parameters)
-                override = self.Parent.has_function(name) if self.Parent!=None else False
+                override = self.Parent.has_function(name) if self.Parent != None else False
                 if override:
                     type_context.def_function('base', lambda x: self.Parent.call(name, parameters))
                 returnValue = type_context.get_function(name, False)(parameters)
@@ -156,11 +161,11 @@ class InterpretVisitor(object):
                 for_context.edit_variable(node.NAME, x)
                 self.visit(node.EXPRESSION, for_context)
         else:
-            x=collection.call('current',[])
-            while collection.call('next',[]):
+            x = collection.call('current', [])
+            while collection.call('next', []):
                 for_context.edit_variable(node.NAME, x)
                 self.visit(node.OPERATION, for_context)
-                x=collection.call('current',[])
+                x = collection.call('current', [])
 
     @Visitor.when(NewNode)
     def visit(self, node: NewNode, context: CodeContext):
@@ -206,6 +211,12 @@ class InterpretVisitor(object):
             self.last_value_returned = left <= right
         else:
             raise Exception("Invalid operator")
+
+    @Visitor.when(IsExpression)
+    def visit(self, node: IsExpression, context: CodeContext):
+        self.visit(node.LEFT, context)
+        T = context.get_type(node.NAME)
+        self.last_value_returned = type(self.last_value_returned) is T
 
     @Visitor.when(StringConcatenationNode)
     def visit(self, node: StringConcatenationNode, context: CodeContext):
@@ -280,7 +291,7 @@ class InterpretVisitor(object):
             Arguments.append(self.last_value_returned)
         self.visit(node.CLASS, context)
         if type(self.last_value_returned) is list:
-            self.last_value_returned=context.Puppet(self.last_value_returned,node.FUNCT)
+            self.last_value_returned = context.Puppet(self.last_value_returned, node.FUNCT)
             return
         self.last_value_returned = self.last_value_returned.call(node.FUNCT, Arguments)
 
@@ -306,13 +317,13 @@ class InterpretVisitor(object):
                 self.visit(node.OPERATION, List_context)
                 elements.append(self.last_value_returned)
         else:
-            x=collection.call('current',[])
-            while collection.call('next',[]):
+            x = collection.call('current', [])
+            while collection.call('next', []):
                 List_context.edit_variable(node.ITERATION, x)
                 self.visit(node.OPERATION, List_context)
                 elements.append(self.last_value_returned)
-                x=collection.call('current',[])
-                
+                x = collection.call('current', [])
+
         self.last_value_returned = elements
 
     @Visitor.when(IndexingNode)
@@ -320,7 +331,7 @@ class InterpretVisitor(object):
         self.visit(node.INDEX, context)
         i = self.last_value_returned
         self.visit(node.COLLECTION, context)
-        self.last_value_returned = self.last_value_returned[i]
+        self.last_value_returned = self.last_value_returned[int(i)]
 
     @Visitor.when(AsNode)
     def visit(self, node: AsNode, context: CodeContext):
