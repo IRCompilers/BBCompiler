@@ -19,7 +19,7 @@ def run_pipeline(text: str, model_folder: str):
         return    
     
     parser = ParserLR1(G, verbose=False)
-    derivation, operations = parser(tokens)
+    derivation, operations = parser([t.TokenType for t in tokens], get_shift_reduce=True)
     #QUE HACER SI HAY ERRORES EN EL PARSER??
     if(derivation==None):
         return
