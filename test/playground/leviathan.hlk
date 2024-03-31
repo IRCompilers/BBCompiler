@@ -23,7 +23,7 @@ type Cat {
 }
 
 type Pet inherits Dog {
-    sound() => print("Pet \"sound\"");
+    sound() => print("Pet sound");
 }
 
 type SmartCat inherits Cat {

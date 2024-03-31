@@ -7,7 +7,19 @@ class CodeContext(IContext):
         self.variables = {}
         self.functions = {}
         self.types = {}
+        self.puppetList={}
 
+    def Puppet(self,value,action):
+        if str(value) not in self.puppetList:
+            self.puppetList[str(value)]=(value,-1)
+        if action=='current':
+            return self.puppetList[str(value)][0][self.puppetList[str(value)][1]]
+        elif action=='next':
+            self.puppetList[str(value)]=(self.puppetList[str(value)][0],self.puppetList[str(value)][1]+1)
+            return len(self.puppetList[str(value)][0])>self.puppetList[str(value)][1]
+        else:
+            return len(self.puppetList[value][0])
+        
     def def_variable(self,name,value):
         self.variables[name]=value
 

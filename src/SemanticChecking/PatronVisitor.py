@@ -33,7 +33,7 @@ class SemanticCheckerVisitor(object):
             self.errors.append('There is two declarations of the same protocol')
 
         # Avoiding repited Functions
-        defaultFunctions = ['print', 'sen', 'cos', 'rand', 'sqrt', 'exp', 'log']
+        defaultFunctions = ['print', 'sin', 'cos', 'rand', 'sqrt', 'exp', 'log']
         FuncNames = defaultFunctions + [x.NAME for x in node.STATEMENTS if type(x) is FunctionNode]
         if EqualObjects(FuncNames):
             self.errors.append('There is two declarations of the same function')
