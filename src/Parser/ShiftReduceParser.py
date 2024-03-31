@@ -36,22 +36,21 @@ class ShiftReduceParser(object):
         while True:
             state = stack[-1]
             lookahead = w[cursor]
-            if self.verbose:
-                print(stack, '<---||--->', w[cursor:])
+            if self.verbose: print(stack, '<---||--->', w[cursor:])
 
-            if (state, str(lookahead)) not in self.copy:
+            if (state, lookahead) not in self.action:
                 print("Error. Aborting...")
                 print(state)
                 print(lookahead)
                 return None
 
-            if self.copy[(state, str(lookahead))] == SROperations.OK:
+            if self.action[state, lookahead] == SROperations.OK:
                 action = SROperations.OK
             else:
-                action, tag = self.copy[(state, str(lookahead))]
+                action, tag = self.action[state, lookahead]
             if action == SROperations.SHIFT:
                 operations.append(SROperations.SHIFT)
-                stack += [str(lookahead), tag]
+                stack += [lookahead, tag]
                 cursor += 1
             elif action == SROperations.REDUCE:
                 operations.append(SROperations.REDUCE)
@@ -59,13 +58,13 @@ class ShiftReduceParser(object):
                 head, body = tag
                 for symbol in reversed(body):
                     stack.pop()
-                    assert str(stack.pop()) == str(symbol)
+                    assert stack.pop() == symbol
                     state = stack[-1]
                 goto = self.goto[state, head]
                 stack += [head, goto]
             elif action == SROperations.OK:
                 stack.pop()
-                assert str(stack.pop()) == str(self.Grammar.startSymbol)
+                assert stack.pop() == self.Grammar.startSymbol
                 assert len(stack) == 1
                 return output if not get_shift_reduce else (output, operations)
             else:
