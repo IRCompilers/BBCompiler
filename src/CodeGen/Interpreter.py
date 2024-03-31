@@ -18,9 +18,12 @@ class InterpretVisitor(object):
     def visit(self, node: ProgramNode):
 
         context = CodeContext()
-
+        
+        def auxPrint(x):
+            print(x)
+            return x
         built_in_functions = {
-            "print": lambda x: print(x[0]),
+            "print": lambda x: auxPrint(x[0]),
             "sin": lambda x: math.sin(x[0]),
             "cos": lambda x: math.cos(x[0]),
             "range": lambda x: list(range(int(x[0]), int(x[1]))),
@@ -64,7 +67,8 @@ class InterpretVisitor(object):
                 for x in [x for x in node.CORPUS if type(x) is TypeAtributeNode]:
                     visitor.visit(x.VALUE, constructor_context)
                     type_context.def_variable(x.VAR.NAME, visitor.last_value_returned)
-
+                
+                type_context.def_variable('self',self)
                 for x in [x for x in node.CORPUS if type(x) is FunctionNode]:
                     visitor.visit(x, type_context)
                     type_context.def_function(x.NAME, visitor.last_value_returned)
@@ -207,6 +211,12 @@ class InterpretVisitor(object):
         else:
             raise Exception("Invalid operator")
 
+    @Visitor.when(IsExpression)
+    def visit(self, node: IsExpression, context: CodeContext):
+        self.visit(node.LEFT,context)
+        T=context.get_type(node.NAME)
+        self.last_value_returned=type(self.last_value_returned) is T
+
     @Visitor.when(StringConcatenationNode)
     def visit(self, node: StringConcatenationNode, context: CodeContext):
         # Modificar, para aquello que sea printable
@@ -320,7 +330,7 @@ class InterpretVisitor(object):
         self.visit(node.INDEX, context)
         i = self.last_value_returned
         self.visit(node.COLLECTION, context)
-        self.last_value_returned = self.last_value_returned[i]
+        self.last_value_returned = self.last_value_returned[int(i)]
 
     @Visitor.when(AsNode)
     def visit(self, node: AsNode, context: CodeContext):
