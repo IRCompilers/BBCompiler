@@ -18,10 +18,12 @@ def run_pipeline(text: str, model_folder: str):
     lexer = Lexer(regex_table, file_path=f"{model_folder}/lexer_automaton.pkl")
     tokens, errors_lexer = lexer.Tokenize(text)
 
+    # print([(x.Lemma, x.TokenType) for x in tokens])
+
     for e in errors_lexer:
         print('\033[91m' + str(e) + '\033[0m')
     
-    if(len(errors_lexer)>0):
+    if len(errors_lexer)>0:
         return    
     
     parser = ParserLR1(G, verbose=False)
