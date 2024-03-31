@@ -1,77 +1,20 @@
-type Person(firstname, lastname) {
-    firstname = firstname;
-    lastname = lastname;
+type Point {
+    x = 0;
+    y = 0;
 
-    name() => self.firstname @@ self.lastname;
-    sound() => print("Hello");
+    getX() => self.x;
+    getY() => self.y;
+
+    setX(x) => self.x := x;
+    setY(y) => self.y := y;
 }
 
-type Knight(firstname, lastname) inherits Person(firstname, lastname) {
-    name() => "Sir" @@ base();
+type PolarPoint inherits Point {
+    rho() => sqrt(self.getX() ^ 2 + self.getY() ^ 2);
 }
 
-protocol Animal {
-    sound() : Object;
-}
-
-type Dog {
-    sound() => print("Woof");
-}
-
-type Cat {
-    sound() => print("Meow");
-}
-
-type Pet inherits Dog {
-    sound() => print("Pet sound");
-}
-
-type SmartCat inherits Cat {
-
-    square_sum(a, b) {
-        (a + b) * (a + b);
-    }
-}
-
-let a: Person = new Person("John", "Doe"), b: Animal = new Dog(), c: Animal = new Cat(), d: Animal = new Pet(), f: Animal = new SmartCat() in {
-
-    for (x in range(0, 10)) {
-
-        if (x % 2 == 1 & x != 1) {
-            a.sound();
-        }
-        elif (x == 2) {
-            b.sound();
-        }
-        elif (x == 4) {
-            c.sound();
-        }
-        elif (x == 6) {
-            d.sound();
-        }
-        elif (x == 8) {
-            print((f as SmartCat).square_sum(3, 4));
-        }
-        elif (x == 0) {
-
-            if (a is Knight) {
-                print("Knight");
-            }
-            else {
-                print("Person");
-            }
-
-            if (b is Dog) {
-                print("Dog");
-            }
-            else {
-                print("Animal");
-            }
-        }
-        else {
-            let numbers = [x ^ 2 || x in [1,2,3]] in
-                for (y in numbers)
-                    print(x @@ y);
-        }
-    }
+let p = new PolarPoint() in {
+    p.setX(3);
+    p.setY(4);
+    print(p.rho());
 }
