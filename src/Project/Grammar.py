@@ -80,9 +80,9 @@ variable %= identifier + colon + identifier, lambda h, s: ParameterNode(s[1].Lem
 #
 type_def %= class_block, lambda h, s: ([], 'Object', [], s[1])
 type_def %= inherits + identifier + class_block, lambda h, s: ([], s[2].Lemma, [], s[3])
-type_def %= parameters + class_block, lambda h, s: (s[1], 'Object', [], s[4])
-type_def %= parameters + inherits + identifier + class_block, lambda h, s: (s[1], s[5].Lemma, [], s[6])
-type_def %= parameters + inherits + identifier + lparen + argument_list + rparen + class_block, lambda h, s: (s[1], s[5].Lemma, s[7], s[9])
+type_def %= lparen + parameter_list + rparen + class_block, lambda h, s: (s[2], 'Object', [], s[4])
+type_def %= lparen + parameter_list + rparen + inherits + identifier + class_block, lambda h, s: (s[2], s[5].Lemma, [], s[6])
+type_def %= lparen + parameter_list + rparen + inherits + identifier + lparen + argument_list + rparen + class_block, lambda h, s: (s[2], s[5].Lemma, s[7], s[9])
 type_def %= inherits + identifier + lparen + argument_list + rparen + class_block, lambda h, s: ([], s[2].Lemma, s[4], s[6])
 #
 class_block %= lbrace + rbrace, lambda h, s: []
@@ -92,7 +92,7 @@ class_body %= class_declaration, lambda h, s: [s[1]]
 class_body %= class_declaration + class_body, lambda h, s: [s[1]] + s[2]
 #
 class_declaration %= variable + equal + main_expression, lambda h, s: TypeAtributeNode(s[1], s[3])
-class_declaration %= identifier + parameters + function_style, lambda h, s: FunctionNode(s[1], s[2], s[3])
+class_declaration %= identifier + parameters + function_style, lambda h, s: FunctionNode(s[1].Lemma, s[2], s[3])
 #
 protocol_declare %= protocol + identifier + lbrace + protocol_body + rbrace, lambda h, s: ProtocolNode(s[2].Lemma, s[4])
 protocol_declare %= protocol + identifier + extends + identifier + lbrace + protocol_body + rbrace, lambda h, s: ProtocolNode(s[2].Lemma, s[6], s[4].Lemma)
