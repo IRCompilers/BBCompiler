@@ -1,24 +1,19 @@
-protocol Iterable {
-    next() : Boolean;
-    current() : Object;
-}
-
-type ArrayIterator(array: Vector, max:Number) {
+type ArrayIterator(array: Vector, max : Number) {
     array : Vector = array;
     index : Number = -1;
     max : Number = max;
 
     next() : Boolean {
-        index := index + 1;
-        this.index < max;
+        self.index := self.index + 1;
+        self.index < self.max;
     }
 
     current() : Object {
-        array[index];
+        self.array[self.index];
     }
 }
 
-let array: Iterable = ArrayIterator(range(0,5), 5) in {
+let array: Iterable = new ArrayIterator(range(0,5), 5) in {
     while(array.next()) {
         print(array.current());
     }

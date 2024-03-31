@@ -21,7 +21,7 @@ class InterpretVisitor(object):
 
         built_in_functions = {
             "print": lambda x: print(x[0]),
-            "sen": lambda x: math.sin(x[0]),
+            "sin": lambda x: math.sin(x[0]),
             "cos": lambda x: math.cos(x[0]),
             "range": lambda x: list(range(int(x[0]), int(x[1]))),
             "exp": lambda x: math.exp(x[0]),
@@ -138,6 +138,7 @@ class InterpretVisitor(object):
     @Visitor.when(WhileNode)
     def visit(self, node: WhileNode, context: CodeContext):
         self.visit(node.CONDITIONS, context)
+        returnValue = None
         while (self.last_value_returned):
             self.visit(node.EXPRESSION, context)
             returnValue = self.last_value_returned

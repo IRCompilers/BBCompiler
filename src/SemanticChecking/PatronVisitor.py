@@ -33,7 +33,7 @@ class SemanticCheckerVisitor(object):
             self.errors.append('There is two declarations of the same protocol')
 
         # Avoiding repited Functions
-        defaultFunctions = ['print', 'sen', 'cos', 'rand', 'sqrt', 'exp', 'log']
+        defaultFunctions = ['print', 'sin', 'cos', 'rand', 'sqrt', 'exp', 'log']
         FuncNames = defaultFunctions + [x.NAME for x in node.STATEMENTS if type(x) is FunctionNode]
         if EqualObjects(FuncNames):
             self.errors.append('There is two declarations of the same function')
@@ -366,7 +366,7 @@ class SemanticCheckerVisitor(object):
     def visit(self, node: SelfDestructiveExpression, scope: Scope = None):
         self.visit(node.VAR, scope)
         self.visit(node.EXPRESSION, scope)
-        if not scope.AreRelated(node.VAR.VALUE_TYPE, node.EXPRESSION):
+        if not scope.AreRelated(node.VAR.VALUE_TYPE, node.EXPRESSION.VALUE_TYPE):
             self.errors.append(f"You cannot change the variable type")
         return self.errors
 
@@ -384,7 +384,7 @@ class SemanticCheckerVisitor(object):
             self.errors.append(f"Expected {len(Constructor)} arguments instead of {len(node.ARGS)}")
         # Visiting the arguments
         for i in range(len(Constructor)):
-            self.visit(node.ARGS[i])
+            self.visit(node.ARGS[i], scope)
             try:
                 if not scope.AreRelated(node.ARGS[i].VALUE_TYPE, Constructor[i].TYPE):
                     self.errors.append(f"{Constructor[i].TYPE} expression was expected instead of {node.ARGS[i].VALUE_TYPE}")

@@ -33,7 +33,7 @@ def AddBasicInfo(scope: Scope):
     scope.AddTypeParameters('String', [])
     scope.AddTypeParameters('Vector', [])
 
-    scope.AddFunctions(ProtocolMethodNode('sen', [ParameterNode('a', 'Number')], 'Number'))
+    scope.AddFunctions(ProtocolMethodNode('sin', [ParameterNode('a', 'Number')], 'Number'))
     scope.AddFunctions(ProtocolMethodNode('cos', [ParameterNode('a', 'Number')], 'Number'))
     scope.AddFunctions(ProtocolMethodNode('exp', [ParameterNode('a', 'Number')], 'Number'))
     scope.AddFunctions(ProtocolMethodNode('sqrt', [ParameterNode('a', 'Number')], 'Number'))
