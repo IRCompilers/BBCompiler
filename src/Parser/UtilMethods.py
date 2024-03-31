@@ -1,31 +1,37 @@
 from src.Common.ContainerSet import ContainerSet
-from src.Common.Compiler import Item
+from src.Common.Compiler import Item, EOF
+from src.Common.Automata import State
+from src.Parser.SROperations import SROperations
 
 
-def compute_firsts(G):
-    '''
+def multiline_formatter(state):
+    return '\n'.join(str(item) for item in state)
+
+
+def compute_firsts(grammar):
+    """
     Computes the firsts sets for the given grammar
 
-    :param G: Grammar
-    :return: set, computed firsts
-    '''
+    :param grammar: Grammar
+    :return: dict
+    """
     firsts = {}
     change = True
 
-    for terminal in G.terminals:
+    for terminal in grammar.terminals:
         firsts[terminal] = ContainerSet(terminal)
 
-    for nonterminal in G.nonTerminals:
-        firsts[nonterminal] = ContainerSet()
+    for non_terminal in grammar.nonTerminals:
+        firsts[non_terminal] = ContainerSet()
 
     while change:
         change = False
 
-        for production in G.Productions:
-            X = production.Left
+        for production in grammar.Productions:
+            x = production.Left
             alpha = production.Right
 
-            first_X = firsts[X]
+            first_x = firsts[x]
 
             try:
                 first_alpha = firsts[alpha]
@@ -35,19 +41,19 @@ def compute_firsts(G):
             local_first = compute_local_first(firsts, alpha)
 
             change |= first_alpha.hard_update(local_first)
-            change |= first_X.hard_update(local_first)
+            change |= first_x.hard_update(local_first)
 
     return firsts
 
 
 def expand(item, firsts):
-    '''
+    """
     Expands the given item
 
     :param item:
     :param firsts:
-    :return:
-    '''
+    :return: list
+    """
     next_symbol = item.NextSymbol
     if next_symbol is None or not next_symbol.IsNonTerminal:
         return []
@@ -61,11 +67,11 @@ def expand(item, firsts):
 
 
 def compress(items):
-    '''
+    """
     Compresses the given items
     :param items:
-    :return:
-    '''
+    :return: set
+    """
     centers = {}
 
     for item in items:
@@ -82,13 +88,13 @@ def compress(items):
 
 
 def compute_local_first(firsts, alpha):
-    '''
-    Computes the local firsts for the given alpha
+    """
+    Computes the local firsts for a given alpha
 
     :param firsts:
     :param alpha:
-    :return:
-    '''
+    :return: ContainerSet
+    """
     first_alpha = ContainerSet()
 
     try:
@@ -108,3 +114,126 @@ def compute_local_first(firsts, alpha):
             first_alpha.set_epsilon()
 
     return first_alpha
+
+
+def build_lr1_automaton(grammar):
+    """
+    Build the automaton for the LR1 parser
+
+    :param grammar: Grammar
+    :return: State
+    """
+    assert len(grammar.startSymbol.productions) == 1, "Grammar must be augmented"
+
+    firsts = compute_firsts(grammar)
+    firsts[grammar.EOF] = ContainerSet(grammar.EOF)
+
+    start_production = grammar.startSymbol.productions[0]
+    start_item = Item(start_production, 0, lookaheads=(grammar.EOF,))
+    start = frozenset([start_item])
+
+    closure = closure_lr1(start, firsts)
+    automaton = State(frozenset(closure), True)
+
+    pending = [start]
+    visited = {start: automaton}
+
+    while pending:
+        current = pending.pop()
+        current_state = visited[current]
+
+        for symbol in grammar.terminals + grammar.nonTerminals:
+            items = current_state.state
+            kernel = goto_lr1(items, symbol, just_kernel=True)
+            if not kernel:
+                continue
+            try:
+                next_state = visited[kernel]
+            except KeyError:
+                closure = goto_lr1(items, symbol, firsts)
+                next_state = visited[kernel] = State(frozenset(closure), True)
+                pending.append(kernel)
+
+            current_state.add_transition(symbol.Name, next_state)
+
+    automaton.set_formatter(multiline_formatter)
+    return automaton
+
+
+def closure_lr1(items, firsts):
+    """
+    It makes the closure for LR1 parser
+
+    :param items:
+    :param firsts:
+    :return: set
+    """
+    closure = ContainerSet(*items)
+    changed = True
+    while changed:
+        changed = False
+        new_items = ContainerSet()
+        for item in closure:
+            new_items.extend(expand(item, firsts))
+        changed = closure.update(new_items)
+
+    return compress(closure)
+
+
+def goto_lr1(items, symbol, firsts=None, just_kernel=False):
+    """
+    `Goto` of LR1 parser
+
+    :param items:
+    :param symbol:
+    :param firsts:
+    :param just_kernel:
+    :return: frozenset | set
+    """
+    assert (
+        just_kernel or firsts is not None
+    ), "`firsts` must be provided if `just_kernel=False`"
+    items = frozenset(item.NextItem() for item in items if item.NextSymbol == symbol)
+    return items if just_kernel else closure_lr1(items, firsts)
+
+
+def evaluate_reverse_parse(right_parse, operations, tokens):
+    """
+    Evaluate the operations of the parser to build the AST
+
+    :param right_parse:
+    :param operations:
+    :param tokens:
+    :return:
+    """
+    if not right_parse or not operations or not tokens:
+        return
+
+    right_parse = iter(right_parse)
+    tokens = iter(tokens)
+    stack = []
+    for operation in operations:
+        if operation == SROperations.SHIFT:
+            token = next(tokens)
+            stack.append(token)
+        elif operation == SROperations.REDUCE:
+            production = next(right_parse)
+            _, body = production
+            attributes = production.attributes
+            assert all(
+                rule is None for rule in attributes[1:]
+            ), "There must be only synthesized attributes."
+            rule = attributes[0]
+
+            if len(body):
+                synthesized = [None] + stack[-len(body):]
+                value = rule(None, synthesized)
+                stack[-len(body):] = [value]
+            else:
+                stack.append(rule(None, None))
+        else:
+            raise Exception("Invalid action!!!")
+
+    assert len(stack) == 1, f'Stack:{stack} '
+    assert isinstance(next(tokens).TokenType, EOF), 'Next Token is not EOF'
+    return stack[0]

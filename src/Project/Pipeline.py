@@ -2,32 +2,27 @@ from src.CodeGen.Interpreter import InterpretVisitor
 from src.Common.Exceptions import SemanticCheckError
 from src.Lexer.Lexer import Lexer
 from src.Lexer.SymbolTable import regex_table
-from src.Parser.ParserLR1 import LR1Parser, evaluate_reverse_parse
+from src.Parser.ParserLR1 import ParserLR1
+from src.Parser.UtilMethods import evaluate_reverse_parse
 from src.Project.Grammar import G
 from src.SemanticChecking.PatronVisitor import SemanticCheckerVisitor
 
 
-def run_pipeline(text: str, model_folder: str, verbose: bool = True):
+def run_pipeline(text: str, model_folder: str):
     lexer = Lexer(regex_table, file_path=f"{model_folder}/lexer_automaton.pkl")
     tokens, errors_lexer = lexer.Tokenize(text)
 
-    if verbose:
-        for v in tokens:
-            print(v.Lemma, v.TokenType.Name)
-
     for e in errors_lexer:
         print('\033[91m' + str(e) + '\033[0m')
-
-    if (len(errors_lexer) > 0):
+    
+    if(len(errors_lexer)>0):
+        return    
+    
+    parser = ParserLR1(G, verbose=False)
+    derivation, operations = parser([t.TokenType for t in tokens], get_shift_reduce=True)
+    #QUE HACER SI HAY ERRORES EN EL PARSER??
+    if(derivation==None):
         return
-
-    parser = LR1Parser(G, verbose=False)
-    derivation, operations = parser(tokens)
-
-    # QUE HACER SI HAY ERRORES EN EL PARSER??
-    if derivation == None:
-        return
-
     ast = evaluate_reverse_parse(derivation, operations, tokens)
 
     semantic_checker = SemanticCheckerVisitor()
@@ -41,8 +36,8 @@ def run_pipeline(text: str, model_folder: str, verbose: bool = True):
         return
 
     interpreter = InterpretVisitor()
-    interpreter.visit(ast)
+    interpreter.visit(ast, None)
 
 
 if __name__ == '__main__':
-    run_pipeline("let a = [x || x in range(0,10)] in for (x in a) print(x);", "../../models")
+    run_pipeline( "let a = [x || x in range(0,10)] in for (x in a) print(x);", "models")
