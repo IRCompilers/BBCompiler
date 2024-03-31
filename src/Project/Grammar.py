@@ -66,8 +66,8 @@ statement %= protocol_declare, lambda h, s: s[1]
 #
 function_style %= darrow + simple_expression + semicolon, lambda h, s: s[2]
 function_style %= colon + identifier + darrow + simple_expression + semicolon, lambda h, s: s[4]
-function_style %= lbrace + expression_block + rbrace, lambda h, s: [s[2]]
-function_style %= colon + identifier + lbrace + expression_block + rbrace, lambda h, s: [s[4]]
+function_style %= lbrace + expression_block + rbrace, lambda h, s: s[2]
+function_style %= colon + identifier + lbrace + expression_block + rbrace, lambda h, s: s[4]
 #
 parameters %= lparen + rparen, lambda h, s: []
 parameters %= lparen + parameter_list + rparen, lambda h, s: s[2]
