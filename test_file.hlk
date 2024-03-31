@@ -11,7 +11,7 @@ type Knight(firstname, lastname) inherits Person(firstname, lastname) {
 }
 
 protocol Animal {
-    sound();
+    sound() : Object;
 }
 
 type Dog {
@@ -33,42 +33,45 @@ type SmartCat inherits Cat {
     }
 }
 
-let a: Person = new Person("John", "Doe"), b: Animal = new Dog(), c: Animal = new Cat(), d: Animal = new Pet(), e: Animal = new SmartCat() in {
+let a: Person = new Person("John", "Doe"), b: Animal = new Dog(), c: Animal = new Cat(), d: Animal = new Pet(), f: Animal = new SmartCat() in {
 
     for (x in range(0, 10)) {
 
         if (x % 2 == 1 & x != 1) {
             a.sound();
-        } elif (x == 2) {
+        }
+        elif (x == 2) {
             b.sound();
-        } elif (x == 4) {
+        }
+        elif (x == 4) {
             c.sound();
-        } elif (x == 6) {
+        }
+        elif (x == 6) {
             d.sound();
-        } elif (x == 8) {
-            print((e as SmartCat).square_sum(3, 4));
-        } elif (x == 0) {
+        }
+        elif (x == 8) {
+            print((f as SmartCat).square_sum(3, 4));
+        }
+        elif (x == 0) {
 
             if (a is Knight) {
                 print("Knight");
-            } else {
+            }
+            else {
                 print("Person");
             }
 
             if (b is Dog) {
                 print("Dog");
-            } else {
+            }
+            else {
                 print("Animal");
             }
-
-        } else {
+        }
+        else {
             let numbers = [x ^ 2 || x in [1,2,3]] in
                 for (y in numbers)
                     print(x @@ y);
         }
-
     }
-
-    let numbers = [1,2,3,4] in print(numbers[0] @ numbers[3]);
-
 }

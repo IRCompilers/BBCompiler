@@ -30,10 +30,6 @@ class ShiftReduceParser(object):
         output = []
         operations = []
 
-        # To Fix the Serialization
-        # self.copy[(1833, "$")] = ("OK", None)
-        # self.copy[(1835, "$")] = ("OK", None)
-        #
         while True:
             state = stack[-1]
             lookahead = w[cursor]
