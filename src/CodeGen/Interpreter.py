@@ -138,6 +138,7 @@ class InterpretVisitor(object):
     @Visitor.when(WhileNode)
     def visit(self, node: WhileNode, context: CodeContext):
         self.visit(node.CONDITIONS, context)
+        returnValue = None
         while (self.last_value_returned):
             self.visit(node.EXPRESSION, context)
             returnValue = self.last_value_returned

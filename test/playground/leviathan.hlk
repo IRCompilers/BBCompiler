@@ -6,7 +6,7 @@ type Person(firstname, lastname) {
     sound() => print("Hello");
 }
 
-type Knight inherits Person {
+type Knight(firstname, lastname) inherits Person(firstname, lastname) {
     name() => "Sir" @@ base();
 }
 
@@ -33,21 +33,21 @@ type SmartCat inherits Cat {
     }
 }
 
-let a: Person = Person("John", "Doe"), b: Animal = Dog(), c: Animal = Cat(), d: Animal = Pet(), e: Animal = SmartCat() in {
+let a: Person = new Person("John", "Doe"), b: Animal = new Dog(), c: Animal = new Cat(), d: Animal = new Pet(), e: Animal = new SmartCat() in {
 
     for (x in range(0, 10)) {
 
         if (x % 2 == 1 & x != 1) {
             a.sound();
-        } else if (x == 2) {
+        } elif (x == 2) {
             b.sound();
-        } else if (x == 4) {
+        } elif (x == 4) {
             c.sound();
-        } else if (x == 6) {
+        } elif (x == 6) {
             d.sound();
-        } else if (x == 8) {
+        } elif (x == 8) {
             print((e as SmartCat).square_sum(3, 4));
-        } else if (x == 0) {
+        } elif (x == 0) {
 
             if (a is Knight) {
                 print("Knight");

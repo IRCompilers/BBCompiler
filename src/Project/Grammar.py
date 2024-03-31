@@ -60,14 +60,14 @@ init_ %= program, lambda h, s: s[1]
 program %= simple_program, lambda h, s: ProgramNode([], s[1])
 program %= statement + program, lambda h, s: ProgramNode([s[1]] + s[2].STATEMENTS, s[2].EXPRESSION)
 
-statement %= function + identifier + parameters + function_style, lambda h, s: FunctionNode(s[2].Lemma, s[3], s[4])
+statement %= function + identifier + parameters + function_style, lambda h, s: FunctionNode(s[2].Lemma, s[3], s[4][1], s[4][0])
 statement %= type_ + identifier + type_def, lambda h, s: TypeNode(s[2].Lemma, s[3][3], s[3][0], s[3][1], s[3][2])
 statement %= protocol_declare, lambda h, s: s[1]
 #
-function_style %= darrow + simple_expression + semicolon, lambda h, s: s[2]
-function_style %= colon + identifier + darrow + simple_expression + semicolon, lambda h, s: s[4]
-function_style %= lbrace + expression_block + rbrace, lambda h, s: s[2]
-function_style %= colon + identifier + lbrace + expression_block + rbrace, lambda h, s: s[4]
+function_style %= darrow + simple_expression + semicolon, lambda h, s: ("Object", s[2])
+function_style %= colon + identifier + darrow + simple_expression + semicolon, lambda h, s: (s[2].Lemma, s[4])
+function_style %= lbrace + expression_block + rbrace, lambda h, s: ("Object", s[2])
+function_style %= colon + identifier + lbrace + expression_block + rbrace, lambda h, s: (s[2].Lemma, s[4])
 #
 parameters %= lparen + rparen, lambda h, s: []
 parameters %= lparen + parameter_list + rparen, lambda h, s: s[2]
@@ -92,25 +92,25 @@ class_body %= class_declaration, lambda h, s: [s[1]]
 class_body %= class_declaration + class_body, lambda h, s: [s[1]] + s[2]
 #
 class_declaration %= variable + equal + main_expression, lambda h, s: TypeAtributeNode(s[1], s[3])
-class_declaration %= identifier + parameters + function_style, lambda h, s: FunctionNode(s[1].Lemma, s[2], s[3])
+class_declaration %= identifier + parameters + function_style, lambda h, s: FunctionNode(s[1].Lemma, s[2], s[3][1], s[3][0])
 #
 protocol_declare %= protocol + identifier + lbrace + protocol_body + rbrace, lambda h, s: ProtocolNode(s[2].Lemma, s[4])
 protocol_declare %= protocol + identifier + extends + identifier + lbrace + protocol_body + rbrace, lambda h, s: ProtocolNode(s[2].Lemma, s[6], s[4].Lemma)
 #
 protocol_body %= identifier + typed_parameters + colon + identifier + semicolon, lambda h, s: [ProtocolMethodNode(s[1].Lemma, s[2], s[4].Lemma)]
-protocol_body %= identifier + typed_parameters + colon + identifier + semicolon + protocol_body, lambda h, s: [ProtocolMethodNode(s[1].Lemma, s[2], s[3].Lemma)] + s[6]
+protocol_body %= identifier + typed_parameters + colon + identifier + semicolon + protocol_body, lambda h, s: [ProtocolMethodNode(s[1].Lemma, s[2], s[4].Lemma)] + s[6]
 #
 typed_parameters %= lparen + rparen, lambda h, s: []
 typed_parameters %= lparen + typed_parameter_list + rparen, lambda h, s: s[2]
 #
-typed_parameter_list %= identifier + colon + identifier, lambda h, s: [ParameterNode(s[1].Lemma, s[2].Lemma)]
-typed_parameter_list %= identifier + colon + identifier + typed_parameter_list, lambda h, s: [ParameterNode(s[1].Lemma, s[2].Lemma)] + s[4]
+typed_parameter_list %= identifier + colon + identifier, lambda h, s: [ParameterNode(s[1].Lemma, s[3].Lemma)]
+typed_parameter_list %= identifier + colon + identifier + typed_parameter_list, lambda h, s: [ParameterNode(s[1].Lemma, s[3].Lemma)] + s[4]
 #
 
 #----------------#
 
 simple_program %= main_expression, lambda h, s: s[1]
-simple_program %= function + identifier + parameters + function_style, lambda h, s: FunctionNode(s[2].Lemma, s[3], s[4])
+simple_program %= function + identifier + parameters + function_style, lambda h, s: FunctionNode(s[2].Lemma, s[3], s[4][1], s[4][0])
 simple_program %= type_ + identifier + type_def, lambda h, s: TypeNode(s[2].Lemma, s[3][3], s[3][0], s[3][1], s[3][2])
 simple_program %= protocol_declare, lambda h, s: s[1]
 
