@@ -232,8 +232,13 @@ def evaluate_reverse_parse(right_parse, operations, tokens):
             else:
                 stack.append(rule(None, None))
         else:
-            raise Exception("Invalid action!!!")
+            print("Invalid action!!!")
+            return None, "Invalid Operation"
 
-    assert len(stack) == 1, f'Stack:{stack} '
-    assert isinstance(next(tokens).TokenType, EOF), 'Next Token is not EOF'
-    return stack[0]
+    if not len(stack) == 1:
+        print(f'Stack:{stack}')
+        return None, "Invalid AST construction"
+    if not isinstance(next(tokens).TokenType, EOF):
+        print('Next Token is not EOF')
+        return None, "Invalid AST construction"
+    return stack[0], None

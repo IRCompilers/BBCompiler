@@ -38,9 +38,7 @@ class ShiftReduceParser(object):
 
             if (state, str(lookahead)) not in self.copy:
                 print("Error. Aborting...")
-                print(state)
-                print(lookahead)
-                return None
+                return None, None, (state, lookahead)
 
             if self.copy[state, str(lookahead)] == SROperations.OK:
                 action = SROperations.OK
@@ -64,6 +62,7 @@ class ShiftReduceParser(object):
                 stack.pop()
                 assert str(stack.pop()) == str(self.Grammar.startSymbol)
                 assert len(stack) == 1
-                return output if not get_shift_reduce else (output, operations)
+                return (output, None, None) if not get_shift_reduce else (output, operations, None)
             else:
-                raise Exception('Invalid action!!!')
+                print("Invalid Action")
+                return None, None, (state, lookahead)
