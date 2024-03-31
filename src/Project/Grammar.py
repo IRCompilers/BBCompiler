@@ -66,8 +66,8 @@ statement %= protocol_declare, lambda h, s: s[1]
 #
 function_style %= darrow + simple_expression + semicolon, lambda h, s: s[2]
 function_style %= colon + identifier + darrow + simple_expression + semicolon, lambda h, s: s[4]
-function_style %= lbrace + expression_block + rbrace, lambda h, s: s[2]
-function_style %= colon + identifier + lbrace + expression_block + rbrace, lambda h, s: s[4]
+function_style %= lbrace + expression_block + rbrace, lambda h, s: [s[2]]
+function_style %= colon + identifier + lbrace + expression_block + rbrace, lambda h, s: [s[4]]
 #
 parameters %= lparen + rparen, lambda h, s: []
 parameters %= lparen + parameter_list + rparen, lambda h, s: s[2]
@@ -80,9 +80,9 @@ variable %= identifier + colon + identifier, lambda h, s: ParameterNode(s[1].Lem
 #
 type_def %= class_block, lambda h, s: ([], 'Object', [], s[1])
 type_def %= inherits + identifier + class_block, lambda h, s: ([], s[2].Lemma, [], s[3])
-type_def %= lparen + parameter_list + rparen + class_block, lambda h, s: (s[2], 'Object', [], s[4])
-type_def %= lparen + parameter_list + rparen + inherits + identifier + class_block, lambda h, s: (s[2], s[5].Lemma, [], s[6])
-type_def %= lparen + parameter_list + rparen + inherits + identifier + lparen + argument_list + rparen + class_block, lambda h, s: (s[2], s[5].Lemma, s[7], s[9])
+type_def %= parameters + class_block, lambda h, s: (s[1], 'Object', [], s[4])
+type_def %= parameters + inherits + identifier + class_block, lambda h, s: (s[1], s[5].Lemma, [], s[6])
+type_def %= parameters + inherits + identifier + lparen + argument_list + rparen + class_block, lambda h, s: (s[1], s[5].Lemma, s[7], s[9])
 type_def %= inherits + identifier + lparen + argument_list + rparen + class_block, lambda h, s: ([], s[2].Lemma, s[4], s[6])
 #
 class_block %= lbrace + rbrace, lambda h, s: []
@@ -121,7 +121,7 @@ expression %= simple_expression, lambda h, s: s[1]
 expression %= lbrace + expression_block + rbrace, lambda h, s: s[2]
 
 expression_block %= main_expression, lambda h, s: ExpressionBlockNode([s[1]])
-expression_block %= expression_block + main_expression, lambda h, s: ExpressionBlockNode(s[1].EXPRESSIONS+[s[2]])
+expression_block %= expression_block + main_expression, lambda h, s: ExpressionBlockNode([s[2]] + s[1].EXPRESSIONS)
 
 not_sc_expression %= let + declaration + in_ + not_sc_expression, lambda h, s: LetNode(s[2][0], s[2][1], s[4])
 not_sc_expression %= identifier + destruct + not_sc_expression, lambda h, s: DestructiveExpression(s[1].Lemma, s[3])
@@ -204,19 +204,19 @@ high_hierarchy_object %= high_hierarchy_object + as_ + identifier, lambda h, s: 
 function_stack %= identifier + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
 function_stack %= function_stack + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
 function_stack %= identifier + arguments, lambda h, s: FunctionCallNode(s[1].Lemma, s[2])
-function_stack %= print_ + lparen + expression + rparen, lambda h, s: FunctionCallNode('print', s[3])
-function_stack %= sin + lparen + expression + rparen, lambda h, s: FunctionCallNode('sin', s[3])
-function_stack %= cos + lparen + expression + rparen, lambda h, s: FunctionCallNode('cos', s[3])
-function_stack %= tan + lparen + expression + rparen, lambda h, s: FunctionCallNode('tan', s[3])
-function_stack %= sqrt + lparen + expression + rparen, lambda h, s: FunctionCallNode('sqrt', s[3])
-function_stack %= exp + lparen + expression + rparen, lambda h, s: FunctionCallNode('exp', s[3])
+function_stack %= print_ + lparen + expression + rparen, lambda h, s: FunctionCallNode('print', [s[3]])
+function_stack %= sin + lparen + expression + rparen, lambda h, s: FunctionCallNode('sin', [s[3]])
+function_stack %= cos + lparen + expression + rparen, lambda h, s: FunctionCallNode('cos', [s[3]])
+function_stack %= tan + lparen + expression + rparen, lambda h, s: FunctionCallNode('tan', [s[3]])
+function_stack %= sqrt + lparen + expression + rparen, lambda h, s: FunctionCallNode('sqrt', [s[3]])
+function_stack %= exp + lparen + expression + rparen, lambda h, s: FunctionCallNode('exp', [s[3]])
 function_stack %= log + lparen + expression + comma + expression + rparen, lambda h, s: FunctionCallNode('log', [s[3]] + [s[5]]) # duda
 function_stack %= rand + lparen + rparen, lambda h, s: FunctionCallNode('rand', [])
 function_stack %= range_ + lparen + expression + comma + expression + rparen, lambda h, s: FunctionCallNode('range', [s[3]] + [s[5]])
 function_stack %= base + lparen + rparen, lambda h, s: FunctionCallNode('base', [])
 function_stack %= identifier + period + identifier, lambda h, s: SelfVariableNode(type(s[1]) is VariableNode and s[1].NAME == 'self', s[3].Lemma)
 function_stack %= lparen + expression + rparen, lambda h, s: s[2]
-function_stack %= number, lambda h, s: NumberNode(s[1])
+function_stack %= number, lambda h, s: NumberNode(float(s[1].Lemma))
 function_stack %= pi, lambda h, s: NumberNode(math.pi)
 function_stack %= e, lambda h, s: NumberNode(math.e)
 function_stack %= string, lambda h, s: StringNode(s[1].Lemma)
