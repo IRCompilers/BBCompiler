@@ -5,7 +5,8 @@ type Person(firstname, lastname) {
     name() => self.firstname @@ self.lastname;
 }
 
-type Knight inherits Person {
+type Knight(firstname, lastname) inherits Person(firstname, lastname)
+{
     name() => "Sir" @@ base();
 }
 

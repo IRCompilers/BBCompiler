@@ -21,9 +21,9 @@ class InterpretVisitor(object):
 
         built_in_functions = {
             "print": lambda x: print(x[0]),
-            "sen": lambda x: math.sin(x[0]),
+            "sin": lambda x: math.sin(x[0]),
             "cos": lambda x: math.cos(x[0]),
-            "range": lambda x: range(int(x[0]), int(x[1])),
+            "range": lambda x: list(range(int(x[0]), int(x[1]))),
             "exp": lambda x: math.exp(x[0]),
             "log": lambda x: math.exp(x[0], x[1]),
             "sqrt": lambda x: math.sqrt(x[0]),
@@ -138,6 +138,7 @@ class InterpretVisitor(object):
     @Visitor.when(WhileNode)
     def visit(self, node: WhileNode, context: CodeContext):
         self.visit(node.CONDITIONS, context)
+        returnValue = None
         while (self.last_value_returned):
             self.visit(node.EXPRESSION, context)
             returnValue = self.last_value_returned
@@ -146,14 +147,20 @@ class InterpretVisitor(object):
 
     @Visitor.when(ForNode)
     def visit(self, node: ForNode, context: CodeContext):
-        # modificar: para aquello que sea iterable
         self.visit(node.COLLECTION, context)
         collection = self.last_value_returned
         for_context = CodeContext(context)
         for_context.def_variable(node.NAME, None)
-        for x in collection:
-            for_context.edit_variable(node.NAME, x)
-            self.visit(node.EXPRESSION, for_context)
+        if type(collection) is list:
+            for x in collection:
+                for_context.edit_variable(node.NAME, x)
+                self.visit(node.EXPRESSION, for_context)
+        else:
+            x=collection.call('current',[])
+            while collection.call('next',[]):
+                for_context.edit_variable(node.NAME, x)
+                self.visit(node.OPERATION, for_context)
+                x=collection.call('current',[])
 
     @Visitor.when(NewNode)
     def visit(self, node: NewNode, context: CodeContext):
@@ -272,6 +279,9 @@ class InterpretVisitor(object):
             self.visit(x, context)
             Arguments.append(self.last_value_returned)
         self.visit(node.CLASS, context)
+        if type(self.last_value_returned) is list:
+            self.last_value_returned=context.Puppet(self.last_value_returned,node.FUNCT)
+            return
         self.last_value_returned = self.last_value_returned.call(node.FUNCT, Arguments)
 
     @Visitor.when(ListNode)
@@ -290,11 +300,19 @@ class InterpretVisitor(object):
         collection = self.last_value_returned
         List_context = CodeContext(context)
         List_context.def_variable(node.ITERATION, None)
-
-        for x in collection:
-            List_context.edit_variable(node.ITERATION, x)
-            self.visit(node.OPERATION, List_context)
-            elements.append(self.last_value_returned)
+        if type(collection) is list:
+            for x in collection:
+                List_context.edit_variable(node.ITERATION, x)
+                self.visit(node.OPERATION, List_context)
+                elements.append(self.last_value_returned)
+        else:
+            x=collection.call('current',[])
+            while collection.call('next',[]):
+                List_context.edit_variable(node.ITERATION, x)
+                self.visit(node.OPERATION, List_context)
+                elements.append(self.last_value_returned)
+                x=collection.call('current',[])
+                
         self.last_value_returned = elements
 
     @Visitor.when(IndexingNode)
@@ -307,14 +325,3 @@ class InterpretVisitor(object):
     @Visitor.when(AsNode)
     def visit(self, node: AsNode, context: CodeContext):
         self.visit(node.EXPRESSION, context)
-
-# Test the above
-# par_node = ParameterNode("x", "int")
-# second_par_node = ParameterNode("y", "int")
-# plus_node = ArithmeticExpression("+", Variable("x"), Variable("y"))
-# let_node = LetNode([par_node, second_par_node], [NumberNode(111), NumberNode(222)], plus_node)
-# print_node = FunctionCallNode('print',[let_node])
-# program = ProgramNode([], print_node)
-#
-# interpreter = InterpretVisitor()
-# interpreter.visit(program)

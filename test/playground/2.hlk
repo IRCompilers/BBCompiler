@@ -13,9 +13,8 @@ type PolarPoint inherits Point {
     rho() => sqrt(self.getX() ^ 2 + self.getY() ^ 2);
 }
 
-let p = PolarPoint() in {
+let p = new PolarPoint() in {
     p.setX(3);
     p.setY(4);
     print(p.rho());
-    print(p.theta());
 }
