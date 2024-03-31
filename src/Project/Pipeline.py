@@ -26,7 +26,7 @@ def run_pipeline(text: str, model_folder: str):
     ast = evaluate_reverse_parse(derivation, operations, tokens)
 
     semantic_checker = SemanticCheckerVisitor()
-    errors = semantic_checker.visit(ast, None)
+    errors = semantic_checker.visit(ast)
 
     if len(errors) > 0:
         for e in errors:
@@ -36,7 +36,7 @@ def run_pipeline(text: str, model_folder: str):
         return
 
     interpreter = InterpretVisitor()
-    interpreter.visit(ast, None)
+    interpreter.visit(ast)
 
 
 if __name__ == '__main__':
