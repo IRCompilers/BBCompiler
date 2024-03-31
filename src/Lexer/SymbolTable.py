@@ -54,6 +54,7 @@ regex_table = [
     (or_, "\|"),
     (list_comprehension, "\|\|"),
     (not_, "\!"),
+    (notequal, "!="),
     (modulus, "%"),
     (power, "^"),
     (destruct, ":="),
