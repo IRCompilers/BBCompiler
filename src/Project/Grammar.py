@@ -201,7 +201,7 @@ pow_ %= pow_ + power + high_hierarchy_object, lambda h, s: ArithmeticExpression(
 high_hierarchy_object %= object_exp, lambda h, s: s[1]
 high_hierarchy_object %= high_hierarchy_object + as_ + identifier, lambda h, s: AsNode(s[1], s[3].Lemma)
 #
-function_stack %= identifier + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
+function_stack %= identifier + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(VariableNode(s[1].Lemma), s[3].Lemma, s[4])
 function_stack %= function_stack + period + identifier + arguments, lambda h, s: TypeFunctionCallNode(s[1], s[3].Lemma, s[4])
 function_stack %= identifier + arguments, lambda h, s: FunctionCallNode(s[1].Lemma, s[2])
 function_stack %= print_ + lparen + expression + rparen, lambda h, s: FunctionCallNode('print', [s[3]])
