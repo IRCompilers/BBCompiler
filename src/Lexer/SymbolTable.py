@@ -34,6 +34,7 @@ regex_table = [
     (divide, "/"),
     (equal, "="),
     (dequal, "=="),
+    (notequal, "\!="),
     (lesst, "<"),
     (greatt, ">"),
     (lequal, "<="),
